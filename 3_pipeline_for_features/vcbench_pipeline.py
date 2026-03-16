@@ -16,6 +16,7 @@ import json
 import importlib.util
 import math
 from pathlib import Path
+from datetime import datetime
 from typing import Any, Iterable, Sequence
 
 import numpy as np
@@ -235,12 +236,17 @@ def main() -> None:
     rs = args.random_state
     input_csv = _resolve_input_csv(args.dataset, args.input_csv)
 
-    print(f"\n{'=' * 60}")
-    print("  VCBench In-Depth Pipeline")
-    print(f"{'=' * 60}\n")
-    print(f"  Dataset: {args.dataset}")
-    print(f"  Input CSV: {input_csv}")
-    print(f"  Mode: {args.mode}\n")
+    log_lines: list[str] = []
+    def _log(msg: str) -> None:
+        print(msg)
+        log_lines.append(msg)
+
+    _log(f"\n{'=' * 60}")
+    _log("  VCBench In-Depth Pipeline")
+    _log(f"{'=' * 60}\n")
+    _log(f"  Dataset: {args.dataset}")
+    _log(f"  Input CSV: {input_csv}")
+    _log(f"  Mode: {args.mode}\n")
 
     records, labels = load_vcbench(
         input_csv,
@@ -390,10 +396,11 @@ def main() -> None:
     else:
         out_path = Path(__file__).parent / "features_full.parquet"
     save_df.to_parquet(out_path, index=False)
-    print(f"  Saved features to: {out_path}")
+    _log(f"  Saved features to: {out_path}")
 
     if args.extract_only:
-        print("  extract_only enabled; skipping training.")
+        _log("  extract_only enabled; skipping training.")
+        _write_log(log_lines)
         return
 
     # Placeholder for future multiple training loops over feature subsets.
@@ -409,23 +416,32 @@ def main() -> None:
     metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
 
     # Output format
-    print(f"\n  Features used: {', '.join(feature_names)}")
-    print(
+    _log(f"\n  Features used: {', '.join(feature_names)}")
+    _log(
         f"\n  [{mode_label}]   {len(feature_names)} features, threshold={metrics['threshold']:.2f}"
     )
     coef = model.coef_[0]
     ranked = sorted(zip(feature_names, coef), key=lambda x: abs(x[1]), reverse=True)
     for name, c in ranked:
         sign = "+" if c >= 0 else "-"
-        print(f"    {sign}{abs(c):.3f}  {name}")
+        _log(f"    {sign}{abs(c):.3f}  {name}")
 
     acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
-    print(
+    _log(
         f"\n  ROC-AUC={metrics['roc_auc']:.3f}  PR-AUC={metrics['pr_auc']:.3f}  "
         f"Prec={metrics['precision']:.3f}  Rec={metrics['recall']:.3f}  "
         f"F0.5={metrics['f0.5']:.3f}  Acc={acc:.3f}  "
         f"FNR={metrics['fnr']:.3f}  TP={int(metrics['tp'])}  FN={int(metrics['fn'])}"
     )
+
+    _write_log(log_lines)
+
+
+def _write_log(lines: list[str]) -> None:
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = Path(__file__).parent / f"training_log_{ts}.txt"
+    log_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"\n  Training log saved to: {log_path}")
 
 
 if __name__ == "__main__":
