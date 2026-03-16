@@ -1,0 +1,7 @@
+Run (log)                                      Threshold  ROC-AUC  PR-AUC  Prec   Rec    F0.5  Acc    FNR    TP  FN
+--------------------------------------------------------------------------------------------------------------------
+training_log_20260316_214448_non_corr_mix.txt     0.14     0.719   0.223   0.233  0.420  0.256  0.823  0.580   34  47
+training_log_20260316_212852_non_corr_binary_value_equivalent.txt
+                                                 0.15     0.730   0.215   0.233  0.333  0.248  0.841  0.667   27  54
+training_log_20260316_212328_non_corr_incl_scaling_values.txt
+                                                 0.19     0.718   0.220   0.257  0.222  0.249  0.872  0.778   18  63

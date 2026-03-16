@@ -1,16 +1,22 @@
 {
   "features": [
+    "has_phd",
     "has_mba",
     "stem_degree",
     "multiple_exits",
+    "senior_leadership",
     "startup_exp",
-    "long_experience",
-    "technical_role",
+    "short_tenure_pattern",
     "industry_match",
     "qs_top_25",
     "qs_top_200",
+    "qs_inverse_best",
     "prior_ipos",
     "prior_acquisitions",
-    "large_company_years"
-  ]
+    "large_company_years",
+    "experience_duration",
+    "technical_role"
+  ],
+  "use_llm": false,
+  "llm_n_features": 8
 }

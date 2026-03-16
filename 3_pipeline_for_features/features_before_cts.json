@@ -1,0 +1,16 @@
+{
+  "features": [
+    "has_mba",
+    "stem_degree",
+    "multiple_exits",
+    "startup_exp",
+    "long_experience",
+    "technical_role",
+    "industry_match",
+    "qs_top_25",
+    "qs_top_200",
+    "prior_ipos",
+    "prior_acquisitions",
+    "large_company_years"
+  ]
+}

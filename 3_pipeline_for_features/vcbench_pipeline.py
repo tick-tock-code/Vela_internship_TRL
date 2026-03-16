@@ -241,12 +241,13 @@ def main() -> None:
         print(msg)
         log_lines.append(msg)
 
+    mode = args.mode
     _log(f"\n{'=' * 60}")
     _log("  VCBench In-Depth Pipeline")
     _log(f"{'=' * 60}\n")
     _log(f"  Dataset: {args.dataset}")
     _log(f"  Input CSV: {input_csv}")
-    _log(f"  Mode: {args.mode}\n")
+    _log(f"  Mode: {mode}\n")
 
     records, labels = load_vcbench(
         input_csv,
@@ -274,10 +275,19 @@ def main() -> None:
     base_feature_names = list(base_train.columns)
 
     selected_features: list[str] = []
+    cfg_use_llm: bool | None = None
+    cfg_llm_n: int | None = None
     cfg_path = Path(args.feature_config) if args.feature_config else None
     if cfg_path is not None and cfg_path.exists():
         data = json.loads(cfg_path.read_text(encoding="utf-8"))
         selected_features = [f for f in data.get("features", []) if isinstance(f, str)]
+        if "use_llm" in data:
+            cfg_use_llm = bool(data.get("use_llm"))
+        if "llm_n_features" in data:
+            try:
+                cfg_llm_n = int(data.get("llm_n_features"))
+            except Exception:
+                cfg_llm_n = None
 
     if selected_features:
         base_selected = [f for f in selected_features if f in base_feature_names]
@@ -324,7 +334,14 @@ def main() -> None:
     llm_train = pd.DataFrame(index=range(len(train_recs)))
     llm_test = pd.DataFrame(index=range(len(test_recs)))
 
-    use_llm = args.mode in ("llm", "hybrid") or args.llm_features
+    mode = args.mode
+    if cfg_use_llm is True and mode == "human":
+        mode = "hybrid"
+    if cfg_use_llm is False and mode == "llm":
+        mode = "human"
+
+    llm_n = cfg_llm_n if cfg_llm_n is not None else args.llm_n_features
+    use_llm = mode in ("llm", "hybrid") or args.llm_features
     if use_llm:
         # NOTE: LLM generation is async; we run a simple synchronous wrapper.
         # This keeps the option available without forcing LLM usage.
@@ -338,7 +355,7 @@ def main() -> None:
             rules = await generator.generate(
                 samples=train_recs,
                 labels=y_train.tolist(),
-                n_rules=args.llm_n_features,
+                n_rules=llm_n,
                 n_samples=min(60, len(train_recs)),
             )
             if not rules:
@@ -356,13 +373,13 @@ def main() -> None:
 
         llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(_gen_llm())
 
-    if args.mode == "human":
+    if mode == "human":
         full_all = pd.concat([base_all, custom_all], axis=1)
         full_train = pd.concat([base_train, custom_train], axis=1)
         full_test = pd.concat([base_test, custom_test], axis=1)
         feature_names = base_feature_names + custom_features
         mode_label = "Human Only"
-    elif args.mode == "llm":
+    elif mode == "llm":
         full_all = llm_all
         full_train = llm_train
         full_test = llm_test
@@ -376,7 +393,7 @@ def main() -> None:
         mode_label = "Hybrid"
 
     # Standardize continuous custom features only (training stats)
-    if args.mode in ("human", "hybrid"):
+    if mode in ("human", "hybrid"):
         full_train, full_test = _standardize_continuous(
             full_train, full_test, custom_features
         )
@@ -439,7 +456,9 @@ def main() -> None:
 
 def _write_log(lines: list[str]) -> None:
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path = Path(__file__).parent / f"training_log_{ts}.txt"
+    log_dir = Path(__file__).parent / "training_logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"training_log_{ts}.txt"
     log_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"\n  Training log saved to: {log_path}")
 
