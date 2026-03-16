@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtualenv
+.venv
+venv/
+ENV/
+env/
+
+# Tests
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# Docs
+docs/build/
+docs/buildclear/
+docs/_build/
+
+# Misc
+*.swp
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Custom
+llm_context.md
+poetry.toml
+lab.py
+lab.ipynb
+.env
+gptrees
+experiment_vcbench/*
+experiments/
+pyrightconfig.json
+examples/*
+!examples/**/*.ipynb
+.private/
