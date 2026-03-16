@@ -48,7 +48,7 @@ Errors are learning opportunities. When something breaks:
 ## File Organization
 
 **Deliverables vs Intermediates:**
-- **Deliverables**: Google Sheets, Google Slides, or other cloud-based outputs that the user can access
+- **Deliverables**: python files (.py), markdown files (md) that are human-readable, such as architecture.md, memory.md and documentation.md. 
 - **Intermediates**: Temporary files needed during processing
 
 **Directory structure:**
@@ -58,7 +58,7 @@ Errors are learning opportunities. When something breaks:
 - `.env` - Environment variables and API keys
 - `credentials.json`, `token.json` - Google OAuth credentials (required files, in `.gitignore`)
 
-**Key principle:** Local files are only for processing. Deliverables live in cloud services (Google Sheets, Slides, etc.) where the user can access them. Everything in `.tmp/` can be deleted and regenerated.
+**Key principle:** Local files are only for processing. Deliverables live in execution and directives. Everything in `.tmp/` can be deleted and regenerated.
 
 ## Summary
 
