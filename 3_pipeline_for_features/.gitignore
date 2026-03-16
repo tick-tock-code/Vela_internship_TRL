@@ -1,0 +1,4 @@
+features_full.parquet
+training_log_*.txt
+loss_curve_*.csv
+__pycache__/

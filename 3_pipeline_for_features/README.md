@@ -12,7 +12,7 @@ LLM-derived features.
 - `vcbench_pipeline.py`  
   Loads VCBench, imports the baseline 15 features, adds custom features, can
   optionally add LLM features, saves a feature dataset, and trains/evaluates a
-  PyTorch logistic regression model.
+  scikit-learn Logistic Regression model.
 
 - `feature_selector_gui.py`  
   A simple GUI to select features and save them to a JSON file.
@@ -55,15 +55,10 @@ Then run the pipeline with:
 python vcbench_pipeline.py --dataset full --feature_config features.json
 ```
 
-## Two-stage runner (vela_TRL -> torch_env2)
+## Generated artifacts
 
-```powershell
-.\run_pipeline.ps1
-```
-
-This will:
-1. Extract features in `vela_TRL` to `features_full.parquet`.
-2. Train in `torch_env2` using that Parquet.
+The pipeline writes Parquet outputs and training logs during runs. These files
+are ignored by git via `3_pipeline_for_features/.gitignore`.
 
 ## Notes
 

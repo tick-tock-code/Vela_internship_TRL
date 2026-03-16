@@ -20,6 +20,7 @@ from typing import Any, Iterable, Sequence
 
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     average_precision_score,
     fbeta_score,
@@ -101,37 +102,17 @@ def _precision_at_k(y_true: np.ndarray, y_scores: np.ndarray, pct: float) -> flo
     return float(np.sum(y_true[top_k]) / k)
 
 
-def _train_pytorch(
+def _train_sklearn(
     X_train: np.ndarray,
     y_train: np.ndarray,
     X_test: np.ndarray,
-    y_test: np.ndarray,
-    epochs: int,
-    lr: float,
-) -> tuple[np.ndarray, np.ndarray, "torch.nn.Linear"]:
-    import torch
-    device = torch.device("cpu")
-    Xtr = torch.tensor(X_train, dtype=torch.float32, device=device)
-    ytr = torch.tensor(y_train.reshape(-1, 1), dtype=torch.float32, device=device)
-    Xte = torch.tensor(X_test, dtype=torch.float32, device=device)
-
-    model = torch.nn.Linear(Xtr.shape[1], 1, bias=True).to(device)
-    opt = torch.optim.Adam(model.parameters(), lr=lr)
-    loss_fn = torch.nn.BCEWithLogitsLoss()
-
-    for _ in range(epochs):
-        model.train()
-        opt.zero_grad()
-        logits = model(Xtr)
-        loss = loss_fn(logits, ytr)
-        loss.backward()
-        opt.step()
-
-    model.eval()
-    with torch.no_grad():
-        train_logits = model(Xtr).cpu().numpy().reshape(-1)
-        test_logits = model(Xte).cpu().numpy().reshape(-1)
-    return train_logits, test_logits, model
+    random_state: int,
+) -> tuple[np.ndarray, np.ndarray, LogisticRegression]:
+    clf = LogisticRegression(max_iter=1000, random_state=random_state)
+    clf.fit(X_train, y_train)
+    train_scores = clf.predict_proba(X_train)[:, 1]
+    test_scores = clf.predict_proba(X_test)[:, 1]
+    return train_scores, test_scores, clf
 
 
 def _report_metrics(
@@ -140,7 +121,7 @@ def _report_metrics(
     y_test: np.ndarray,
     test_scores: np.ndarray,
 ) -> dict[str, float]:
-    # Threshold tuning on training set for F0.5
+    # Threshold tuning on training set for F0.5 (match example script)
     best_t = 0.5
     best_f = 0.0
     for t in np.arange(0.05, 0.95, 0.01):
@@ -154,6 +135,12 @@ def _report_metrics(
             best_f, best_t = f, float(t)
 
     y_pred = (test_scores >= best_t).astype(int)
+    tp = float(np.sum((y_test == 1) & (y_pred == 1)))
+    fn = float(np.sum((y_test == 1) & (y_pred == 0)))
+    tn = float(np.sum((y_test == 0) & (y_pred == 0)))
+    fp = float(np.sum((y_test == 0) & (y_pred == 1)))
+    fnt = fn / (tp + fn) if (tp + fn) > 0 else 0.0
+
     metrics = {
         "roc_auc": roc_auc_score(y_test, test_scores),
         "pr_auc": average_precision_score(y_test, test_scores),
@@ -164,6 +151,11 @@ def _report_metrics(
         "precision@5%": _precision_at_k(y_test, test_scores, 0.05),
         "precision@10%": _precision_at_k(y_test, test_scores, 0.10),
         "threshold": best_t,
+        "tp": tp,
+        "fn": fn,
+        "tn": tn,
+        "fp": fp,
+        "fnr": fnt,
     }
     return metrics
 
@@ -175,8 +167,6 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--label_column", default="success")
     p.add_argument("--test_size", type=float, default=0.20)
     p.add_argument("--random_state", type=int, default=42)
-    p.add_argument("--epochs", type=int, default=200)
-    p.add_argument("--lr", type=float, default=1e-2)
     p.add_argument(
         "--feature_set",
         choices=sorted(FEATURE_SETS.keys()),
@@ -412,8 +402,8 @@ def main() -> None:
     X_train = full_train.values.astype(float)
     X_test = full_test.values.astype(float)
 
-    train_scores, test_scores, model = _train_pytorch(
-        X_train, y_train, X_test, y_test, args.epochs, args.lr
+    train_scores, test_scores, model = _train_sklearn(
+        X_train, y_train, X_test, rs
     )
 
     metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
@@ -423,7 +413,7 @@ def main() -> None:
     print(
         f"\n  [{mode_label}]   {len(feature_names)} features, threshold={metrics['threshold']:.2f}"
     )
-    coef = model.weight.detach().cpu().numpy().reshape(-1)
+    coef = model.coef_[0]
     ranked = sorted(zip(feature_names, coef), key=lambda x: abs(x[1]), reverse=True)
     for name, c in ranked:
         sign = "+" if c >= 0 else "-"
@@ -433,7 +423,8 @@ def main() -> None:
     print(
         f"\n  ROC-AUC={metrics['roc_auc']:.3f}  PR-AUC={metrics['pr_auc']:.3f}  "
         f"Prec={metrics['precision']:.3f}  Rec={metrics['recall']:.3f}  "
-        f"F0.5={metrics['f0.5']:.3f}  Acc={acc:.3f}"
+        f"F0.5={metrics['f0.5']:.3f}  Acc={acc:.3f}  "
+        f"FNR={metrics['fnr']:.3f}  TP={int(metrics['tp'])}  FN={int(metrics['fn'])}"
     )
 
 
