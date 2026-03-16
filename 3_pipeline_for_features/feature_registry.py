@@ -62,7 +62,7 @@ FEATURE_REGISTRY: dict[str, FeatureSpec] = {
 
 
 FEATURE_SETS: dict[str, list[str]] = {
+    "base_only": [],
     "custom_only": list(FEATURE_REGISTRY.keys()),
     "base_plus_custom": list(FEATURE_REGISTRY.keys()),
 }
-

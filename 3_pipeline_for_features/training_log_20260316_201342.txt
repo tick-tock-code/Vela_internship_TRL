@@ -1,0 +1,28 @@
+
+  Features used: top_university, has_phd, has_mba, stem_degree, prior_exit, multiple_exits, senior_leadership, large_company_exp, startup_exp, long_experience, serial_founder, technical_role, many_prior_roles, short_tenure_pattern, industry_match, qs_top_25, qs_top_50, qs_top_100, qs_top_200, prior_ipos, prior_acquisitions, large_company_years
+
+  [Train from Parquet]   22 features, threshold=0.00
+    +1.014  prior_ipos
+    +0.682  prior_acquisitions
+    -0.617  short_tenure_pattern
+    -0.606  long_experience
+    -0.603  senior_leadership
+    +0.531  qs_top_25
+    +0.370  prior_exit
+    -0.259  qs_top_200
+    +0.258  multiple_exits
+    -0.239  large_company_exp
+    +0.209  top_university
+    -0.187  has_mba
+    -0.134  many_prior_roles
+    -0.132  startup_exp
+    +0.131  industry_match
+    +0.111  qs_top_100
+    -0.088  serial_founder
+    -0.085  stem_degree
+    +0.068  has_phd
+    +0.028  qs_top_50
+    -0.018  technical_role
+    +0.010  large_company_years
+
+  ROC-AUC=0.573  PR-AUC=0.140  Prec=0.000  Rec=0.000  F0.5=0.000  Acc=0.909  FNR=1.000  TP=0  FN=162

@@ -1,16 +1,21 @@
 # VCBench Custom Feature Pipeline
 
-This folder contains a custom pipeline that combines the 15 baseline features
-from the example script with your own feature registry.
+This folder contains an in-depth pipeline that combines the 15 baseline features
+from the example script with your own feature registry, with an option to add
+LLM-derived features.
 
 ## Files
 
 - `feature_registry.py`  
   Defines custom feature formulas and named feature sets.
 
-- `vcbench_custom_pipeline.py`  
-  Loads VCBench, imports the baseline 15 features, adds custom features, and
-  trains/evaluates a logistic regression model.
+- `vcbench_pipeline.py`  
+  Loads VCBench, imports the baseline 15 features, adds custom features, can
+  optionally add LLM features, saves a feature dataset, and trains/evaluates a
+  PyTorch logistic regression model.
+
+- `feature_selector_gui.py`  
+  A simple GUI to select features and save them to a JSON file.
 
 ## Custom features included
 
@@ -23,24 +28,47 @@ from the example script with your own feature registry.
 Example (default feature set = base + custom):
 
 ```bash
-python vcbench_custom_pipeline.py --input_csv C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public_sample100.csv
+python vcbench_pipeline.py --dataset sample
 ```
 
 Override with a named set:
 
 ```bash
-python vcbench_custom_pipeline.py --input_csv C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv --feature_set custom_only
+python vcbench_pipeline.py --dataset full --feature_set custom_only
 ```
 
 Override with explicit custom features:
 
 ```bash
-python vcbench_custom_pipeline.py --input_csv C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv --features qs_top_25,prior_ipos,large_company_years
+python vcbench_pipeline.py --dataset full --features qs_top_25,prior_ipos,large_company_years
 ```
+
+Use the GUI to save a JSON feature list:
+
+```bash
+python feature_selector_gui.py
+```
+
+Then run the pipeline with:
+
+```bash
+python vcbench_pipeline.py --dataset full --feature_config features.json
+```
+
+## Two-stage runner (vela_TRL -> torch_env2)
+
+```powershell
+.\run_pipeline.ps1
+```
+
+This will:
+1. Extract features in `vela_TRL` to `features_full.parquet`.
+2. Train in `torch_env2` using that Parquet.
 
 ## Notes
 
 - The baseline features are imported directly from:
   `2_Human_features_running_example_script\vcbench_lambda_features_minimal.py`
 - The base script path can be overridden with `--base_script`.
-
+- To include LLM-derived features, add `--llm_features` and ensure your API
+  key is set in the environment (e.g., `OPENAI_API_KEY`).
