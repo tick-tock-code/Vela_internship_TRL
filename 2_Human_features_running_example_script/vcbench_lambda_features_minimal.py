@@ -159,7 +159,17 @@ def _extract_human_features(record: dict[str, Any]) -> dict[str, int]:
     )
 
     # --- Industry match (1 feature) ---
-    startup_industry = record.get("industry", "").lower()
+    industry_raw = record.get("industry", "")
+    if industry_raw is None:
+        industry_raw = ""
+    # Handle NaN or non-string values defensively
+    if not isinstance(industry_raw, str):
+        try:
+            if pd.isna(industry_raw):
+                industry_raw = ""
+        except Exception:
+            industry_raw = str(industry_raw)
+    startup_industry = industry_raw.lower()
     industry_match = int(
         bool(startup_industry)
         and any(startup_industry in j.get("industry", "").lower() for j in jobs)

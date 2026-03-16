@@ -1,0 +1,25 @@
+LLM reasoning can be:
+
+
+clustering techniques
+binary questions
+scoring
+
+
+Experiment with feature engineering
+
+put together own pipeline
+
+
+improvement in accuracy
+looking at weighting of different questions
+ - 
+
+
+fit regression model
+feature weightings
+logistic regression 100%
+10 nodes to 1 binary output
+correlation makes things tricky - make the model as simple as possible
+
+different ML depths for logistic regression could be used.
