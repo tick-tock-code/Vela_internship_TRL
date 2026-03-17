@@ -1,0 +1,31 @@
+{
+  "features": [
+    "prior_acquisitions",
+    "prior_ipos",
+    "multiple_exits",
+    "qs_top_200",
+    "qs_top_25",
+    "industry_match",
+    "long_experience",
+    "technical_role",
+    "senior_leadership",
+    "large_company_years",
+    "stem_degree",
+    "qs_inverse_best",
+    "short_tenure_pattern",
+    "has_mba",
+    "startup_exp",
+    "has_phd"
+  ],
+  "use_llm": false,
+  "llm_n_features": 8,
+  "use_llm_reasoning": false,
+  "llm_reasoning_features": [
+    "domain_expertise",
+    "serial_entrepreneur",
+    "strong_network",
+    "founder_history_rating"
+  ],
+  "llm_reasoning_dataset_size": "full",
+  "llm_reasoning_prompts_path": "llm_reasoning_prompts.json"
+}

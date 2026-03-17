@@ -1,2 +1,47 @@
 Doc says cross validated -> but methodology is to run AI on the set once on the entire train dataset
 This is complicated further as me, ML engineer, had access to entire dataset to analyse first. So to mirror that for the LLM, it should also get access to the full train set?
+
+
+Prompting - on a founder by founder basis, a score from 1-5 needs to be objective, so it needs the context of the whole group?
+
+Look at the prompts, look for some features.
+
+Prompt evolution strategy.
+
+Policy induction - working back and forth with the llm to improve the llm.
+
+Give an initial prompt to generate features, learning feedback loop
+Even if not better features, can look at the prompt evolution instead.
+
+Batching founders up - work with 20 founders at a time, to allow for scoring on 1-5. Be aware that this is a sample of the entire dataset, so these scores do not need to be distributed evenly. 
+
+Idea that if you ask.
+Setting temperature to zero - 'creativity' -> use temperature to keep creative when iterating prompts, then score with low temp.
+Comparing creative and low temp model responses - 
+
+For comparing prompts -> temperature zero would reduce variance in feature, and can investigate prompts.
+
+Ablation study on temperature. Looking at varation on results from temperature.
+
+Coffee model to improve prompting
+ - might be worth testing that in the LLM feature approach in that domain, could be quicker to setup
+ - 
+
+
+
+Does the LLM reason improve past F0.5 = 0.25?
+
+
+
+Gemini API key -> I can set things up
+
+
+
+Basic route is iterating with LLMs to come up with ideas of what they recommend as features
+
+ - getting away from objective features, moving towards subjective features.
+ - policies (maybe not relevant, a combination of different features)
+
+if it doesn't work, figure out why
+can easily overfit with a bad prompt
+tried to give feedback - was difficult with bad prompts.
