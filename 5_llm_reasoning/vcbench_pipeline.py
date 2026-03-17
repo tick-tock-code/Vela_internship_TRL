@@ -277,6 +277,12 @@ def _parse_args() -> argparse.Namespace:
         help="Dataset size for reasoning features: full, 200, 400, 1000.",
     )
     p.add_argument(
+        "--llm_reasoning_batch_size",
+        type=int,
+        default=20,
+        help="Batch size for LLM reasoning (default 20).",
+    )
+    p.add_argument(
         "--llm_sweep_repeats",
         type=int,
         default=3,
@@ -470,6 +476,13 @@ def main() -> None:
         if cfg_llm_reasoning_prompts_path
         else Path(args.llm_reasoning_prompts)
     )
+    llm_providers = cfg_llm_providers or {"openai": True, "google": False}
+    llm_google_model = cfg_llm_google_model
+    llm_reasoning_batch_size = (
+        cfg_llm_reasoning_batch_size
+        if cfg_llm_reasoning_batch_size is not None
+        else args.llm_reasoning_batch_size
+    )
     reasoning_dataset_size = (
         cfg_llm_reasoning_dataset_size
         if cfg_llm_reasoning_dataset_size is not None
@@ -518,6 +531,9 @@ def main() -> None:
     cfg_llm_reasoning_features: list[str] | None = None
     cfg_llm_reasoning_dataset_size: str | None = None
     cfg_llm_reasoning_prompts_path: str | None = None
+    cfg_llm_providers: dict[str, bool] | None = None
+    cfg_llm_google_model: str | None = None
+    cfg_llm_reasoning_batch_size: int | None = None
     cfg_path = Path(args.feature_config) if args.feature_config else None
     if cfg_path is not None and cfg_path.exists():
         data = json.loads(cfg_path.read_text(encoding="utf-8"))
@@ -539,6 +555,15 @@ def main() -> None:
             cfg_llm_reasoning_dataset_size = data.get("llm_reasoning_dataset_size")
         if isinstance(data.get("llm_reasoning_prompts_path"), str):
             cfg_llm_reasoning_prompts_path = data.get("llm_reasoning_prompts_path")
+        if isinstance(data.get("llm_providers"), dict):
+            cfg_llm_providers = {
+                "openai": bool(data.get("llm_providers", {}).get("openai", False)),
+                "google": bool(data.get("llm_providers", {}).get("google", False)),
+            }
+        if isinstance(data.get("llm_google_model"), str):
+            cfg_llm_google_model = data.get("llm_google_model")
+        if isinstance(data.get("llm_reasoning_batch_size"), int):
+            cfg_llm_reasoning_batch_size = data.get("llm_reasoning_batch_size")
 
     if selected_features:
         base_selected = [f for f in selected_features if f in base_feature_names]
@@ -638,6 +663,8 @@ def main() -> None:
                                         model=args.llm_model,
                                         n_features=n_rules,
                                         all_recs=records,
+                                        providers=llm_providers,
+                                        google_model=llm_google_model,
                                     ),
                                     timeout=float(args.llm_timeout),
                                 )
@@ -764,6 +791,8 @@ def main() -> None:
                     model=args.llm_model,
                     n_features=llm_n,
                     all_recs=records,
+                    providers=llm_providers,
+                    google_model=llm_google_model,
                 )
             )
 
@@ -781,6 +810,9 @@ def main() -> None:
             dataset_size=reasoning_dataset_size,
             random_state=rs,
             prompts_path=prompts_path,
+            providers=llm_providers,
+            google_model=llm_google_model,
+            batch_size=llm_reasoning_batch_size,
         )
         reasoning_df, all_reasoning_names = generate_reasoning_features(
             records=records,

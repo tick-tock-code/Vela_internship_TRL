@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from think_reason_learn.core.llms import OpenAIChoice
+from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 from think_reason_learn.datasets import VCBENCH_HELPERS, VCBENCH_SCHEMA
 from think_reason_learn.features import FeatureEvaluator, FeatureGenerator
 
@@ -20,6 +20,8 @@ async def generate_llm_features(
     model: str,
     n_features: int,
     all_recs: list[dict[str, Any]] | None = None,
+    providers: dict[str, bool] | None = None,
+    google_model: str | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
     """Generate LLM features exactly like the example script.
 
@@ -41,10 +43,20 @@ async def generate_llm_features(
         print(f"  TRL OPENAI_API_KEY set: {bool(trl_settings.OPENAI_API_KEY)}")
     except Exception:
         pass
+    if providers is None:
+        providers = {"openai": True, "google": False}
+    llm_priority = []
+    if providers.get("openai", False):
+        llm_priority.append(OpenAIChoice(model=model))
+    if providers.get("google", False):
+        llm_priority.append(GoogleChoice(model=google_model or "gemini-2.0-flash"))
+    if not llm_priority:
+        raise RuntimeError("No LLM providers enabled for feature generation.")
+
     generator = FeatureGenerator(
         schema=VCBENCH_SCHEMA,
         helpers=VCBENCH_HELPERS,
-        llm_priority=[OpenAIChoice(model=model)],
+        llm_priority=llm_priority,
         temperature=0.7,
     )
     rules = await generator.generate(

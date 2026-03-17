@@ -1,6 +1,8 @@
 {
-  "domain_expertise": "Does this founder have domain expertise relevant to their startup?",
-  "serial_entrepreneur": "Does the career trajectory suggest a serial entrepreneur?",
-  "strong_network": "Would you expect this founder to have a strong professional network?",
-  "founder_history_rating": "Rate the founder's education and job history on a scale of 1-5. This value will be part of a larger model indicating whether this founder's startup is likely to be successful. Success is measured as \"achieving an IPO/acquisition above $500M or raising $500M+\"."
+  "domain_expertise": "Does this founder have domain expertise relevant to their startup? Return a JSON list of length N where each entry contains index and score. Scores must be numeric and in range 0-1. Example: [{\"index\": 0, \"score\": 0.8}, {\"index\": 1, \"score\": 0.2}].",
+  "serial_entrepreneur": "Does the career trajectory suggest a serial entrepreneur? Return a JSON list of length N where each entry contains index and score. Scores must be numeric and in range 0-1. Example: [{\"index\": 0, \"score\": 1}, {\"index\": 1, \"score\": 0}].",
+  "strong_network": "Would you expect this founder to have a strong professional network? Return a JSON list of length N where each entry contains index and score. Scores must be numeric and in range 0-1. Example: [{\"index\": 0, \"score\": 0.7}, {\"index\": 1, \"score\": 0.1}].",
+  "founder_history_rating": "Rate the founder's education and job history on a scale of 1-5. This value will be part of a larger model indicating whether this founder's startup is likely to be successful. Success is measured as \"achieving an IPO/acquisition above $500M or raising $500M+\". Return a JSON list of length N where each entry contains index and score. Scores must be numeric and in range 1-5. Example: [{\"index\": 0, \"score\": 4}, {\"index\": 1, \"score\": 2}]."
+
+
 }

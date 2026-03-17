@@ -27,5 +27,11 @@
     "founder_history_rating"
   ],
   "llm_reasoning_dataset_size": "full",
-  "llm_reasoning_prompts_path": "llm_reasoning_prompts.json"
+  "llm_reasoning_prompts_path": "llm_reasoning_prompts.json",
+  "llm_providers": {
+    "openai": true,
+    "google": false
+  },
+  "llm_google_model": "gemini-2.0-flash",
+  "llm_reasoning_batch_size": 20
 }

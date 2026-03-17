@@ -45,3 +45,6 @@ Basic route is iterating with LLMs to come up with ideas of what they recommend 
 if it doesn't work, figure out why
 can easily overfit with a bad prompt
 tried to give feedback - was difficult with bad prompts.
+
+
+Idea: grade in different batches more than one, to get a relative ranking system.

@@ -13,7 +13,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from think_reason_learn.core.llms import OpenAIChoice
+from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 from think_reason_learn.core.llms import llm as trl_llm
 
 
@@ -23,6 +23,9 @@ class ReasoningConfig:
     dataset_size: str  # "full", "200", "400", "1000"
     random_state: int
     prompts_path: Path
+    providers: dict[str, bool]
+    google_model: str | None = None
+    batch_size: int = 20
 
 
 def _load_prompts(path: Path) -> dict[str, str]:
@@ -71,6 +74,28 @@ def _format_record(record: dict[str, Any]) -> str:
     return json.dumps(record, ensure_ascii=False)
 
 
+def _parse_json_scores(text: str) -> list[dict[str, float]]:
+    try:
+        data = json.loads(text)
+    except Exception:
+        return []
+    if not isinstance(data, list):
+        return []
+    items = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        if "index" not in item or "score" not in item:
+            continue
+        try:
+            idx = int(item["index"])
+            score = float(item["score"])
+        except Exception:
+            continue
+        items.append({"index": idx, "score": score})
+    return items
+
+
 def generate_reasoning_features(
     records: list[dict[str, Any]],
     labels: np.ndarray,
@@ -84,29 +109,68 @@ def generate_reasoning_features(
     )
 
     features = {k: [] for k in prompts.keys()}
-    model_choice = OpenAIChoice(model=config.model)
+    failures = 0
+    if config.providers.get("openai", False):
+        model_choice = OpenAIChoice(model=config.model)
+    elif config.providers.get("google", False):
+        model_choice = GoogleChoice(model=config.google_model or "gemini-2.0-flash")
+    else:
+        raise RuntimeError("No LLM providers enabled for reasoning features.")
 
-    for rec in selected_records:
-        rec_text = _format_record(rec)
+    batch_size = max(1, int(config.batch_size))
+    rng = np.random.RandomState(config.random_state)
+    order = rng.permutation(len(selected_records))
+    ordered_records = [selected_records[i] for i in order]
+    ordered_labels = selected_labels[order]
+
+    for start in range(0, len(ordered_records), batch_size):
+        batch = ordered_records[start : start + batch_size]
+        batch_texts = "\n".join(
+            [f"Index {i}: {_format_record(rec)}" for i, rec in enumerate(batch)]
+        )
         for key, prompt in prompts.items():
             min_v, max_v = _expected_range(key)
             full_prompt = (
                 f"{prompt}\n"
-                f"Return a single numeric value between {min_v} and {max_v}.\n"
-                f"Founder record:\n{rec_text}"
+                f"Batch size: {len(batch)}. Return JSON list with entries for indices 0..{len(batch)-1}.\n"
+                f"Founder batch:\n{batch_texts}"
             )
             response = trl_llm.respond(
                 full_prompt,
                 choice=model_choice,
                 temperature=0.0,
             )
-            value = _parse_numeric(_sanitize(str(response)))
-            features[key].append(value)
+            parsed = _parse_json_scores(_sanitize(str(response)))
+            if len(parsed) != len(batch):
+                failures += 1
+                # One retry with sanitized prompt
+                response = trl_llm.respond(
+                    full_prompt,
+                    choice=model_choice,
+                    temperature=0.0,
+                )
+                parsed = _parse_json_scores(_sanitize(str(response)))
+                if len(parsed) != len(batch):
+                    parsed = []
+            scores = [float('nan')] * len(batch)
+            for item in parsed:
+                idx = item["index"]
+                score = item["score"]
+                if 0 <= idx < len(batch):
+                    if score < min_v or score > max_v:
+                        failures += 1
+                        continue
+                    scores[idx] = score
+            if any(np.isnan(scores)):
+                failures += 1
+            features[key].extend(scores)
         time.sleep(0.05)
 
+    # Restore original ordering
     df = pd.DataFrame(features)
-    df.insert(0, "founder_uuid", [r.get("founder_uuid") for r in selected_records])
-    df.insert(1, "success", selected_labels)
+    df.insert(0, "founder_uuid", [r.get("founder_uuid") for r in ordered_records])
+    df.insert(1, "success", ordered_labels)
+    df = df.iloc[np.argsort(order)].reset_index(drop=True)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"llm_reasoning_{config.dataset_size}.parquet"
@@ -120,6 +184,9 @@ def generate_reasoning_features(
         "prompt_keys": list(prompts.keys()),
         "output_parquet": str(out_path),
         "n_records": len(selected_records),
+        "batch_size": batch_size,
+        "n_batches": int(np.ceil(len(selected_records) / batch_size)),
+        "validation_failures": failures,
     }
     metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
