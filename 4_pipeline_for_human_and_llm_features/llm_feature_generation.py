@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import Any, Iterable
+import os
+from pathlib import Path
 
 import pandas as pd
 
@@ -23,6 +25,22 @@ async def generate_llm_features(
 
     Returns (l_all, l_train, l_test, llm_names).
     """
+    _load_env_if_present()
+    try:
+        from think_reason_learn.core._config import settings as trl_settings
+        if os.getenv("OPENAI_API_KEY"):
+            trl_settings.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+        # Reset LLM singleton so it re-reads updated settings
+        from think_reason_learn.core.llms._ask import LLM
+        from think_reason_learn.core._singleton import SingletonMeta
+        SingletonMeta._instances.pop(LLM, None)
+        import think_reason_learn.core.llms as trl_llms
+        trl_llms.llm = trl_llms.LLM()
+        import think_reason_learn.features._generator as gen_mod
+        gen_mod.llm = trl_llms.llm
+        print(f"  TRL OPENAI_API_KEY set: {bool(trl_settings.OPENAI_API_KEY)}")
+    except Exception:
+        pass
     generator = FeatureGenerator(
         schema=VCBENCH_SCHEMA,
         helpers=VCBENCH_HELPERS,
@@ -59,3 +77,25 @@ async def generate_llm_features(
         print(f"    {i}. {r.name}: {r.description}")
 
     return l_all, l_train, l_test, llm_names
+
+
+def _load_env_if_present() -> None:
+    env_path = Path(__file__).resolve().parents[1].parent / ".env"
+    if not env_path.exists():
+        return
+    try:
+        from think_reason_learn.core import _config as trl_config
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            key = key.strip().lstrip("\ufeff")
+            val = val.strip().strip('"').strip("'")
+            if key and (key not in os.environ or not os.environ.get(key)):
+                os.environ[key] = val
+            if key in ("OPENAI_API_KEY", "GOOGLE_AI_API_KEY", "XAI_API_KEY", "ANTHROPIC_API_KEY"):
+                if hasattr(trl_config, "settings") and not getattr(trl_config.settings, key, ""):
+                    setattr(trl_config.settings, key, val)
+    except Exception:
+        return

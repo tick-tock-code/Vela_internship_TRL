@@ -157,6 +157,15 @@ def _report_metrics(
     return metrics
 
 
+def _format_topk(metrics: dict[str, float]) -> list[str]:
+    return [
+        "\n  Top-k precision:",
+        f"    precision@1%={metrics['precision@1%']:.3f}",
+        f"    precision@5%={metrics['precision@5%']:.3f}",
+        f"    precision@10%={metrics['precision@10%']:.3f}",
+    ]
+
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="VCBench in-depth pipeline.")
     p.add_argument("--dataset", choices=["sample", "full"], default="sample")
@@ -198,6 +207,14 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--llm_model", default="gpt-4.1-nano")
     p.add_argument("--llm_n_features", type=int, default=8)
     p.add_argument(
+        "--llm_sweep",
+        action="store_true",
+        help=(
+            "Sweep LLM n_rules over 1,2,3,4,6,8,10,15,20,25,30,35,40,45,50 "
+            "in LLM-only mode."
+        ),
+    )
+    p.add_argument(
         "--base_script",
         default=str(
             Path(
@@ -233,15 +250,25 @@ def _load_env_if_present() -> None:
     if not env_path.exists():
         return
     try:
+        from think_reason_learn.core import _config as trl_config
         for line in env_path.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, val = line.split("=", 1)
-            key = key.strip()
+            key = key.strip().lstrip("\ufeff")
             val = val.strip().strip('"').strip("'")
-            if key and key not in os.environ:
+            if key and (key not in os.environ or not os.environ.get(key)):
                 os.environ[key] = val
+            if key in ("OPENAI_API_KEY", "GOOGLE_AI_API_KEY", "XAI_API_KEY", "ANTHROPIC_API_KEY"):
+                if hasattr(trl_config, "settings") and not getattr(trl_config.settings, key, ""):
+                    setattr(trl_config.settings, key, val)
+        # Reset LLM singleton so it re-reads updated settings
+        from think_reason_learn.core.llms._ask import LLM
+        from think_reason_learn.core._singleton import SingletonMeta
+        SingletonMeta._instances.pop(LLM, None)
+        import think_reason_learn.core.llms as trl_llms
+        trl_llms.llm = trl_llms.LLM()
     except Exception:
         # Best-effort only; do not crash if .env is malformed.
         return
@@ -359,26 +386,135 @@ def main() -> None:
     mode = args.mode
     if cfg_use_llm is True and mode == "human":
         mode = "hybrid"
-    if cfg_use_llm is False and mode == "llm":
-        mode = "human"
 
     _log(f"  Mode: {mode}\n")
 
     llm_n = cfg_llm_n if cfg_llm_n is not None else args.llm_n_features
+    sweep_enabled = args.llm_sweep
+    sweep_rules = [1, 2, 3, 4, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50]
     use_llm = mode in ("llm", "hybrid") or args.llm_features
     if use_llm:
+        _log(f"  OPENAI_API_KEY set: {bool(os.getenv('OPENAI_API_KEY'))}")
         import asyncio
-        _log(f"\n  Generating {llm_n} LLM features with {args.llm_model}...")
-        llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
-            generate_llm_features(
-                train_recs=train_recs,
-                y_train=y_train,
-                test_recs=test_recs,
-                model=args.llm_model,
-                n_features=llm_n,
-                all_recs=records,
+        if sweep_enabled:
+            sweep_dir = Path(__file__).parent / "training_logs" / f"llm_sweep_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            sweep_dir.mkdir(parents=True, exist_ok=True)
+            features_storage = Path(__file__).parent / "features_storage"
+            features_storage.mkdir(parents=True, exist_ok=True)
+            summary_rows = []
+            for n_rules in sweep_rules:
+                _log(f"\n  Generating {n_rules} LLM features with {args.llm_model}...")
+                llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
+                    generate_llm_features(
+                        train_recs=train_recs,
+                        y_train=y_train,
+                        test_recs=test_recs,
+                        model=args.llm_model,
+                        n_features=n_rules,
+                        all_recs=records,
+                    )
+                )
+
+                full_all = llm_all
+                full_train = llm_train
+                full_test = llm_test
+                feature_names = llm_feature_names
+                mode_label = "LLM Only"
+
+                X_train = full_train.values.astype(float)
+                X_test = full_test.values.astype(float)
+
+                train_scores, test_scores, model = _train_sklearn(
+                    X_train, y_train, X_test, rs
+                )
+                metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
+                acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
+                metrics["accuracy"] = acc
+
+                # Save features for this n_rules
+                llm_df = pd.concat(
+                    [
+                        pd.Series([r.get("founder_uuid") for r in records], name="founder_uuid"),
+                        pd.Series(labels, name="success"),
+                        full_all,
+                    ],
+                    axis=1,
+                )
+                llm_df.to_parquet(features_storage / f"llm_features_{n_rules}.parquet", index=False)
+
+                # Write run log
+                run_lines = []
+                run_lines.append(f"Requested n_rules: {n_rules}")
+                run_lines.append(f"Resultant features: {len(feature_names)}")
+                run_lines.append(f"Features used: {', '.join(feature_names)}")
+                run_lines.append(f"[{mode_label}] {len(feature_names)} features, threshold={metrics['threshold']:.2f}")
+                run_lines.append("\nWeights:")
+                run_lines.append(f"{'feature':<40} {'coef':>8}")
+                run_lines.append("-" * 50)
+                for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
+                    run_lines.append(f"{name:<40} {c:>8.3f}")
+                run_lines.append(
+                    f"ROC-AUC={metrics['roc_auc']:.3f} PR-AUC={metrics['pr_auc']:.3f} "
+                    f"Prec={metrics['precision']:.3f} Rec={metrics['recall']:.3f} "
+                    f"F0.5={metrics['f0.5']:.3f} Acc={acc:.3f}"
+                )
+                run_lines.extend(_format_topk(metrics))
+                (sweep_dir / f"run_{n_rules}.txt").write_text("\n".join(run_lines), encoding="utf-8")
+
+                row = {
+                    "n_rules": n_rules,
+                    "resultant_features": len(feature_names),
+                    "roc_auc": metrics["roc_auc"],
+                    "f0.5": metrics["f0.5"],
+                    "precision": metrics["precision"],
+                    "recall": metrics["recall"],
+                    "accuracy": acc,
+                    "precision@1%": metrics["precision@1%"],
+                    "precision@5%": metrics["precision@5%"],
+                    "precision@10%": metrics["precision@10%"],
+                }
+                for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
+                    row[f"w_{name}"] = c
+                summary_rows.append(row)
+
+            summary_df = pd.DataFrame(summary_rows)
+            summary_df.to_csv(sweep_dir / "llm_sweep_summary.csv", index=False)
+            try:
+                import matplotlib.pyplot as plt  # type: ignore
+                fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+                x = summary_df["resultant_features"]
+                axes[0, 0].scatter(x, summary_df["roc_auc"])
+                axes[0, 0].set_title("ROC-AUC")
+                axes[0, 1].scatter(x, summary_df["f0.5"])
+                axes[0, 1].set_title("F0.5")
+                axes[1, 0].scatter(x, summary_df["recall"], label="Recall")
+                if "precision" in summary_df.columns:
+                    axes[1, 0].scatter(x, summary_df["precision"], label="Precision")
+                    axes[1, 0].legend()
+                axes[1, 0].set_title("Recall + Precision")
+                axes[1, 1].scatter(x, summary_df["accuracy"])
+                axes[1, 1].set_title("Accuracy")
+                for ax in axes.flat:
+                    ax.set_xlabel("Resultant features")
+                plt.tight_layout()
+                plt.savefig(sweep_dir / "llm_sweep_metrics.png", dpi=150)
+                plt.close(fig)
+            except Exception:
+                pass
+
+            return
+        else:
+            _log(f"\n  Generating {llm_n} LLM features with {args.llm_model}...")
+            llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
+                generate_llm_features(
+                    train_recs=train_recs,
+                    y_train=y_train,
+                    test_recs=test_recs,
+                    model=args.llm_model,
+                    n_features=llm_n,
+                    all_recs=records,
+                )
             )
-        )
 
 
     if mode == "human":
@@ -407,7 +543,7 @@ def main() -> None:
         )
 
     # Verify selected features match config (when provided)
-    if selected_features:
+    if selected_features and mode != "llm":
         expected_set = {f for f in selected_features if f in feature_names}
         actual_set = set(feature_names)
         if expected_set != actual_set:
@@ -432,10 +568,12 @@ def main() -> None:
         ],
         axis=1,
     )
+    features_storage = Path(__file__).parent / "features_storage"
+    features_storage.mkdir(parents=True, exist_ok=True)
     if args.output_parquet:
         out_path = Path(args.output_parquet)
     else:
-        out_path = Path(__file__).parent / "features_full.parquet"
+        out_path = features_storage / "features_full.parquet"
     save_df.to_parquet(out_path, index=False)
     _log(f"  Saved features to: {out_path}")
 
@@ -484,6 +622,8 @@ def main() -> None:
         f"F0.5={metrics['f0.5']:.3f}  Acc={acc:.3f}  "
         f"FNR={metrics['fnr']:.3f}  TP={int(metrics['tp'])}  FN={int(metrics['fn'])}"
     )
+    for line in _format_topk(metrics):
+        _log(line)
 
     metrics["accuracy"] = acc
     _write_log(
@@ -532,6 +672,9 @@ def _write_log(
             "recall": metrics.get("recall"),
             "f0.5": metrics.get("f0.5"),
             "accuracy": metrics.get("accuracy"),
+            "precision@1%": metrics.get("precision@1%"),
+            "precision@5%": metrics.get("precision@5%"),
+            "precision@10%": metrics.get("precision@10%"),
             "fnr": metrics.get("fnr"),
             "tp": metrics.get("tp"),
             "fn": metrics.get("fn"),
