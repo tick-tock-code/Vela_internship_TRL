@@ -4,17 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 import importlib.util
-import sys
 
 import pandas as pd
 import numpy as np
 
 from think_reason_learn.datasets import load_vcbench
-from sklearn.model_selection import train_test_split
-
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
 from feature_registry import FEATURE_REGISTRY
 
@@ -55,26 +49,18 @@ def main() -> None:
         r"C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder"
     ) / "VCBench-Starter-Kit" / "vcbench_final_public.csv"
 
-    records, labels = load_vcbench(str(input_csv), "success", 0, 42)
-    idx = np.arange(len(records))
-    train_idx, _ = train_test_split(
-        idx,
-        test_size=0.20,
-        stratify=labels,
-        random_state=42,
-    )
-    train_recs = [records[i] for i in train_idx]
+    records, _ = load_vcbench(str(input_csv), "success", 0, 42)
 
-    base_df = pd.DataFrame([extract_base(r) for r in train_recs])
+    base_df = pd.DataFrame([extract_base(r) for r in records])
     custom_features = list(FEATURE_REGISTRY.keys())
-    custom_df = _custom_feature_df(train_recs, custom_features)
+    custom_df = _custom_feature_df(records, custom_features)
 
     full_df = pd.concat([base_df, custom_df], axis=1)
     corr = full_df.corr()
 
     out_dir = Path(__file__).parent
-    csv_path = out_dir / "human_feature_correlations_train.csv"
-    png_path = out_dir / "human_feature_correlations_train.png"
+    csv_path = out_dir / "human_feature_correlations.csv"
+    png_path = out_dir / "human_feature_correlations.png"
 
     corr.to_csv(csv_path, index=True)
     print(f"Saved correlation CSV to: {csv_path}")
