@@ -18,6 +18,7 @@ import importlib.util
 import math
 from pathlib import Path
 from datetime import datetime
+import traceback
 from typing import Any, Iterable, Sequence
 
 import numpy as np
@@ -207,11 +208,51 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--llm_model", default="gpt-4.1-nano")
     p.add_argument("--llm_n_features", type=int, default=8)
     p.add_argument(
+        "--llm_sweep_repeats",
+        type=int,
+        default=3,
+        help="Repeat each LLM sweep n_rules value this many times.",
+    )
+    p.add_argument(
+        "--llm_sweep_range",
+        default="1-15",
+        help="Range for LLM sweep when --llm_sweep is set (default: 1-15).",
+    )
+    p.add_argument(
+        "--llm_retry_attempts",
+        type=int,
+        default=2,
+        help="Retry LLM generation this many times on failure during sweep.",
+    )
+    p.add_argument(
+        "--llm_retry_sleep",
+        type=float,
+        default=10.0,
+        help="Seconds to sleep between LLM generation retries.",
+    )
+    p.add_argument(
+        "--llm_timeout",
+        type=float,
+        default=120.0,
+        help="Timeout in seconds for each LLM generation call during sweep.",
+    )
+    p.add_argument(
+        "--llm_sweep_start_rule",
+        type=int,
+        default=1,
+        help="Start sweep at this n_rules value (default: 1).",
+    )
+    p.add_argument(
+        "--llm_sweep_start_repeat",
+        type=int,
+        default=1,
+        help="Start sweep at this repeat index for the start rule (default: 1).",
+    )
+    p.add_argument(
         "--llm_sweep",
         action="store_true",
         help=(
-            "Sweep LLM n_rules over 1,2,3,4,6,8,10,15,20,25,30,35,40,45,50 "
-            "in LLM-only mode."
+            "Sweep LLM n_rules over a range (default 1-15) in LLM-only mode."
         ),
     )
     p.add_argument(
@@ -242,6 +283,37 @@ def _resolve_input_csv(dataset: str, override: str) -> str:
     if dataset == "sample":
         return str(base / "vcbench_final_public_sample100.csv")
     return str(base / "vcbench_final_public.csv")
+
+
+def _parse_sweep_range(spec: str) -> list[int]:
+    spec = spec.strip()
+    if not spec:
+        return list(range(1, 16))
+    if "-" in spec:
+        parts = spec.split("-", 1)
+        try:
+            start = int(parts[0].strip())
+            end = int(parts[1].strip())
+            if start <= 0 or end <= 0:
+                raise ValueError
+            if start > end:
+                start, end = end, start
+            return list(range(start, end + 1))
+        except Exception:
+            return list(range(1, 16))
+    # comma-separated list
+    vals = []
+    for piece in spec.split(","):
+        piece = piece.strip()
+        if not piece:
+            continue
+        try:
+            v = int(piece)
+            if v > 0:
+                vals.append(v)
+        except Exception:
+            continue
+    return sorted(set(vals)) if vals else list(range(1, 16))
 
 
 def _load_env_if_present() -> None:
@@ -281,9 +353,15 @@ def main() -> None:
     input_csv = _resolve_input_csv(args.dataset, args.input_csv)
 
     log_lines: list[str] = []
+    sweep_terminal_log: Path | None = None
+
     def _log(msg: str) -> None:
         print(msg)
         log_lines.append(msg)
+        if sweep_terminal_log is not None:
+            sweep_terminal_log.parent.mkdir(parents=True, exist_ok=True)
+            with sweep_terminal_log.open("a", encoding="utf-8") as f:
+                f.write(msg + "\n")
 
     mode = args.mode
     _log(f"\n{'=' * 60}")
@@ -391,7 +469,8 @@ def main() -> None:
 
     llm_n = cfg_llm_n if cfg_llm_n is not None else args.llm_n_features
     sweep_enabled = args.llm_sweep
-    sweep_rules = [1, 2, 3, 4, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    sweep_rules = _parse_sweep_range(args.llm_sweep_range)
+    sweep_repeats = max(1, int(args.llm_sweep_repeats))
     use_llm = mode in ("llm", "hybrid") or args.llm_features
     if use_llm:
         _log(f"  OPENAI_API_KEY set: {bool(os.getenv('OPENAI_API_KEY'))}")
@@ -401,81 +480,121 @@ def main() -> None:
             sweep_dir.mkdir(parents=True, exist_ok=True)
             features_storage = Path(__file__).parent / "features_storage"
             features_storage.mkdir(parents=True, exist_ok=True)
+            sweep_terminal_log = sweep_dir / "terminal_log.txt"
+            _log("Sweep terminal log started.")
             summary_rows = []
+            start_rule = max(1, int(args.llm_sweep_start_rule))
+            start_repeat = max(1, int(args.llm_sweep_start_repeat))
             for n_rules in sweep_rules:
-                _log(f"\n  Generating {n_rules} LLM features with {args.llm_model}...")
-                llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
-                    generate_llm_features(
-                        train_recs=train_recs,
-                        y_train=y_train,
-                        test_recs=test_recs,
-                        model=args.llm_model,
-                        n_features=n_rules,
-                        all_recs=records,
+                for repeat_idx in range(1, sweep_repeats + 1):
+                    if n_rules < start_rule:
+                        continue
+                    if n_rules == start_rule and repeat_idx < start_repeat:
+                        continue
+                    _log(
+                        f"\n  Generating {n_rules} LLM features with {args.llm_model}... (repeat {repeat_idx}/{sweep_repeats})"
                     )
-                )
+                    attempt = 0
+                    while True:
+                        try:
+                            llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
+                                asyncio.wait_for(
+                                    generate_llm_features(
+                                        train_recs=train_recs,
+                                        y_train=y_train,
+                                        test_recs=test_recs,
+                                        model=args.llm_model,
+                                        n_features=n_rules,
+                                        all_recs=records,
+                                    ),
+                                    timeout=float(args.llm_timeout),
+                                )
+                            )
+                            break
+                        except Exception:
+                            attempt += 1
+                            err = traceback.format_exc()
+                            _log(f"\n  ERROR during LLM generation (attempt {attempt}):")
+                            _log(err)
+                            if attempt > max(0, int(args.llm_retry_attempts)):
+                                _log("  Exceeded retry attempts. Skipping this run.")
+                                llm_all = llm_train = llm_test = pd.DataFrame(index=range(len(records)))
+                                llm_feature_names = []
+                                break
+                            _log(f"  Retrying in {args.llm_retry_sleep:.1f}s...")
+                            import time
+                            time.sleep(max(0.0, float(args.llm_retry_sleep)))
+                    if not llm_feature_names:
+                        continue
 
-                full_all = llm_all
-                full_train = llm_train
-                full_test = llm_test
-                feature_names = llm_feature_names
-                mode_label = "LLM Only"
+                    full_all = llm_all
+                    full_train = llm_train
+                    full_test = llm_test
+                    feature_names = llm_feature_names
+                    mode_label = "LLM Only"
 
-                X_train = full_train.values.astype(float)
-                X_test = full_test.values.astype(float)
+                    X_train = full_train.values.astype(float)
+                    X_test = full_test.values.astype(float)
 
-                train_scores, test_scores, model = _train_sklearn(
-                    X_train, y_train, X_test, rs
-                )
-                metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
-                acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
-                metrics["accuracy"] = acc
+                    train_scores, test_scores, model = _train_sklearn(
+                        X_train, y_train, X_test, rs
+                    )
+                    metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
+                    acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
+                    metrics["accuracy"] = acc
 
-                # Save features for this n_rules
-                llm_df = pd.concat(
-                    [
-                        pd.Series([r.get("founder_uuid") for r in records], name="founder_uuid"),
-                        pd.Series(labels, name="success"),
-                        full_all,
-                    ],
-                    axis=1,
-                )
-                llm_df.to_parquet(features_storage / f"llm_features_{n_rules}.parquet", index=False)
+                    # Save features for this n_rules + repeat
+                    llm_df = pd.concat(
+                        [
+                            pd.Series([r.get("founder_uuid") for r in records], name="founder_uuid"),
+                            pd.Series(labels, name="success"),
+                            full_all,
+                        ],
+                        axis=1,
+                    )
+                    llm_df.to_parquet(
+                        features_storage / f"llm_features_{n_rules}_r{repeat_idx}.parquet",
+                        index=False,
+                    )
 
-                # Write run log
-                run_lines = []
-                run_lines.append(f"Requested n_rules: {n_rules}")
-                run_lines.append(f"Resultant features: {len(feature_names)}")
-                run_lines.append(f"Features used: {', '.join(feature_names)}")
-                run_lines.append(f"[{mode_label}] {len(feature_names)} features, threshold={metrics['threshold']:.2f}")
-                run_lines.append("\nWeights:")
-                run_lines.append(f"{'feature':<40} {'coef':>8}")
-                run_lines.append("-" * 50)
-                for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
-                    run_lines.append(f"{name:<40} {c:>8.3f}")
-                run_lines.append(
-                    f"ROC-AUC={metrics['roc_auc']:.3f} PR-AUC={metrics['pr_auc']:.3f} "
-                    f"Prec={metrics['precision']:.3f} Rec={metrics['recall']:.3f} "
-                    f"F0.5={metrics['f0.5']:.3f} Acc={acc:.3f}"
-                )
-                run_lines.extend(_format_topk(metrics))
-                (sweep_dir / f"run_{n_rules}.txt").write_text("\n".join(run_lines), encoding="utf-8")
+                    # Write run log
+                    run_id = f"run_{n_rules}_{repeat_idx}"
+                    run_lines = []
+                    run_lines.append(f"Requested n_rules: {n_rules}")
+                    run_lines.append(f"Repeat: {repeat_idx}")
+                    run_lines.append(f"Resultant features: {len(feature_names)}")
+                    run_lines.append(f"Features used: {', '.join(feature_names)}")
+                    run_lines.append(f"[{mode_label}] {len(feature_names)} features, threshold={metrics['threshold']:.2f}")
+                    run_lines.append("\nWeights:")
+                    run_lines.append(f"{'feature':<40} {'coef':>8}")
+                    run_lines.append("-" * 50)
+                    for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
+                        run_lines.append(f"{name:<40} {c:>8.3f}")
+                    run_lines.append(
+                        f"ROC-AUC={metrics['roc_auc']:.3f} PR-AUC={metrics['pr_auc']:.3f} "
+                        f"Prec={metrics['precision']:.3f} Rec={metrics['recall']:.3f} "
+                        f"F0.5={metrics['f0.5']:.3f} Acc={acc:.3f}"
+                    )
+                    run_lines.extend(_format_topk(metrics))
+                    (sweep_dir / f"{run_id}.txt").write_text("\n".join(run_lines), encoding="utf-8")
 
-                row = {
-                    "n_rules": n_rules,
-                    "resultant_features": len(feature_names),
-                    "roc_auc": metrics["roc_auc"],
-                    "f0.5": metrics["f0.5"],
-                    "precision": metrics["precision"],
-                    "recall": metrics["recall"],
-                    "accuracy": acc,
-                    "precision@1%": metrics["precision@1%"],
-                    "precision@5%": metrics["precision@5%"],
-                    "precision@10%": metrics["precision@10%"],
-                }
-                for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
-                    row[f"w_{name}"] = c
-                summary_rows.append(row)
+                    row = {
+                        "run_id": run_id,
+                        "repeat": repeat_idx,
+                        "n_rules": n_rules,
+                        "resultant_features": len(feature_names),
+                        "roc_auc": metrics["roc_auc"],
+                        "f0.5": metrics["f0.5"],
+                        "precision": metrics["precision"],
+                        "recall": metrics["recall"],
+                        "accuracy": acc,
+                        "precision@1%": metrics["precision@1%"],
+                        "precision@5%": metrics["precision@5%"],
+                        "precision@10%": metrics["precision@10%"],
+                    }
+                    for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
+                        row[f"w_{name}"] = c
+                    summary_rows.append(row)
 
             summary_df = pd.DataFrame(summary_rows)
             summary_df.to_csv(sweep_dir / "llm_sweep_summary.csv", index=False)

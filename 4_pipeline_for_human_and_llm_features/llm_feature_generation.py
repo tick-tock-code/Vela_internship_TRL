@@ -74,7 +74,12 @@ async def generate_llm_features(
     ok = len(rules) - len(errors)
     print(f"  Generated {len(rules)} rules ({ok} compiled OK)")
     for i, r in enumerate(rules, 1):
-        print(f"    {i}. {r.name}: {r.description}")
+        def _sanitize(text: str) -> str:
+            return "".join(ch if ch.isprintable() else " " for ch in text)
+
+        name = _sanitize(str(r.name))
+        desc = _sanitize(str(r.description))
+        print(f"    {i}. {name}: {desc}")
 
     return l_all, l_train, l_test, llm_names
 
