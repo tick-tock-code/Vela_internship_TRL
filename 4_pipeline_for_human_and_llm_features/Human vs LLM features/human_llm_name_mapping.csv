@@ -1,0 +1,12 @@
+llm_feature,best_human_feature,name_similarity
+founder_uuid,founder_uuid,1.0
+has_phd,has_phd,1.0
+has_ipo,has_mba,0.3333333333333333
+industry_experience,industry_match,0.3333333333333333
+large_company_experience,large_company_years,0.5
+multiple_exits,multiple_exits,1.0
+education_qs_rank,qs_top_200,0.2
+industry_diversity,industry_match,0.3333333333333333
+has_mba,has_mba,1.0
+founder_role_as_ceo,founder_uuid,0.2
+industry_experience_duration,industry_match,0.25
