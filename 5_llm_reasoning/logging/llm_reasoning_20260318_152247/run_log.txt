@@ -1,0 +1,6 @@
+run_log started
+[2026-03-18T15:22:47.202678] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-18T15:22:47.621527] Loaded records: 4500 labels: 4500
+[2026-03-18T15:22:47.622096] Use LLM reasoning: True
+[2026-03-18T15:22:47.627002] Split train=3600 test=900
+[2026-03-18T15:22:47.627465] OPENAI_API_KEY set: True

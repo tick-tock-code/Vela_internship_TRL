@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from typing import TypeVar, Tuple, Generic, List, TypeAlias, Literal
-from typing import Dict, override, Union, Any
+from typing import Dict, Union, Any
+try:
+    from typing import override
+except ImportError:  # Python < 3.12
+    from typing_extensions import override
 import math
 from dataclasses import dataclass, field, asdict
 import asyncio

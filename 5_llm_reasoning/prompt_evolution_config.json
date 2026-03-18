@@ -1,0 +1,21 @@
+{
+  "experiment": "B",
+  "pool_size": 10,
+  "sample_size": 200,
+  "batch_size": 20,
+  "concurrency": 10,
+  "iterations": 10,
+  "save_every": 2,
+  "selection_metric": "f0.5",
+  "random_state": 42,
+  "dataset": "full",
+  "llm_model": "gpt-4.1-nano",
+  "critic_model": "gpt-4.1-nano",
+  "critic_temperature": 0.2,
+  "core_prompt_path": "core_prompt_evolve.txt",
+  "experiments_path": "experiments_evolve.json",
+  "output_root": "prompt_evolution",
+  "dry_run": false,
+  "initial_mutations": 9,
+  "critic_sample_size": 20
+}

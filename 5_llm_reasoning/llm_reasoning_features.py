@@ -45,6 +45,7 @@ class ReasoningConfig:
     log_every: int = 1
     repair_nan: bool = True
     repair_existing: bool = False
+    skip_select: bool = False
 
 
 def _load_core_prompt(path: Path) -> str:
@@ -215,7 +216,7 @@ def _hash_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _write_per_experiment_parquets(
+def write_per_experiment_parquets(
     df: pd.DataFrame,
     exp_to_keys: dict[str, list[str]],
     output_dir: Path,
@@ -232,6 +233,38 @@ def _write_per_experiment_parquets(
         if exp_path.exists() and not overwrite:
             continue
         exp_df.to_parquet(exp_path, index=False)
+
+
+def build_experiment_key_map(
+    experiments_path: Path,
+    selected_experiments: list[str] | None = None,
+) -> tuple[list[str], dict[str, list[str]]]:
+    experiments = _load_experiments(experiments_path)
+    if selected_experiments:
+        experiments = [e for e in experiments if e.get("id") in set(selected_experiments)]
+    if not experiments:
+        raise RuntimeError("No experiments selected for LLM reasoning.")
+    _validate_experiments(experiments)
+
+    feature_keys: list[str] = []
+    exp_to_keys: dict[str, list[str]] = {}
+    for k in GLOBAL_NUMERIC_KEYS:
+        feature_keys.append(k)
+    for k in GLOBAL_TEXT_KEYS:
+        feature_keys.append(k)
+    for exp in experiments:
+        exp_id = str(exp.get("id"))
+        exp_keys: list[str] = []
+        for k in exp.get("numeric_keys", []):
+            key = f"{exp_id}_{k}"
+            feature_keys.append(key)
+            exp_keys.append(key)
+        for k in exp.get("text_keys", []):
+            key = f"{exp_id}_{k}"
+            feature_keys.append(key)
+            exp_keys.append(key)
+        exp_to_keys[exp_id] = exp_keys
+    return feature_keys, exp_to_keys
 
 
 def generate_reasoning_features(
@@ -295,9 +328,12 @@ def generate_reasoning_features(
             exp_keys.append(key)
         exp_to_keys[exp_id] = exp_keys
 
-    selected_records, selected_labels = _select_records(
-        records, labels, dataset_size, config.random_state
-    )
+    if config.skip_select:
+        selected_records, selected_labels = records, labels
+    else:
+        selected_records, selected_labels = _select_records(
+            records, labels, dataset_size, config.random_state
+        )
     total_records = len(selected_records)
 
     batch_size = max(1, int(config.batch_size))
@@ -359,7 +395,7 @@ def generate_reasoning_features(
             required_cols = set(["founder_uuid", "success"] + feature_keys)
             if required_cols.issubset(set(df.columns)):
                 if not config.repair_existing:
-                    _write_per_experiment_parquets(
+                    write_per_experiment_parquets(
                         df,
                         exp_to_keys,
                         output_dir,
@@ -886,7 +922,7 @@ def generate_reasoning_features(
     nan_rows_after = _rows_with_nan() if config.repair_nan else []
 
     # Per-experiment outputs
-    _write_per_experiment_parquets(
+    write_per_experiment_parquets(
         df,
         exp_to_keys,
         output_dir,

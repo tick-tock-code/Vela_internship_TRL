@@ -1,0 +1,12 @@
+[
+  {
+    "id": "B",
+    "instructions": "Use the following rubric:\n\nTop founder:\n- rapid progression or early leadership\n- ownership in ambiguous environments\n- operates in high-growth or technical contexts\n\nWeak founder:\n- limited ownership\n- slow progression\n- inconsistent direction\n\nScore relative to this rubric (1-5). Provide a one-sentence justification for the score.",
+    "numeric_keys": [
+      "rubric_score"
+    ],
+    "text_keys": [
+      "rubric_score_justification"
+    ]
+  }
+]

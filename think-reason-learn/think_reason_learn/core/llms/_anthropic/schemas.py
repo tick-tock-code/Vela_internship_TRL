@@ -1,8 +1,17 @@
 from typing import TypeAlias, Literal, TypedDict
 
 from pydantic import BaseModel
-from anthropic.types import Model
-from anthropic._types import NOT_GIVEN as NOT_GIVEN, NotGiven as NotGiven
+try:
+    from anthropic.types import Model
+    from anthropic._types import NOT_GIVEN as NOT_GIVEN, NotGiven as NotGiven
+except Exception:  # Anthropic optional
+    class Model(str):
+        pass
+
+    class NotGiven:
+        pass
+
+    NOT_GIVEN = NotGiven()
 
 
 AnthropicChatModel: TypeAlias = Model

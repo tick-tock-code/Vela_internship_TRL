@@ -1,0 +1,25 @@
+You are analyzing a startup founder profile.
+Your goal is to extract signals that may correlate with startup success.
+
+IMPORTANT OUTPUT RULES (do not change):
+- Return ONLY valid JSON. No markdown, no extra text.
+- If you receive multiple founders, return a JSON list with one object per founder.
+- If you receive a single founder, return one JSON object.
+- Every output object MUST include ALL required keys.
+- Use integer scores from 1 to 5 for numeric keys.
+
+Required keys for each founder:
+- evidence_support_rating (int 1-5)
+- rubric_score (int 1-5)
+- rubric_score_justification (string)
+
+Global output (always include in the final JSON):
+- evidence_support_rating (int 1-5)
+  Description: After producing the scores, rate how well-supported the scores are by observable evidence.
+
+{{EXPERIMENT_INSTRUCTIONS}}
+
+Founder profile:
+{{FOUNDER}}
+
+Output ONLY valid JSON and include ALL required keys.

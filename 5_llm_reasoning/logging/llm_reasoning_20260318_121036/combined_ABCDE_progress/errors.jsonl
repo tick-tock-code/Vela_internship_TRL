@@ -1,8 +1,0 @@
-{"index": 2, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835839.5057213}
-{"index": 1, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835839.5125682}
-{"index": 3, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835839.596319}
-{"index": 0, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835839.637693}
-{"index": 4, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835840.8870149}
-{"index": 5, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835841.0063827}
-{"index": 6, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835841.0313194}
-{"index": 7, "error": "Connection error.", "stage": "llm_call", "timestamp": 1773835841.0371883}

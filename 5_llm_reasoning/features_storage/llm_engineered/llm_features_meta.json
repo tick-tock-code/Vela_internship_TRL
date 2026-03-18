@@ -3,13 +3,13 @@
   "n_features": 8,
   "feature_names": [
     "has_phd",
-    "has_mba",
-    "industry_experience_in_success",
-    "multiple_educations",
-    "industry_experience_in_high_ranking_qs",
-    "recent_job_experience",
-    "leadership_role",
-    "industry_experience_success"
+    "in_high_qs_rank",
+    "has_experience_in_industry",
+    "has_exited_before",
+    "has_experience_in_lead_roles",
+    "education_in_top_rank",
+    "has_multiple_degrees",
+    "industry_match_jobs"
   ],
   "model": "gpt-4.1-nano",
   "providers": {

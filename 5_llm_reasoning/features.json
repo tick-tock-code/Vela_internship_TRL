@@ -36,8 +36,9 @@
     "llm_reasoning_batch_size":  20,
     "llm_reasoning_log_every":  10,
     "llm_reasoning_concurrency":  10,
-    "llm_reasoning_repair_nan":  false,
-    "llm_reasoning_repair_existing":  false,
+    "llm_reasoning_repair_nan":  true,
+    "llm_reasoning_repair_existing":  true,
+    "llm_reasoning_split_batches":  true,
     "llm_engineered_for_reasoning":  true,
     "llm_engineered_cache":  true,
     "llm_reasoning_experiments":  [
@@ -50,7 +51,5 @@
     "llm_temperature":  0,
     "llm_reasoning_mode":  "single",
     "llm_reasoning_sequential":  [],
-    "llm_reasoning_combined":  [
-                                   "A"
-                               ]
+    "llm_reasoning_combined":  []
 }

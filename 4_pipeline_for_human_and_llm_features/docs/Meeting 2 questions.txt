@@ -1,9 +1,3 @@
-Doc says cross validated -> but methodology is to run AI on the set once on the entire train dataset
-This is complicated further as me, ML engineer, had access to entire dataset to analyse first. So to mirror that for the LLM, it should also get access to the full train set?
-
-
-Prompting - on a founder by founder basis, a score from 1-5 needs to be objective, so it needs the context of the whole group?
-
 Look at the prompts, look for some features.
 
 Prompt evolution strategy.
@@ -38,13 +32,12 @@ Gemini API key -> I can set things up
 
 
 Basic route is iterating with LLMs to come up with ideas of what they recommend as features
-
  - getting away from objective features, moving towards subjective features.
  - policies (maybe not relevant, a combination of different features)
 
 if it doesn't work, figure out why
-can easily overfit with a bad prompt
-tried to give feedback - was difficult with bad prompts.
 
 
-Idea: grade in different batches more than one, to get a relative ranking system.
+
+
+Iterative prompt improvement - try with GEPA as a model

@@ -1,2 +1,0 @@
-Doc says cross validated -> but methodology is to run AI on the set once on the entire train dataset
-This is complicated further as me, ML engineer, had access to entire dataset to analyse first. So to mirror that for the LLM, it should also get access to the full train set?

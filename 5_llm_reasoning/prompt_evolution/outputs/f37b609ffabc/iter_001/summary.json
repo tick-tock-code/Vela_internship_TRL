@@ -1,0 +1,24 @@
+{
+  "total_rows": 20,
+  "numeric": {
+    "evidence_support_rating": {
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
+      "nan_count": 0
+    },
+    "B_rubric_score": {
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
+      "nan_count": 0
+    }
+  },
+  "text": {
+    "B_rubric_score_justification": {
+      "empty_count": 0
+    }
+  }
+}

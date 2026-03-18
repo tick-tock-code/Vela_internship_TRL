@@ -166,6 +166,11 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--batch_sizes", default="5,10,20,30")
     p.add_argument("--concurrencies", default="5,10,15,20")
     p.add_argument(
+        "--experiments",
+        default="A",
+        help="Comma-separated experiment IDs to run (default: A).",
+    )
+    p.add_argument(
         "--quick",
         action="store_true",
         help="Reduce grid size to batch_sizes=10,20 and concurrencies=5,10.",
@@ -212,6 +217,9 @@ def main() -> None:
         records, labels, args.sample_size, args.random_state
     )
 
+    experiments_list = [x.strip() for x in args.experiments.split(",") if x.strip()]
+    exp_label = "+".join(experiments_list) if experiments_list else "A"
+
     if args.quick:
         batch_sizes = [10, 20]
         concurrencies = [5, 10]
@@ -233,7 +241,7 @@ def main() -> None:
                 rep_records = [sample_records[i] for i in perm]
                 rep_labels = sample_labels[perm]
 
-                run_id = f"bs{batch_size}_c{concurrency}_r{repeat}"
+                run_id = f"{exp_label}_bs{batch_size}_c{concurrency}_r{repeat}"
                 run_dir = root / run_id
                 run_dir.mkdir(parents=True, exist_ok=True)
                 log_dir = run_dir / "logs"
@@ -251,7 +259,7 @@ def main() -> None:
                     google_model=llm_google_model,
                     batch_size=batch_size,
                     concurrency=concurrency,
-                    experiments=["A"],
+                    experiments=experiments_list or ["A"],
                     dry_run=args.dry_run,
                     dry_run_fast=args.dry_run,
                     log_dir=log_dir,
@@ -308,15 +316,21 @@ def main() -> None:
         updated_rows.append(row_dict)
 
     summary_df = pd.DataFrame(updated_rows)
-    summary_path = root / "benchmark_summary.csv"
+    summary_path = root / f"benchmark_summary_{exp_label}.csv"
     summary_df.to_csv(summary_path, index=False)
 
+    group_cols = ["batch_size", "concurrency"]
+    numeric_cols = [
+        c for c in summary_df.columns
+        if c not in group_cols and pd.api.types.is_numeric_dtype(summary_df[c])
+    ]
     agg = (
-        summary_df.groupby(["batch_size", "concurrency"])
+        summary_df[group_cols + numeric_cols]
+        .groupby(group_cols)
         .agg(["mean", "std"])
         .reset_index()
     )
-    agg_path = root / "benchmark_aggregate.csv"
+    agg_path = root / f"benchmark_aggregate_{exp_label}.csv"
     agg.to_csv(agg_path, index=False)
 
     print(f"Summary saved to: {summary_path}")

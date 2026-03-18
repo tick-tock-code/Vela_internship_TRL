@@ -1,0 +1,18 @@
+{
+  "model": "gpt-4.1-nano",
+  "dataset_size": "full",
+  "random_state": 42,
+  "core_prompt_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\core_prompt.txt",
+  "experiments_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\experiments.json",
+  "experiments": [
+    "A"
+  ],
+  "output_parquet": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\run_A\\llm_reasoning_full.parquet",
+  "train_meta": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\run_A\\llm_reasoning_full_A_train.json",
+  "test_meta": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\run_A\\llm_reasoning_full_A_test.json",
+  "split_batches": true,
+  "batch_size": 20,
+  "concurrency": 10,
+  "dry_run": false,
+  "dry_run_fast": false
+}

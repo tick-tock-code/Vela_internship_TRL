@@ -1,0 +1,11 @@
+{"index": -1, "stage": "start_run", "experiment": "A", "processed": 0, "total": 900, "batch_size": 20, "n_batches": 45, "timestamp": 1773844010.3762863}
+{"index": 0, "stage": "start_call", "experiment": "A", "processed": 0, "total": 900, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773844010.3770714}
+{"index": 10, "stage": "start_call", "experiment": "A", "processed": 0, "total": 900, "batch_index": 10, "batch_start": 200, "batch_end": 219, "batch_size": 20, "timestamp": 1773844010.377656}
+{"index": 20, "stage": "start_call", "experiment": "A", "processed": 0, "total": 900, "batch_index": 20, "batch_start": 400, "batch_end": 419, "batch_size": 20, "timestamp": 1773844010.3779638}
+{"index": 30, "stage": "start_call", "experiment": "A", "processed": 0, "total": 900, "batch_index": 30, "batch_start": 600, "batch_end": 619, "batch_size": 20, "timestamp": 1773844010.3784292}
+{"index": 40, "stage": "start_call", "experiment": "A", "processed": 0, "total": 900, "batch_index": 40, "batch_start": 800, "batch_end": 819, "batch_size": 20, "timestamp": 1773844010.3787727}
+{"index": 8, "stage": "done", "experiment": "A", "processed": 200, "total": 900, "batch_index": 8, "batch_start": 160, "batch_end": 179, "batch_size": 20, "timestamp": 1773844062.0385618}
+{"index": 18, "stage": "done", "experiment": "A", "processed": 400, "total": 900, "batch_index": 18, "batch_start": 360, "batch_end": 379, "batch_size": 20, "timestamp": 1773844085.1692429}
+{"index": 31, "stage": "done", "experiment": "A", "processed": 600, "total": 900, "batch_index": 31, "batch_start": 620, "batch_end": 639, "batch_size": 20, "timestamp": 1773844117.3444693}
+{"index": 41, "stage": "done", "experiment": "A", "processed": 800, "total": 900, "batch_index": 41, "batch_start": 820, "batch_end": 839, "batch_size": 20, "timestamp": 1773844149.8476427}
+{"index": 44, "stage": "done", "experiment": "A", "processed": 900, "total": 900, "batch_index": 44, "batch_start": 880, "batch_end": 899, "batch_size": 20, "timestamp": 1773844196.639699}

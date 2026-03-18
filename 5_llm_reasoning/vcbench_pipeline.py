@@ -38,7 +38,12 @@ from think_reason_learn.datasets import load_vcbench
 
 from feature_registry import FEATURE_REGISTRY, FEATURE_SETS
 from llm_feature_generation import generate_llm_features
-from llm_reasoning_features import ReasoningConfig, generate_reasoning_features
+from llm_reasoning_features import (
+    ReasoningConfig,
+    build_experiment_key_map,
+    generate_reasoning_features,
+    write_per_experiment_parquets,
+)
 
 
 def _load_base_feature_extractor(script_path: Path):
@@ -233,6 +238,12 @@ def _train_and_log(
     mode_label: str,
     log_dir: Path | None = None,
 ) -> tuple[dict[str, float], LogisticRegression]:
+    # Impute missing values using training means (prevents leakage).
+    if full_train.isna().any().any() or full_test.isna().any().any():
+        fill_values = full_train.mean()
+        full_train = full_train.fillna(fill_values)
+        full_test = full_test.fillna(fill_values)
+
     X_train = full_train.values.astype(float)
     X_test = full_test.values.astype(float)
 
@@ -274,6 +285,54 @@ def _train_and_log(
         log_dir=log_dir,
     )
     return metrics, model
+
+
+def _parse_training_log(path: Path) -> dict[str, float] | None:
+    if not path.exists():
+        return None
+    lines = path.read_text(encoding="utf-8").splitlines()
+    metrics_line = None
+    for line in lines:
+        if line.startswith("ROC-AUC="):
+            metrics_line = line
+            break
+    if not metrics_line:
+        return None
+    metrics: dict[str, float] = {}
+    for part in metrics_line.split():
+        if "=" not in part:
+            continue
+        key, val = part.split("=", 1)
+        try:
+            metrics[key] = float(val)
+        except ValueError:
+            continue
+    return metrics
+
+
+def _write_f05_table(rows: list[dict[str, float]], report_path: Path) -> str:
+    header = "| Regression | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |"
+    sep = "|---|---:|---:|---:|---:|---:|---:|"
+    lines = [header, sep]
+    for row in rows:
+        lines.append(
+            "| {name} | {f0:.3f} | {roc:.3f} | {pr:.3f} | {prec:.3f} | {rec:.3f} | {acc:.3f} |".format(
+                name=row["name"],
+                f0=row["F0.5"],
+                roc=row["ROC-AUC"],
+                pr=row["PR-AUC"],
+                prec=row["Prec"],
+                rec=row["Rec"],
+                acc=row["Acc"],
+            )
+        )
+    table = "\n".join(lines)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        "# LLM Regression Summary (F0.5)\n\n" + table + "\n",
+        encoding="utf-8",
+    )
+    return table
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="VCBench in-depth pipeline.")
@@ -539,6 +598,7 @@ def main() -> None:
     cfg_llm_reasoning_repair_nan: bool | None = None
     cfg_llm_reasoning_repair_existing: bool | None = None
     cfg_llm_engineered_for_reasoning: bool | None = None
+    cfg_llm_reasoning_split_batches: bool | None = None
     cfg_llm_engineered_cache: bool | None = None
     cfg_path = Path(args.feature_config) if args.feature_config else None
     if cfg_path is not None and cfg_path.exists():
@@ -600,6 +660,8 @@ def main() -> None:
             cfg_llm_reasoning_repair_nan = bool(data.get("llm_reasoning_repair_nan"))
         if "llm_reasoning_repair_existing" in data:
             cfg_llm_reasoning_repair_existing = bool(data.get("llm_reasoning_repair_existing"))
+        if "llm_reasoning_split_batches" in data:
+            cfg_llm_reasoning_split_batches = bool(data.get("llm_reasoning_split_batches"))
         if "llm_engineered_for_reasoning" in data:
             cfg_llm_engineered_for_reasoning = bool(data.get("llm_engineered_for_reasoning"))
         if "llm_engineered_cache" in data:
@@ -681,6 +743,9 @@ def main() -> None:
     llm_reasoning_repair_nan = cfg_llm_reasoning_repair_nan if cfg_llm_reasoning_repair_nan is not None else True
     llm_reasoning_repair_existing = cfg_llm_reasoning_repair_existing if cfg_llm_reasoning_repair_existing is not None else False
     llm_engineered_for_reasoning = cfg_llm_engineered_for_reasoning if cfg_llm_engineered_for_reasoning is not None else False
+    llm_reasoning_split_batches = (
+        cfg_llm_reasoning_split_batches if cfg_llm_reasoning_split_batches is not None else True
+    )
     llm_engineered_cache = cfg_llm_engineered_cache if cfg_llm_engineered_cache is not None else True
     llm_temperature = cfg_llm_temperature if cfg_llm_temperature is not None else 0.0
     llm_reasoning_dry_run = bool(args.llm_reasoning_dry_run) or bool(cfg_llm_reasoning_dry_run)
@@ -1014,6 +1079,151 @@ def main() -> None:
             log_root = Path(__file__).parent / "logging" / f"llm_reasoning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             log_root.mkdir(parents=True, exist_ok=True)
             run_log = log_root / "run_log.txt"
+
+        def _load_existing_reasoning(
+            exp_list: list[str] | None,
+        ) -> tuple[pd.DataFrame | None, list[str]]:
+            if not exp_list or len(exp_list) != 1:
+                return None, []
+            exp_id = exp_list[0]
+            candidates = [
+                output_root / f"run_{exp_id}" / f"llm_reasoning_{reasoning_dataset_size}.parquet",
+                output_root / f"run_{exp_id}" / "llm_reasoning_full.parquet",
+                output_root / f"llm_reasoning_{reasoning_dataset_size}.parquet",
+            ]
+            for path in candidates:
+                if path.exists():
+                    df = pd.read_parquet(path)
+                    if len(df) == len(records):
+                        feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
+                        return df, feature_cols
+            return None, []
+
+        def _reasoning_has_nans(path: Path) -> bool:
+            if not path.exists():
+                return False
+            df = pd.read_parquet(path)
+            num = df.select_dtypes(include=[np.number]).drop(columns=["success"], errors="ignore")
+            if num.empty:
+                return False
+            return bool(num.isna().any(axis=1).any())
+
+        def _generate_reasoning_split_batches(
+            experiments_list: list[str] | None,
+            output_dir: Path,
+            meta_path: Path,
+            log_label: str,
+        ) -> tuple[pd.DataFrame, list[str]]:
+            train_dir = output_dir / "split_train"
+            test_dir = output_dir / "split_test"
+            train_meta = meta_path.with_name(meta_path.stem + "_train.json")
+            test_meta = meta_path.with_name(meta_path.stem + "_test.json")
+
+            train_config = ReasoningConfig(
+                model=args.llm_model,
+                dataset_size=reasoning_dataset_size,
+                random_state=rs,
+                core_prompt_path=reasoning_core_prompt_path,
+                experiments_path=reasoning_experiments_path,
+                providers=llm_providers,
+                google_model=llm_google_model,
+                batch_size=llm_reasoning_batch_size,
+                concurrency=llm_reasoning_concurrency,
+                experiments=experiments_list,
+                dry_run=llm_reasoning_dry_run,
+                dry_run_fast=llm_reasoning_dry_run_fast,
+                log_dir=log_root / f"{log_label}_train",
+                log_every=llm_reasoning_log_every,
+                repair_nan=llm_reasoning_repair_nan,
+                repair_existing=llm_reasoning_repair_existing,
+                skip_select=True,
+            )
+            test_config = ReasoningConfig(
+                model=args.llm_model,
+                dataset_size=reasoning_dataset_size,
+                random_state=rs,
+                core_prompt_path=reasoning_core_prompt_path,
+                experiments_path=reasoning_experiments_path,
+                providers=llm_providers,
+                google_model=llm_google_model,
+                batch_size=llm_reasoning_batch_size,
+                concurrency=llm_reasoning_concurrency,
+                experiments=experiments_list,
+                dry_run=llm_reasoning_dry_run,
+                dry_run_fast=llm_reasoning_dry_run_fast,
+                log_dir=log_root / f"{log_label}_test",
+                log_every=llm_reasoning_log_every,
+                repair_nan=llm_reasoning_repair_nan,
+                repair_existing=llm_reasoning_repair_existing,
+                skip_select=True,
+            )
+
+            train_df, _ = generate_reasoning_features(
+                records=train_recs,
+                labels=y_train,
+                config=train_config,
+                output_dir=train_dir,
+                metadata_path=train_meta,
+            )
+            test_df, _ = generate_reasoning_features(
+                records=test_recs,
+                labels=y_test,
+                config=test_config,
+                output_dir=test_dir,
+                metadata_path=test_meta,
+            )
+
+            feature_cols = [c for c in train_df.columns if c not in ("founder_uuid", "success")]
+            test_cols = [c for c in test_df.columns if c not in ("founder_uuid", "success")]
+            if set(feature_cols) != set(test_cols):
+                raise RuntimeError("Train/test reasoning feature columns do not match.")
+            feature_cols = sorted(feature_cols)
+            full_features = pd.DataFrame(index=range(len(records)), columns=feature_cols)
+            full_features.iloc[train_idx] = train_df[feature_cols].to_numpy()
+            full_features.iloc[test_idx] = test_df[feature_cols].to_numpy()
+            combined_df = pd.DataFrame(
+                {
+                    "founder_uuid": [r.get("founder_uuid") for r in records],
+                    "success": labels,
+                }
+            )
+            for col in feature_cols:
+                combined_df[col] = full_features[col].values
+
+            output_dir.mkdir(parents=True, exist_ok=True)
+            combined_path = output_dir / f"llm_reasoning_{reasoning_dataset_size}.parquet"
+            combined_df.to_parquet(combined_path, index=False)
+
+            _, exp_to_keys = build_experiment_key_map(
+                reasoning_experiments_path, experiments_list
+            )
+            write_per_experiment_parquets(
+                combined_df,
+                exp_to_keys,
+                output_dir,
+                reasoning_dataset_size,
+                overwrite=True,
+            )
+
+            meta = {
+                "model": args.llm_model,
+                "dataset_size": reasoning_dataset_size,
+                "random_state": rs,
+                "core_prompt_path": str(reasoning_core_prompt_path),
+                "experiments_path": str(reasoning_experiments_path),
+                "experiments": experiments_list,
+                "output_parquet": str(combined_path),
+                "train_meta": str(train_meta),
+                "test_meta": str(test_meta),
+                "split_batches": True,
+                "batch_size": llm_reasoning_batch_size,
+                "concurrency": llm_reasoning_concurrency,
+                "dry_run": llm_reasoning_dry_run,
+                "dry_run_fast": llm_reasoning_dry_run_fast,
+            }
+            meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+            return combined_df, feature_cols
+
         reasoning_mode = cfg_llm_reasoning_mode or "single"
         sequential = cfg_llm_reasoning_sequential or []
         combined = cfg_llm_reasoning_combined or []
@@ -1025,31 +1235,34 @@ def main() -> None:
                 exp_dir = output_root / f"run_{exp_id}"
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{exp_id}.json"
-                config = ReasoningConfig(
-                    model=args.llm_model,
-                    dataset_size=reasoning_dataset_size,
-                    random_state=rs,
-                    core_prompt_path=reasoning_core_prompt_path,
-                    experiments_path=reasoning_experiments_path,
-                    providers=llm_providers,
-                    google_model=llm_google_model,
-                    batch_size=llm_reasoning_batch_size,
-                    concurrency=llm_reasoning_concurrency,
-                    experiments=[exp_id],
-                    dry_run=llm_reasoning_dry_run,
-                    dry_run_fast=llm_reasoning_dry_run_fast,
-                    log_dir=log_root / f"{exp_id}_progress",
-                    log_every=llm_reasoning_log_every,
-                    repair_nan=llm_reasoning_repair_nan,
-                    repair_existing=llm_reasoning_repair_existing,
-                )
-                generate_reasoning_features(
-                    records=records,
-                    labels=labels,
-                    config=config,
-                    output_dir=exp_dir,
-                    metadata_path=meta_path,
-                )
+                if llm_reasoning_split_batches:
+                    _generate_reasoning_split_batches([exp_id], exp_dir, meta_path, exp_id)
+                else:
+                    config = ReasoningConfig(
+                        model=args.llm_model,
+                        dataset_size=reasoning_dataset_size,
+                        random_state=rs,
+                        core_prompt_path=reasoning_core_prompt_path,
+                        experiments_path=reasoning_experiments_path,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                        batch_size=llm_reasoning_batch_size,
+                        concurrency=llm_reasoning_concurrency,
+                        experiments=[exp_id],
+                        dry_run=llm_reasoning_dry_run,
+                        dry_run_fast=llm_reasoning_dry_run_fast,
+                        log_dir=log_root / f"{exp_id}_progress",
+                        log_every=llm_reasoning_log_every,
+                        repair_nan=llm_reasoning_repair_nan,
+                        repair_existing=llm_reasoning_repair_existing,
+                    )
+                    generate_reasoning_features(
+                        records=records,
+                        labels=labels,
+                        config=config,
+                        output_dir=exp_dir,
+                        metadata_path=meta_path,
+                    )
                 _log_run(f"Completed sequential experiment {exp_id}")
 
             # Combined run
@@ -1059,63 +1272,97 @@ def main() -> None:
                 exp_dir = output_root / combo_id
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{combo_id}.json"
-                config = ReasoningConfig(
-                    model=args.llm_model,
-                    dataset_size=reasoning_dataset_size,
-                    random_state=rs,
-                    core_prompt_path=reasoning_core_prompt_path,
-                    experiments_path=reasoning_experiments_path,
-                    providers=llm_providers,
-                    google_model=llm_google_model,
-                    batch_size=llm_reasoning_batch_size,
-                    concurrency=llm_reasoning_concurrency,
-                    experiments=combined,
-                    dry_run=llm_reasoning_dry_run,
-                    dry_run_fast=llm_reasoning_dry_run_fast,
-                    log_dir=log_root / f"{combo_id}_progress",
-                    log_every=llm_reasoning_log_every,
-                    repair_nan=llm_reasoning_repair_nan,
-                    repair_existing=llm_reasoning_repair_existing,
-                )
-                generate_reasoning_features(
-                    records=records,
-                    labels=labels,
-                    config=config,
-                    output_dir=exp_dir,
-                    metadata_path=meta_path,
-                )
+                if llm_reasoning_split_batches:
+                    _generate_reasoning_split_batches(combined, exp_dir, meta_path, combo_id)
+                else:
+                    config = ReasoningConfig(
+                        model=args.llm_model,
+                        dataset_size=reasoning_dataset_size,
+                        random_state=rs,
+                        core_prompt_path=reasoning_core_prompt_path,
+                        experiments_path=reasoning_experiments_path,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                        batch_size=llm_reasoning_batch_size,
+                        concurrency=llm_reasoning_concurrency,
+                        experiments=combined,
+                        dry_run=llm_reasoning_dry_run,
+                        dry_run_fast=llm_reasoning_dry_run_fast,
+                        log_dir=log_root / f"{combo_id}_progress",
+                        log_every=llm_reasoning_log_every,
+                        repair_nan=llm_reasoning_repair_nan,
+                        repair_existing=llm_reasoning_repair_existing,
+                    )
+                    generate_reasoning_features(
+                        records=records,
+                        labels=labels,
+                        config=config,
+                        output_dir=exp_dir,
+                        metadata_path=meta_path,
+                    )
                 _log_run(f"Completed combined experiment {combo_id}")
             # Skip training path for sequential/combined batch generation
             return
         else:
             output_dir = output_root
             meta_path = output_dir / f"llm_reasoning_{reasoning_dataset_size}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            config = ReasoningConfig(
-                model=args.llm_model,
-                dataset_size=reasoning_dataset_size,
-                random_state=rs,
-                core_prompt_path=reasoning_core_prompt_path,
-                experiments_path=reasoning_experiments_path,
-                providers=llm_providers,
-                google_model=llm_google_model,
-                batch_size=llm_reasoning_batch_size,
-                concurrency=llm_reasoning_concurrency,
-                experiments=cfg_llm_reasoning_experiments,
-                dry_run=llm_reasoning_dry_run,
-                dry_run_fast=llm_reasoning_dry_run_fast,
-                log_dir=log_root / "single_progress",
-                log_every=llm_reasoning_log_every,
-                repair_nan=llm_reasoning_repair_nan,
-                repair_existing=llm_reasoning_repair_existing,
-            )
-            reasoning_df, all_reasoning_names = generate_reasoning_features(
-                records=records,
-                labels=labels,
-                config=config,
-                output_dir=output_dir,
-                metadata_path=meta_path,
-            )
-            reasoning_feature_names = all_reasoning_names
+            exp_list = cfg_llm_reasoning_experiments
+            exp_id = exp_list[0] if exp_list and len(exp_list) == 1 else None
+            run_dir = output_root / f"run_{exp_id}" if exp_id else output_root
+            run_parquet = run_dir / f"llm_reasoning_{reasoning_dataset_size}.parquet"
+            if exp_id and run_dir.exists() and llm_reasoning_repair_existing and _reasoning_has_nans(run_parquet):
+                reasoning_df, all_reasoning_names = _generate_reasoning_split_batches(
+                    exp_list,
+                    run_dir,
+                    meta_path,
+                    f"{exp_id}_repair",
+                )
+                _log("  Repaired cached LLM reasoning features for run_A.")
+            else:
+                cached_df, cached_names = _load_existing_reasoning(exp_list)
+                if cached_df is not None and cached_names:
+                    reasoning_df = cached_df
+                    all_reasoning_names = cached_names
+                    _log("  Loaded cached LLM reasoning features from run_A output.")
+                elif llm_reasoning_split_batches:
+                    reasoning_df, all_reasoning_names = _generate_reasoning_split_batches(
+                        exp_list,
+                        output_dir,
+                        meta_path,
+                        "single_progress",
+                    )
+                else:
+                    config = ReasoningConfig(
+                        model=args.llm_model,
+                        dataset_size=reasoning_dataset_size,
+                        random_state=rs,
+                        core_prompt_path=reasoning_core_prompt_path,
+                        experiments_path=reasoning_experiments_path,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                        batch_size=llm_reasoning_batch_size,
+                        concurrency=llm_reasoning_concurrency,
+                        experiments=exp_list,
+                        dry_run=llm_reasoning_dry_run,
+                        dry_run_fast=llm_reasoning_dry_run_fast,
+                        log_dir=log_root / "single_progress",
+                        log_every=llm_reasoning_log_every,
+                        repair_nan=llm_reasoning_repair_nan,
+                        repair_existing=llm_reasoning_repair_existing,
+                    )
+                    reasoning_df, all_reasoning_names = generate_reasoning_features(
+                        records=records,
+                        labels=labels,
+                        config=config,
+                        output_dir=output_dir,
+                        metadata_path=meta_path,
+                    )
+            # Use numeric reasoning features for training; keep text in parquet only.
+            reasoning_feature_names = [
+                c
+                for c in reasoning_df.columns
+                if c not in ("founder_uuid", "success") and pd.api.types.is_numeric_dtype(reasoning_df[c])
+            ]
             reasoning_all = reasoning_df[reasoning_feature_names]
             reasoning_train = reasoning_all.iloc[train_idx].reset_index(drop=True)
             reasoning_test = reasoning_all.iloc[test_idx].reset_index(drop=True)
@@ -1210,6 +1457,13 @@ def main() -> None:
                 f"Missing: {missing} Extra: {extra}"
             )
 
+    # Impute missing values using training means (prevents leakage).
+    if full_train.isna().any().any() or full_test.isna().any().any():
+        fill_values = full_train.mean()
+        full_train = full_train.fillna(fill_values)
+        full_test = full_test.fillna(fill_values)
+        full_all = full_all.fillna(fill_values)
+
     # NaN/Inf checks
     if not np.isfinite(full_train.values).all() or not np.isfinite(full_test.values).all():
         raise RuntimeError("NaN or Inf detected in feature matrices.")
@@ -1259,6 +1513,24 @@ def main() -> None:
 
     # Optional reasoning-only and reasoning+human runs for consistent comparison.
     if use_llm_reasoning and reasoning_feature_names:
+        human_only_log_dir = Path(__file__).parent / "training_logs" / "human" / "only"
+        human_train = pd.concat([base_train, custom_train], axis=1)
+        human_test = pd.concat([base_test, custom_test], axis=1)
+        human_train, human_test = _standardize_continuous(
+            human_train, human_test, custom_features
+        )
+        _train_and_log(
+            base_feature_names + custom_features,
+            human_train,
+            human_test,
+            y_train,
+            y_test,
+            args,
+            input_csv,
+            "Human Only",
+            log_dir=human_only_log_dir,
+        )
+
         _train_and_log(
             reasoning_feature_names,
             reasoning_train,
@@ -1271,11 +1543,6 @@ def main() -> None:
             log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only",
         )
 
-        human_train = pd.concat([base_train, custom_train], axis=1)
-        human_test = pd.concat([base_test, custom_test], axis=1)
-        human_train, human_test = _standardize_continuous(
-            human_train, human_test, custom_features
-        )
         reasoning_plus_human_train = pd.concat([human_train, reasoning_train], axis=1)
         reasoning_plus_human_test = pd.concat([human_test, reasoning_test], axis=1)
         reasoning_plus_human_names = base_feature_names + custom_features + reasoning_feature_names
@@ -1313,9 +1580,41 @@ def main() -> None:
                 y_test,
                 args,
                 input_csv,
-                "LLM Engineered + Reasoning",
-                log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
+            "LLM Engineered + Reasoning",
+            log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
+        )
+
+        # F0.5 summary table (latest logs)
+        report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+        rows: list[dict[str, float]] = []
+        log_paths = [
+            (human_only_log_dir / "training_log_*.txt", "Human Only"),
+            (Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / "training_log_*.txt", "LLM Reasoning Only"),
+            (Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human" / "training_log_*.txt", "LLM Reasoning + Human"),
+            (Path(__file__).parent / "training_logs" / "llm_engineered" / "only" / "training_log_*.txt", "LLM Engineered Only"),
+            (Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning" / "training_log_*.txt", "LLM Engineered + Reasoning"),
+        ]
+        for pattern, name in log_paths:
+            candidates = sorted(pattern.parent.glob(pattern.name))
+            if not candidates:
+                continue
+            metrics = _parse_training_log(candidates[-1])
+            if not metrics:
+                continue
+            rows.append(
+                {
+                    "name": name,
+                    "F0.5": metrics.get("F0.5", float("nan")),
+                    "ROC-AUC": metrics.get("ROC-AUC", float("nan")),
+                    "PR-AUC": metrics.get("PR-AUC", float("nan")),
+                    "Prec": metrics.get("Prec", float("nan")),
+                    "Rec": metrics.get("Rec", float("nan")),
+                    "Acc": metrics.get("Acc", float("nan")),
+                }
             )
+        if rows:
+            table = _write_f05_table(rows, report_path)
+            _log("\nF0.5 summary:\n" + table)
 
     # Placeholder for future multiple training loops over feature subsets.
     # TODO: add loop over named feature sets and aggregate metrics.
