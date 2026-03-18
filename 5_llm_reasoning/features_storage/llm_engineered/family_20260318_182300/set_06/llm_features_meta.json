@@ -1,0 +1,20 @@
+{
+  "n_rows": 4500,
+  "n_features": 8,
+  "feature_names": [
+    "has_phd",
+    "has_investment_experience",
+    "industry_experience_in_tech",
+    "has_exit_event",
+    "has_edu_high_qs_rank",
+    "industry_experience_in_biotech",
+    "has_leadership_role",
+    "has_education_in_strong_field"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash"
+}

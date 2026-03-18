@@ -17,9 +17,12 @@ import json
 import importlib.util
 import math
 import asyncio
+import sys
+import shutil
 from pathlib import Path
 from datetime import datetime
 import traceback
+import time
 from typing import Any, Iterable, Sequence
 
 import numpy as np
@@ -44,6 +47,25 @@ from llm_reasoning_features import (
     generate_reasoning_features,
     write_per_experiment_parquets,
 )
+
+RUN_LOG_PATH: Path | None = None
+
+
+def _install_excepthook() -> None:
+    def _hook(exc_type, exc, tb):
+        if RUN_LOG_PATH is not None:
+            try:
+                with RUN_LOG_PATH.open("a", encoding="utf-8") as f:
+                    f.write("\n[ERROR] Unhandled exception:\n")
+                    f.write("".join(traceback.format_exception(exc_type, exc, tb)))
+            except Exception:
+                pass
+        sys.__excepthook__(exc_type, exc, tb)
+
+    sys.excepthook = _hook
+
+
+_install_excepthook()
 
 
 def _load_base_feature_extractor(script_path: Path):
@@ -334,6 +356,68 @@ def _write_f05_table(rows: list[dict[str, float]], report_path: Path) -> str:
     )
     return table
 
+
+def _write_family_leaderboard(rows: list[dict[str, Any]], report_path: Path, csv_path: Path) -> None:
+    if not rows:
+        return
+    df = pd.DataFrame(rows)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(csv_path, index=False)
+    header = "| Set ID | Regression | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |"
+    sep = "|---|---|---:|---:|---:|---:|---:|---:|"
+    lines = [header, sep]
+    for _, row in df.iterrows():
+        lines.append(
+            "| {set_id} | {name} | {f0:.3f} | {roc:.3f} | {pr:.3f} | {prec:.3f} | {rec:.3f} | {acc:.3f} |".format(
+                set_id=row.get("set_id", ""),
+                name=row.get("regression", ""),
+                f0=float(row.get("F0.5", float("nan"))),
+                roc=float(row.get("ROC-AUC", float("nan"))),
+                pr=float(row.get("PR-AUC", float("nan"))),
+                prec=float(row.get("Prec", float("nan"))),
+                rec=float(row.get("Rec", float("nan"))),
+                  acc=float(row.get("Acc", float("nan"))),
+              )
+          )
+    leaderboard_table = "\n".join(lines)
+
+    metrics = ["F0.5", "ROC-AUC", "PR-AUC", "Prec", "Rec", "Acc"]
+    improvements: dict[str, list[float]] = {m: [] for m in metrics}
+    for set_id in df["set_id"].unique():
+        subset = df[df["set_id"] == set_id]
+        only = subset[subset["regression"] == "LLM Engineered Only"]
+        plus = subset[subset["regression"] == "LLM Engineered + Reasoning"]
+        if only.empty or plus.empty:
+            continue
+        for m in metrics:
+            try:
+                delta = float(plus.iloc[0][m]) - float(only.iloc[0][m])
+                improvements[m].append(delta)
+            except Exception:
+                continue
+
+    avg_lines = ["### Average Improvement (Engineered + Reasoning vs Engineered Only)"]
+    for m in metrics:
+        vals = improvements.get(m, [])
+        avg = float(np.nanmean(vals)) if vals else float("nan")
+        avg_lines.append(f"- {m}: {avg:+.3f}")
+
+    section = (
+        "## LLM Engineered Run-Family Leaderboard\n\n"
+        + leaderboard_table
+        + "\n\n"
+        + "\n".join(avg_lines)
+        + "\n"
+    )
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    if report_path.exists():
+        base = report_path.read_text(encoding="utf-8").rstrip()
+        report_path.write_text(base + "\n\n" + section, encoding="utf-8")
+    else:
+        report_path.write_text(
+            "# LLM Regression Summary (F0.5)\n\n" + section, encoding="utf-8"
+        )
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="VCBench in-depth pipeline.")
     p.add_argument("--dataset", choices=["sample", "full"], default="sample")
@@ -600,6 +684,11 @@ def main() -> None:
     cfg_llm_engineered_for_reasoning: bool | None = None
     cfg_llm_reasoning_split_batches: bool | None = None
     cfg_llm_engineered_cache: bool | None = None
+    cfg_llm_engineered_freeze: bool | None = None
+    cfg_llm_engineered_run_family: bool | None = None
+    cfg_llm_engineered_run_family_size: int | None = None
+    cfg_llm_engineered_run_family_n: int | None = None
+    cfg_llm_engineered_run_family_id: str | None = None
     cfg_path = Path(args.feature_config) if args.feature_config else None
     if cfg_path is not None and cfg_path.exists():
         data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
@@ -666,6 +755,22 @@ def main() -> None:
             cfg_llm_engineered_for_reasoning = bool(data.get("llm_engineered_for_reasoning"))
         if "llm_engineered_cache" in data:
             cfg_llm_engineered_cache = bool(data.get("llm_engineered_cache"))
+        if "llm_engineered_freeze" in data:
+            cfg_llm_engineered_freeze = bool(data.get("llm_engineered_freeze"))
+        if "llm_engineered_run_family" in data:
+            cfg_llm_engineered_run_family = bool(data.get("llm_engineered_run_family"))
+        if "llm_engineered_run_family_size" in data:
+            try:
+                cfg_llm_engineered_run_family_size = int(data.get("llm_engineered_run_family_size"))
+            except Exception:
+                cfg_llm_engineered_run_family_size = None
+        if "llm_engineered_run_family_n_features" in data:
+            try:
+                cfg_llm_engineered_run_family_n = int(data.get("llm_engineered_run_family_n_features"))
+            except Exception:
+                cfg_llm_engineered_run_family_n = None
+        if "llm_engineered_run_family_id" in data:
+            cfg_llm_engineered_run_family_id = str(data.get("llm_engineered_run_family_id"))
         if "llm_temperature" in data:
             try:
                 cfg_llm_temperature = float(data.get("llm_temperature"))
@@ -684,6 +789,8 @@ def main() -> None:
         log_root.mkdir(parents=True, exist_ok=True)
         run_log = log_root / "run_log.txt"
         run_log.write_text("run_log started\n", encoding="utf-8")
+        global RUN_LOG_PATH
+        RUN_LOG_PATH = run_log
 
     def _log_run(msg: str) -> None:
         if run_log is not None:
@@ -747,6 +854,11 @@ def main() -> None:
         cfg_llm_reasoning_split_batches if cfg_llm_reasoning_split_batches is not None else True
     )
     llm_engineered_cache = cfg_llm_engineered_cache if cfg_llm_engineered_cache is not None else True
+    llm_engineered_freeze = cfg_llm_engineered_freeze if cfg_llm_engineered_freeze is not None else False
+    llm_engineered_run_family = cfg_llm_engineered_run_family if cfg_llm_engineered_run_family is not None else False
+    llm_engineered_run_family_size = cfg_llm_engineered_run_family_size if cfg_llm_engineered_run_family_size is not None else 10
+    llm_engineered_run_family_n = cfg_llm_engineered_run_family_n if cfg_llm_engineered_run_family_n is not None else None
+    llm_engineered_run_family_id = cfg_llm_engineered_run_family_id
     llm_temperature = cfg_llm_temperature if cfg_llm_temperature is not None else 0.0
     llm_reasoning_dry_run = bool(args.llm_reasoning_dry_run) or bool(cfg_llm_reasoning_dry_run)
     llm_reasoning_dry_run_fast = bool(args.llm_reasoning_dry_run_fast) or bool(cfg_llm_reasoning_dry_run_fast)
@@ -761,6 +873,12 @@ def main() -> None:
         or (args.mode in ("reasoning", "hybrid"))
     )
     _log_run(f"Use LLM reasoning: {use_llm_reasoning}")
+    _log_run(
+        "Config flags: "
+        f"llm_engineered_run_family={llm_engineered_run_family} "
+        f"llm_engineered_freeze={llm_engineered_freeze} "
+        f"llm_engineered_run_family_id={llm_engineered_run_family_id}"
+    )
     if llm_reasoning_dry_run_fast:
         llm_reasoning_dry_run = True
         use_llm_reasoning = True
@@ -1075,6 +1193,8 @@ def main() -> None:
 
     if use_llm_reasoning:
         output_root = Path(__file__).parent / "features_storage" / "llm_reasoning"
+        current_root = output_root / "current"
+        runs_root = output_root / "runs"
         if log_root is None:
             log_root = Path(__file__).parent / "logging" / f"llm_reasoning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             log_root.mkdir(parents=True, exist_ok=True)
@@ -1083,21 +1203,48 @@ def main() -> None:
         def _load_existing_reasoning(
             exp_list: list[str] | None,
         ) -> tuple[pd.DataFrame | None, list[str]]:
-            if not exp_list or len(exp_list) != 1:
-                return None, []
-            exp_id = exp_list[0]
-            candidates = [
-                output_root / f"run_{exp_id}" / f"llm_reasoning_{reasoning_dataset_size}.parquet",
-                output_root / f"run_{exp_id}" / "llm_reasoning_full.parquet",
-                output_root / f"llm_reasoning_{reasoning_dataset_size}.parquet",
-            ]
-            for path in candidates:
-                if path.exists():
-                    df = pd.read_parquet(path)
-                    if len(df) == len(records):
-                        feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
-                        return df, feature_cols
+            # Prefer current/ if present
+            current_path = current_root / "llm_reasoning_full.parquet"
+            if current_path.exists():
+                df = pd.read_parquet(current_path)
+                if len(df) == len(records):
+                    feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
+                    return df, feature_cols
+            # Fallback: most recent run in runs/
+            if runs_root.exists():
+                run_dirs = sorted(
+                    [p for p in runs_root.glob("run_*") if p.is_dir()],
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                for run_dir in run_dirs:
+                    run_path = run_dir / "llm_reasoning_full.parquet"
+                    if run_path.exists():
+                        df = pd.read_parquet(run_path)
+                        if len(df) == len(records):
+                            feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
+                            return df, feature_cols
             return None, []
+
+        def _sync_reasoning_current(run_dir: Path, exp_list: list[str] | None) -> None:
+            current_root.mkdir(parents=True, exist_ok=True)
+            src_full = run_dir / "llm_reasoning_full.parquet"
+            if src_full.exists():
+                shutil.copy2(src_full, current_root / "llm_reasoning_full.parquet")
+            # Copy per-experiment outputs if present
+            exp_src = run_dir / "experiments"
+            exp_dst = current_root / "experiments"
+            if exp_src.exists():
+                if exp_dst.exists():
+                    shutil.rmtree(exp_dst)
+                shutil.copytree(exp_src, exp_dst)
+            # Write a minimal manifest
+            manifest = {
+                "source_run": run_dir.name,
+                "experiments": exp_list or [],
+                "timestamp": datetime.now().isoformat(),
+            }
+            (current_root / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
         def _reasoning_has_nans(path: Path) -> bool:
             if not path.exists():
@@ -1232,7 +1379,8 @@ def main() -> None:
             # Sequential runs
             for exp_id in sequential:
                 _log_run(f"Starting sequential experiment {exp_id}")
-                exp_dir = output_root / f"run_{exp_id}"
+                runs_root.mkdir(parents=True, exist_ok=True)
+                exp_dir = runs_root / f"run_{exp_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{exp_id}.json"
                 if llm_reasoning_split_batches:
@@ -1263,13 +1411,15 @@ def main() -> None:
                         output_dir=exp_dir,
                         metadata_path=meta_path,
                     )
+                _sync_reasoning_current(exp_dir, [exp_id])
                 _log_run(f"Completed sequential experiment {exp_id}")
 
             # Combined run
             if combined:
                 combo_id = "combined_" + "".join(combined)
                 _log_run(f"Starting combined experiment {combo_id}")
-                exp_dir = output_root / combo_id
+                runs_root.mkdir(parents=True, exist_ok=True)
+                exp_dir = runs_root / f"run_{combo_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{combo_id}.json"
                 if llm_reasoning_split_batches:
@@ -1300,15 +1450,18 @@ def main() -> None:
                         output_dir=exp_dir,
                         metadata_path=meta_path,
                     )
+                _sync_reasoning_current(exp_dir, combined)
                 _log_run(f"Completed combined experiment {combo_id}")
             # Skip training path for sequential/combined batch generation
             return
         else:
-            output_dir = output_root
-            meta_path = output_dir / f"llm_reasoning_{reasoning_dataset_size}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            runs_root.mkdir(parents=True, exist_ok=True)
+            run_dir = runs_root / f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            run_dir.mkdir(parents=True, exist_ok=True)
+            output_dir = run_dir
+            meta_path = run_dir / f"llm_reasoning_{reasoning_dataset_size}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             exp_list = cfg_llm_reasoning_experiments
             exp_id = exp_list[0] if exp_list and len(exp_list) == 1 else None
-            run_dir = output_root / f"run_{exp_id}" if exp_id else output_root
             run_parquet = run_dir / f"llm_reasoning_{reasoning_dataset_size}.parquet"
             if exp_id and run_dir.exists() and llm_reasoning_repair_existing and _reasoning_has_nans(run_parquet):
                 reasoning_df, all_reasoning_names = _generate_reasoning_split_batches(
@@ -1357,12 +1510,22 @@ def main() -> None:
                         output_dir=output_dir,
                         metadata_path=meta_path,
                     )
+            if "reasoning_df" in locals():
+                _sync_reasoning_current(run_dir, exp_list or [])
             # Use numeric reasoning features for training; keep text in parquet only.
+            for col in reasoning_df.columns:
+                if col not in ("founder_uuid", "success"):
+                    reasoning_df[col] = pd.to_numeric(reasoning_df[col], errors="ignore")
             reasoning_feature_names = [
                 c
                 for c in reasoning_df.columns
                 if c not in ("founder_uuid", "success") and pd.api.types.is_numeric_dtype(reasoning_df[c])
             ]
+            if not reasoning_feature_names:
+                raise RuntimeError(
+                    "No numeric LLM reasoning features detected. "
+                    "Check cached reasoning parquet column types."
+                )
             reasoning_all = reasoning_df[reasoning_feature_names]
             reasoning_train = reasoning_all.iloc[train_idx].reset_index(drop=True)
             reasoning_test = reasoning_all.iloc[test_idx].reset_index(drop=True)
@@ -1388,6 +1551,11 @@ def main() -> None:
             llm_test = llm_all.iloc[test_idx].reset_index(drop=True)
             _log("  Loaded cached LLM-engineered features.")
         else:
+            if llm_engineered_freeze:
+                raise RuntimeError(
+                    "LLM-engineered features are frozen but cache is missing. "
+                    "Set llm_engineered_freeze=false or regenerate the cache."
+                )
             _log(f"\n  Generating {llm_n} LLM-engineered features with {args.llm_model}...")
             llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
                 generate_llm_features(
@@ -1488,7 +1656,7 @@ def main() -> None:
         elif mode == "llm":
             out_path = features_storage / "llm_engineered" / "llm_features.parquet"
         elif mode == "reasoning":
-            out_path = features_storage / "llm_reasoning" / "llm_reasoning_features.parquet"
+            out_path = features_storage / "llm_reasoning" / "current" / "llm_reasoning_full.parquet"
         else:
             out_path = features_storage / "features_full.parquet"
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1513,108 +1681,433 @@ def main() -> None:
 
     # Optional reasoning-only and reasoning+human runs for consistent comparison.
     if use_llm_reasoning and reasoning_feature_names:
-        human_only_log_dir = Path(__file__).parent / "training_logs" / "human" / "only"
-        human_train = pd.concat([base_train, custom_train], axis=1)
-        human_test = pd.concat([base_test, custom_test], axis=1)
-        human_train, human_test = _standardize_continuous(
-            human_train, human_test, custom_features
-        )
-        _train_and_log(
-            base_feature_names + custom_features,
-            human_train,
-            human_test,
-            y_train,
-            y_test,
-            args,
-            input_csv,
-            "Human Only",
-            log_dir=human_only_log_dir,
-        )
-
-        _train_and_log(
-            reasoning_feature_names,
-            reasoning_train,
-            reasoning_test,
-            y_train,
-            y_test,
-            args,
-            input_csv,
-            "LLM Reasoning Only",
-            log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only",
-        )
-
-        reasoning_plus_human_train = pd.concat([human_train, reasoning_train], axis=1)
-        reasoning_plus_human_test = pd.concat([human_test, reasoning_test], axis=1)
-        reasoning_plus_human_names = base_feature_names + custom_features + reasoning_feature_names
-        _train_and_log(
-            reasoning_plus_human_names,
-            reasoning_plus_human_train,
-            reasoning_plus_human_test,
-            y_train,
-            y_test,
-            args,
-            input_csv,
-            "LLM Reasoning + Human",
-            log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human",
-        )
-        if llm_engineered_feature_names:
-            _train_and_log(
-                llm_engineered_feature_names,
-                llm_train,
-                llm_test,
-                y_train,
-                y_test,
-                args,
-                input_csv,
-                "LLM Engineered Only",
-                log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "only",
+        if not llm_engineered_run_family:
+            human_only_log_dir = Path(__file__).parent / "training_logs" / "human" / "only"
+            human_train = pd.concat([base_train, custom_train], axis=1)
+            human_test = pd.concat([base_test, custom_test], axis=1)
+            human_train, human_test = _standardize_continuous(
+                human_train, human_test, custom_features
             )
-            llm_plus_reasoning_train = pd.concat([llm_train, reasoning_train], axis=1)
-            llm_plus_reasoning_test = pd.concat([llm_test, reasoning_test], axis=1)
-            llm_plus_reasoning_names = llm_engineered_feature_names + reasoning_feature_names
             _train_and_log(
-                llm_plus_reasoning_names,
-                llm_plus_reasoning_train,
-                llm_plus_reasoning_test,
+                base_feature_names + custom_features,
+                human_train,
+                human_test,
                 y_train,
                 y_test,
                 args,
                 input_csv,
-            "LLM Engineered + Reasoning",
-            log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
-        )
+                "Human Only",
+                log_dir=human_only_log_dir,
+            )
 
-        # F0.5 summary table (latest logs)
-        report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
-        rows: list[dict[str, float]] = []
-        log_paths = [
-            (human_only_log_dir / "training_log_*.txt", "Human Only"),
-            (Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / "training_log_*.txt", "LLM Reasoning Only"),
-            (Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human" / "training_log_*.txt", "LLM Reasoning + Human"),
-            (Path(__file__).parent / "training_logs" / "llm_engineered" / "only" / "training_log_*.txt", "LLM Engineered Only"),
-            (Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning" / "training_log_*.txt", "LLM Engineered + Reasoning"),
-        ]
-        for pattern, name in log_paths:
-            candidates = sorted(pattern.parent.glob(pattern.name))
-            if not candidates:
-                continue
-            metrics = _parse_training_log(candidates[-1])
-            if not metrics:
-                continue
-            rows.append(
-                {
-                    "name": name,
-                    "F0.5": metrics.get("F0.5", float("nan")),
-                    "ROC-AUC": metrics.get("ROC-AUC", float("nan")),
-                    "PR-AUC": metrics.get("PR-AUC", float("nan")),
-                    "Prec": metrics.get("Prec", float("nan")),
-                    "Rec": metrics.get("Rec", float("nan")),
-                    "Acc": metrics.get("Acc", float("nan")),
+            _train_and_log(
+                reasoning_feature_names,
+                reasoning_train,
+                reasoning_test,
+                y_train,
+                y_test,
+                args,
+                input_csv,
+                "LLM Reasoning Only",
+                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only",
+            )
+
+            reasoning_plus_human_train = pd.concat([human_train, reasoning_train], axis=1)
+            reasoning_plus_human_test = pd.concat([human_test, reasoning_test], axis=1)
+            reasoning_plus_human_names = base_feature_names + custom_features + reasoning_feature_names
+            _train_and_log(
+                reasoning_plus_human_names,
+                reasoning_plus_human_train,
+                reasoning_plus_human_test,
+                y_train,
+                y_test,
+                args,
+                input_csv,
+                "LLM Reasoning + Human",
+                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human",
+            )
+            if llm_engineered_feature_names:
+                _train_and_log(
+                    llm_engineered_feature_names,
+                    llm_train,
+                    llm_test,
+                    y_train,
+                    y_test,
+                    args,
+                    input_csv,
+                    "LLM Engineered Only",
+                    log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "only",
+                )
+                llm_plus_reasoning_train = pd.concat([llm_train, reasoning_train], axis=1)
+                llm_plus_reasoning_test = pd.concat([llm_test, reasoning_test], axis=1)
+                llm_plus_reasoning_names = llm_engineered_feature_names + reasoning_feature_names
+                _train_and_log(
+                    llm_plus_reasoning_names,
+                    llm_plus_reasoning_train,
+                    llm_plus_reasoning_test,
+                    y_train,
+                    y_test,
+                    args,
+                    input_csv,
+                    "LLM Engineered + Reasoning",
+                    log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
+                )
+
+            # F0.5 summary table (latest logs)
+            report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+            rows: list[dict[str, float]] = []
+            log_paths = [
+                (human_only_log_dir / "training_log_*.txt", "Human Only"),
+                (Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / "training_log_*.txt", "LLM Reasoning Only"),
+                (Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human" / "training_log_*.txt", "LLM Reasoning + Human"),
+                (Path(__file__).parent / "training_logs" / "llm_engineered" / "only" / "training_log_*.txt", "LLM Engineered Only"),
+                (Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning" / "training_log_*.txt", "LLM Engineered + Reasoning"),
+            ]
+            for pattern, name in log_paths:
+                candidates = sorted(pattern.parent.glob(pattern.name))
+                if not candidates:
+                    continue
+                metrics = _parse_training_log(candidates[-1])
+                if not metrics:
+                    continue
+                rows.append(
+                    {
+                        "name": name,
+                        "F0.5": metrics.get("F0.5", float("nan")),
+                        "ROC-AUC": metrics.get("ROC-AUC", float("nan")),
+                        "PR-AUC": metrics.get("PR-AUC", float("nan")),
+                        "Prec": metrics.get("Prec", float("nan")),
+                        "Rec": metrics.get("Rec", float("nan")),
+                        "Acc": metrics.get("Acc", float("nan")),
+                    }
+                )
+            if rows:
+                table = _write_f05_table(rows, report_path)
+                _log("\nF0.5 summary:\n" + table)
+
+        # Run-family mode (multiple engineered feature sets + leaderboard)
+        if llm_engineered_run_family:
+            if not reasoning_feature_names:
+                raise RuntimeError("Run-family mode requires reasoning features to be loaded.")
+            families_dir = cache_dir / "families"
+            archives_dir = cache_dir / "archives"
+            family_dir: Path | None = None
+            family_id = llm_engineered_run_family_id or ""
+            if llm_engineered_freeze and not family_id:
+                if families_dir.exists():
+                    consolidated = sorted(
+                        families_dir.glob("family_*_features.parquet"),
+                        key=lambda p: p.stat().st_mtime,
+                        reverse=True,
+                    )
+                    if consolidated:
+                        latest = consolidated[0]
+                        family_id = latest.stem.replace("family_", "").replace("_features", "")
+                        _log(f"  [Run-family] Reusing consolidated family: family_{family_id}")
+                if not family_id:
+                    existing = sorted(
+                        [p for p in cache_dir.glob("family_*") if p.is_dir()],
+                        key=lambda p: p.stat().st_mtime,
+                        reverse=True,
+                    )
+                    for candidate in existing:
+                        set_dirs = list(candidate.glob("set_*"))
+                        if not set_dirs:
+                            continue
+                        has_cache = any(
+                            (sd / "llm_features.parquet").exists()
+                            and (sd / "llm_features_meta.json").exists()
+                            for sd in set_dirs
+                        )
+                        if has_cache:
+                            family_dir = candidate
+                            family_id = candidate.name.replace("family_", "")
+                            _log(f"  [Run-family] Reusing existing family cache: {candidate.name}")
+                            break
+            if family_dir is None:
+                if not family_id:
+                    family_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+                family_dir = cache_dir / f"family_{family_id}"
+                family_dir.mkdir(parents=True, exist_ok=True)
+            family_features_path = families_dir / f"family_{family_id}_features.parquet"
+            family_meta_path = families_dir / f"family_{family_id}_meta.json"
+            run_n = llm_engineered_run_family_n or llm_n
+            rows: list[dict[str, Any]] = []
+            skipped_sets: list[str] = []
+            reasoning_label = "+".join(cfg_llm_reasoning_experiments or [])
+            founder_ids = [r.get("founder_uuid") for r in records]
+            family_frames: list[pd.DataFrame] = []
+            family_set_features: dict[str, list[str]] = {}
+            _log_run(
+                f"Run-family start: id={family_id} n_sets={llm_engineered_run_family_size} n_features={run_n}"
+            )
+            def _evaluate_from_consolidated(df: pd.DataFrame, meta: dict[str, Any]) -> list[dict[str, Any]]:
+                set_features: dict[str, list[str]] = meta.get("set_features", {})
+                out_rows: list[dict[str, Any]] = []
+                for set_id, features in set_features.items():
+                    df_set = df[df["set_id"] == set_id].set_index("row_index")
+                    set_train = df_set.loc[train_idx]
+                    set_test = df_set.loc[test_idx]
+                    metrics_only, _ = _train_and_log(
+                        features,
+                        set_train[features],
+                        set_test[features],
+                        y_train,
+                        y_test,
+                        args,
+                        input_csv,
+                        "LLM Engineered Only",
+                        log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "only",
+                    )
+                    out_rows.append(
+                        {
+                            "set_id": set_id,
+                            "regression": "LLM Engineered Only",
+                            "F0.5": metrics_only.get("f0.5", float("nan")),
+                            "ROC-AUC": metrics_only.get("roc_auc", float("nan")),
+                            "PR-AUC": metrics_only.get("pr_auc", float("nan")),
+                            "Prec": metrics_only.get("precision", float("nan")),
+                            "Rec": metrics_only.get("recall", float("nan")),
+                            "Acc": metrics_only.get("accuracy", float("nan")),
+                            "reasoning_experiment": reasoning_label,
+                        }
+                    )
+                    set_plus_train = pd.concat([set_train[features], reasoning_train], axis=1)
+                    set_plus_test = pd.concat([set_test[features], reasoning_test], axis=1)
+                    metrics_plus, _ = _train_and_log(
+                        features + reasoning_feature_names,
+                        set_plus_train,
+                        set_plus_test,
+                        y_train,
+                        y_test,
+                        args,
+                        input_csv,
+                        "LLM Engineered + Reasoning",
+                        log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "plus_reasoning",
+                    )
+                    out_rows.append(
+                        {
+                            "set_id": set_id,
+                            "regression": "LLM Engineered + Reasoning",
+                            "F0.5": metrics_plus.get("f0.5", float("nan")),
+                            "ROC-AUC": metrics_plus.get("roc_auc", float("nan")),
+                            "PR-AUC": metrics_plus.get("pr_auc", float("nan")),
+                            "Prec": metrics_plus.get("precision", float("nan")),
+                            "Rec": metrics_plus.get("recall", float("nan")),
+                            "Acc": metrics_plus.get("accuracy", float("nan")),
+                            "reasoning_experiment": reasoning_label,
+                        }
+                    )
+                return out_rows
+
+            if llm_engineered_freeze and family_features_path.exists() and family_meta_path.exists():
+                df = pd.read_parquet(family_features_path)
+                meta = json.loads(family_meta_path.read_text(encoding="utf-8"))
+                rows = _evaluate_from_consolidated(df, meta)
+                report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+                leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
+                _write_family_leaderboard(rows, report_path, leaderboard_csv)
+                _log(f"\nRun-family leaderboard appended to: {report_path}")
+                return
+            for idx in range(1, llm_engineered_run_family_size + 1):
+                set_id = f"set_{idx:02d}"
+                set_dir = family_dir / set_id
+                set_dir.mkdir(parents=True, exist_ok=True)
+                _log_run(f"Run-family processing {set_id}")
+                set_all = None
+                set_names = None
+                if llm_engineered_cache:
+                    set_all, set_names = _load_llm_engineered_cache(
+                        cache_dir=set_dir,
+                        expected_rows=len(records),
+                        expected_n=run_n,
+                        model=args.llm_model,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                    )
+                if set_all is None or set_names is None:
+                    if llm_engineered_freeze:
+                        _log(
+                            f"\n  [Run-family] Cache missing for {set_id}; "
+                            "freeze enabled so skipping generation."
+                        )
+                        skipped_sets.append(set_id)
+                        _log_run(f"Run-family skipped {set_id} (cache missing)")
+                        continue
+                    _log(f"\n  [Run-family] Generating set {set_id} ({run_n} features)...")
+                    attempt = 0
+                    max_attempts = max(1, int(args.llm_retry_attempts) + 1)
+                    while attempt < max_attempts:
+                        attempt += 1
+                        try:
+                            async def _run_generate():
+                                return await generate_llm_features(
+                                    train_recs=train_recs,
+                                    y_train=y_train,
+                                    test_recs=test_recs,
+                                    model=args.llm_model,
+                                    n_features=run_n,
+                                    all_recs=records,
+                                    providers=llm_providers,
+                                    google_model=llm_google_model,
+                                )
+
+                            if float(args.llm_timeout) > 0:
+                                set_all, set_train, set_test, set_names = asyncio.run(
+                                    asyncio.wait_for(
+                                        _run_generate(), timeout=float(args.llm_timeout)
+                                    )
+                                )
+                            else:
+                                set_all, set_train, set_test, set_names = asyncio.run(
+                                    _run_generate()
+                                )
+                            break
+                        except Exception:
+                            err = traceback.format_exc()
+                            _log(f"\n  [Run-family] ERROR during LLM generation for {set_id} (attempt {attempt}):")
+                            _log(err)
+                            _log_run(
+                                f"[Run-family] ERROR {set_id} attempt {attempt}: "
+                                f"{err.splitlines()[-1] if err else 'unknown error'}"
+                            )
+                            if attempt >= max_attempts:
+                                _log(
+                                    f"  [Run-family] Exceeded retry attempts for {set_id}. Skipping."
+                                )
+                                _log_run(
+                                    f"Run-family skipped {set_id} (generation failed after {attempt} attempts)"
+                                )
+                                skipped_sets.append(set_id)
+                                set_all = None
+                                set_names = None
+                                break
+                            _log(f"  [Run-family] Retrying in {args.llm_retry_sleep:.1f}s...")
+                            time.sleep(max(0.0, float(args.llm_retry_sleep)))
+                    if (
+                        llm_engineered_cache
+                        and set_all is not None
+                        and set_names is not None
+                    ):
+                        _save_llm_engineered_cache(
+                            cache_dir=set_dir,
+                            df=set_all,
+                            feature_names=set_names,
+                            model=args.llm_model,
+                            providers=llm_providers,
+                            google_model=llm_google_model,
+                            n_features=run_n,
+                        )
+                else:
+                    set_train = set_all.iloc[train_idx].reset_index(drop=True)
+                    set_test = set_all.iloc[test_idx].reset_index(drop=True)
+
+                if set_all is None or set_names is None:
+                    continue
+
+                if set_all is not None and set_names is not None:
+                    set_df = set_all.copy()
+                    set_df.insert(0, "row_index", np.arange(len(records)))
+                    set_df.insert(1, "founder_uuid", founder_ids)
+                    set_df.insert(2, "success", labels)
+                    set_df.insert(3, "set_id", set_id)
+                    family_frames.append(set_df)
+                    family_set_features[set_id] = set_names
+
+                set_only_log = Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "only"
+                set_plus_log = Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "plus_reasoning"
+
+                metrics_only, _ = _train_and_log(
+                    set_names,
+                    set_train,
+                    set_test,
+                    y_train,
+                    y_test,
+                    args,
+                    input_csv,
+                    "LLM Engineered Only",
+                    log_dir=set_only_log,
+                )
+                rows.append(
+                    {
+                        "set_id": set_id,
+                        "regression": "LLM Engineered Only",
+                        "F0.5": metrics_only.get("f0.5", float("nan")),
+                        "ROC-AUC": metrics_only.get("roc_auc", float("nan")),
+                        "PR-AUC": metrics_only.get("pr_auc", float("nan")),
+                        "Prec": metrics_only.get("precision", float("nan")),
+                        "Rec": metrics_only.get("recall", float("nan")),
+                        "Acc": metrics_only.get("accuracy", float("nan")),
+                        "reasoning_experiment": reasoning_label,
+                    }
+                )
+
+                set_plus_train = pd.concat([set_train, reasoning_train], axis=1)
+                set_plus_test = pd.concat([set_test, reasoning_test], axis=1)
+                metrics_plus, _ = _train_and_log(
+                    set_names + reasoning_feature_names,
+                    set_plus_train,
+                    set_plus_test,
+                    y_train,
+                    y_test,
+                    args,
+                    input_csv,
+                    "LLM Engineered + Reasoning",
+                    log_dir=set_plus_log,
+                )
+                rows.append(
+                    {
+                        "set_id": set_id,
+                        "regression": "LLM Engineered + Reasoning",
+                        "F0.5": metrics_plus.get("f0.5", float("nan")),
+                        "ROC-AUC": metrics_plus.get("roc_auc", float("nan")),
+                        "PR-AUC": metrics_plus.get("pr_auc", float("nan")),
+                        "Prec": metrics_plus.get("precision", float("nan")),
+                        "Rec": metrics_plus.get("recall", float("nan")),
+                        "Acc": metrics_plus.get("accuracy", float("nan")),
+                        "reasoning_experiment": reasoning_label,
+                    }
+                )
+                _log_run(f"Run-family completed {set_id}")
+
+            if family_frames:
+                families_dir.mkdir(parents=True, exist_ok=True)
+                combined = pd.concat(family_frames, ignore_index=True, sort=False)
+                combined.to_parquet(family_features_path, index=False)
+                meta = {
+                    "family_id": family_id,
+                    "model": args.llm_model,
+                    "n_features": run_n,
+                    "providers": llm_providers,
+                    "google_model": llm_google_model,
+                    "set_features": family_set_features,
+                    "timestamp": datetime.now().isoformat(),
                 }
-            )
-        if rows:
-            table = _write_f05_table(rows, report_path)
-            _log("\nF0.5 summary:\n" + table)
+                family_meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+                # Archive per-set caches to reduce clutter
+                if family_dir.exists():
+                    archives_dir.mkdir(parents=True, exist_ok=True)
+                    archive_target = archives_dir / f"family_{family_id}"
+                    if archive_target.exists():
+                        shutil.rmtree(archive_target)
+                    shutil.move(str(family_dir), str(archive_target))
+
+            report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+            leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
+            _write_family_leaderboard(rows, report_path, leaderboard_csv)
+            meta_path = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard_meta.json"
+            meta = {
+                "family_id": family_id,
+                "n_sets": llm_engineered_run_family_size,
+                "n_features": run_n,
+                "reasoning_experiment": reasoning_label,
+                "model": args.llm_model,
+                "timestamp": datetime.now().isoformat(),
+                "skipped_sets": skipped_sets,
+            }
+            meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+            _log(f"\nRun-family leaderboard appended to: {report_path}")
+            return
 
     # Placeholder for future multiple training loops over feature subsets.
     # TODO: add loop over named feature sets and aggregate metrics.
@@ -1682,7 +2175,10 @@ def _write_log(
     log_dir.mkdir(parents=True, exist_ok=True)
     log_path = log_dir / f"training_log_{ts}.txt"
     log_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"\n  Training log saved to: {log_path}")
+    try:
+        print(f"\n  Training log saved to: {log_path}")
+    except OSError:
+        pass
 
     report = {
         "dataset": input_csv,
@@ -1709,7 +2205,10 @@ def _write_log(
     }
     report_path = log_dir / f"run_report_{ts}.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    print(f"  Run report saved to: {report_path}")
+    try:
+        print(f"  Run report saved to: {report_path}")
+    except OSError:
+        pass
 
 
 def _log_dir_for_mode(

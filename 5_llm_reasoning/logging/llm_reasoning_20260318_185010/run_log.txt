@@ -1,0 +1,59 @@
+run_log started
+[2026-03-18T18:50:10.264007] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-18T18:50:10.628745] Loaded records: 4500 labels: 4500
+[2026-03-18T18:50:10.629340] Use LLM reasoning: True
+[2026-03-18T18:50:10.629662] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_run_family_id=20260318_182731
+[2026-03-18T18:50:10.633898] Split train=3600 test=900
+[2026-03-18T18:50:10.634388] OPENAI_API_KEY set: True
+[2026-03-18T18:50:11.065045] Run-family start: id=20260318_182731 n_sets=10 n_features=8
+
+[ERROR] Unhandled exception:
+Traceback (most recent call last):
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 2234, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 1906, in main
+    rows = _evaluate_from_consolidated(df, meta)
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 1877, in _evaluate_from_consolidated
+    metrics_plus, _ = _train_and_log(
+                      ~~~~~~~~~~~~~~^
+        features + reasoning_feature_names,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "plus_reasoning",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 272, in _train_and_log
+    train_scores, test_scores, model = _train_sklearn(
+                                       ~~~~~~~~~~~~~~^
+        X_train, y_train, X_test, args.random_state
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 192, in _train_sklearn
+    clf.fit(X_train, y_train)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\joelb\.conda\envs\vela_TRL\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+  File "C:\Users\joelb\.conda\envs\vela_TRL\Lib\site-packages\sklearn\linear_model\_logistic.py", line 1191, in fit
+    X, y = validate_data(
+           ~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<5 lines>...
+        accept_large_sparse=solver not in ["liblinear", "sag", "saga"],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\joelb\.conda\envs\vela_TRL\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\joelb\.conda\envs\vela_TRL\Lib\site-packages\sklearn\utils\validation.py", line 1333, in check_X_y
+    check_consistent_length(X, y)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\joelb\.conda\envs\vela_TRL\Lib\site-packages\sklearn\utils\validation.py", line 464, in check_consistent_length
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Found input variables with inconsistent numbers of samples: [4304, 3600]

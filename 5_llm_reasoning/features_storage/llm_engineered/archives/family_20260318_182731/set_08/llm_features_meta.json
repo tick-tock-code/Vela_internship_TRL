@@ -1,0 +1,20 @@
+{
+  "n_rows": 4500,
+  "n_features": 8,
+  "feature_names": [
+    "has_phd",
+    "industry_in_tech",
+    "has_exited",
+    "multiple_jobs",
+    "industry_is_startup_focused",
+    "education_high_qs",
+    "industry_has_exit",
+    "has_masters_or_higher"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash"
+}

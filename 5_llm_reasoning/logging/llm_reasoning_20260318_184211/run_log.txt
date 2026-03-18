@@ -1,0 +1,28 @@
+run_log started
+[2026-03-18T18:42:11.894419] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-18T18:42:12.256712] Loaded records: 4500 labels: 4500
+[2026-03-18T18:42:12.257251] Use LLM reasoning: True
+[2026-03-18T18:42:12.257540] Config flags: llm_engineered_run_family=True llm_engineered_freeze=False llm_engineered_run_family_id=20260318_182731
+[2026-03-18T18:42:12.261658] Split train=3600 test=900
+[2026-03-18T18:42:12.262150] OPENAI_API_KEY set: True
+[2026-03-18T18:42:12.706679] Run-family start: id=20260318_182731 n_sets=10 n_features=8
+[2026-03-18T18:42:12.707297] Run-family processing set_01
+[2026-03-18T18:42:13.058703] Run-family completed set_01
+[2026-03-18T18:42:13.059570] Run-family processing set_02
+[2026-03-18T18:42:13.404464] Run-family completed set_02
+[2026-03-18T18:42:13.405076] Run-family processing set_03
+[2026-03-18T18:42:13.749956] Run-family completed set_03
+[2026-03-18T18:42:13.750735] Run-family processing set_04
+[2026-03-18T18:42:20.983707] Run-family completed set_04
+[2026-03-18T18:42:20.984521] Run-family processing set_05
+[2026-03-18T18:42:27.259246] Run-family completed set_05
+[2026-03-18T18:42:27.259996] Run-family processing set_06
+[2026-03-18T18:42:32.677372] Run-family completed set_06
+[2026-03-18T18:42:32.678407] Run-family processing set_07
+[2026-03-18T18:42:38.978849] Run-family completed set_07
+[2026-03-18T18:42:38.979555] Run-family processing set_08
+[2026-03-18T18:42:44.505610] Run-family completed set_08
+[2026-03-18T18:42:44.506373] Run-family processing set_09
+[2026-03-18T18:42:49.818924] Run-family completed set_09
+[2026-03-18T18:42:49.819910] Run-family processing set_10
+[2026-03-18T18:42:55.719321] Run-family completed set_10

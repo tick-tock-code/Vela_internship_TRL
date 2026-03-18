@@ -1,0 +1,9 @@
+{
+  "family_id": "20260318_182731",
+  "n_sets": 10,
+  "n_features": 8,
+  "reasoning_experiment": "A",
+  "model": "gpt-4.1-nano",
+  "timestamp": "2026-03-18T18:42:55.845712",
+  "skipped_sets": []
+}

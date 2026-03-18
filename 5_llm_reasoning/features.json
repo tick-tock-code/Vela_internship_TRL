@@ -41,6 +41,11 @@
     "llm_reasoning_split_batches":  true,
     "llm_engineered_for_reasoning":  true,
     "llm_engineered_cache":  true,
+    "llm_engineered_freeze":  true,
+    "llm_engineered_run_family":  true,
+    "llm_engineered_run_family_size":  10,
+    "llm_engineered_run_family_n_features":  8,
+    "llm_engineered_run_family_id":  "20260318_182731",
     "llm_reasoning_experiments":  [
                                       "A"
                                   ],

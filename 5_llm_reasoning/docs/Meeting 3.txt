@@ -1,0 +1,32 @@
+Expert information features
+ - what are those features
+ - Features based on what's unique to taste
+
+Human-powered feature engineer
+Expert driven feature engineer
+
+
+
+Good documentation, memory in a file, prd.md - product requirement document
+Lessons.md
+
+
+every time you do something, write it in lessons.md
+
+
+User interface
+admin user interface, UI, instead of going into the code.
+
+
+initial paper, .tex for latex -> 
+
+
+Cross validation means 
+
+
+For LLM engineer -> generating features on a small dataset, bin those founders. 
+Evaluating features on rest of full dataset -> cross validation
+
+
+
+Mixing the batches - does the score for an individual founder vary?

@@ -1,0 +1,113 @@
+{
+  "family_id": "20260318_182731",
+  "model": "gpt-4.1-nano",
+  "n_features": 8,
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "set_features": {
+    "set_01": [
+      "has_phd",
+      "industry_experience",
+      "ipo_over",
+      "acquisition_experience",
+      "education_high_qs",
+      "industry_match",
+      "leadership_duration",
+      "multiple_educations"
+    ],
+    "set_02": [
+      "has_phd",
+      "has_investment_background",
+      "industry_tech_or_research",
+      "has_exited",
+      "multiple_high_ranking_qs",
+      "lead_startup",
+      "industry_diversity",
+      "education_in_science_or_engineering"
+    ],
+    "set_03": [
+      "has_phd",
+      "in_high_qs_rank",
+      "has_executive_experience",
+      "industry_experience",
+      "has_ipos_or_acquisitions",
+      "education_diversity",
+      "has_multiple_educations",
+      "experience_in_billion_dollar_acquisitions"
+    ],
+    "set_04": [
+      "has_phd",
+      "has_ipos",
+      "industry_tech_or_biotech",
+      "has_experience_in_research",
+      "has_investment_experience",
+      "has_education_high_qs",
+      "has_exited",
+      "industry_non_tech"
+    ],
+    "set_05": [
+      "has_phd",
+      "involved_in_ipo",
+      "industry_biotech_or_nanotech",
+      "has_exited",
+      "education_high_qs",
+      "industry_tech_or_biotech",
+      "has_mba",
+      "has_long_experience"
+    ],
+    "set_06": [
+      "has_phd",
+      "has_investment_experience",
+      "has_exit_event",
+      "industry_in_tech",
+      "has_executive_role",
+      "has_high_qs_ranking_education",
+      "industry_experience_in_startup",
+      "has_education_in_science_or_engineering"
+    ],
+    "set_07": [
+      "has_phd",
+      "has_experience_in_industry",
+      "has_exited_before",
+      "education_qs_rank_better_than_threshold",
+      "has_experience_in_high_company_size",
+      "has_multiple_exits",
+      "has_experience_in_specific_industry",
+      "has_advanced_education"
+    ],
+    "set_08": [
+      "has_phd",
+      "industry_in_tech",
+      "has_exited",
+      "multiple_jobs",
+      "industry_is_startup_focused",
+      "education_high_qs",
+      "industry_has_exit",
+      "has_masters_or_higher"
+    ],
+    "set_09": [
+      "has_phd",
+      "experience_in_industry",
+      "has_international_experience",
+      "has_exited_company",
+      "multiple_educations",
+      "industry_experience_duration",
+      "has_education_qs_rank",
+      "industry_diversity_in_jobs"
+    ],
+    "set_10": [
+      "has_phd",
+      "industry_experience",
+      "has_exit_event",
+      "education_qs_rank",
+      "has_multiple_jobs_in_industry",
+      "company_size_experience",
+      "has_educational_diversity",
+      "industry_diversity"
+    ]
+  },
+  "timestamp": "2026-03-18T18:42:55.829508"
+}

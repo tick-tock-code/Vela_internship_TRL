@@ -41,3 +41,6 @@ if it doesn't work, figure out why
 
 
 Iterative prompt improvement - try with GEPA as a model
+
+
+Expert information features

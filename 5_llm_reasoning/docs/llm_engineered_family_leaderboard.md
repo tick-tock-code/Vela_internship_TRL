@@ -1,14 +1,4 @@
-# LLM Regression Summary (F0.5)
-
-| Regression | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |
-|---|---:|---:|---:|---:|---:|---:|
-| Human Only | 0.248 | 0.730 | 0.215 | 0.233 | 0.333 | 0.841 |
-| LLM Reasoning Only | 0.158 | 0.615 | 0.129 | 0.134 | 0.556 | 0.638 |
-| LLM Reasoning + Human | 0.245 | 0.724 | 0.224 | 0.235 | 0.296 | 0.850 |
-| LLM Engineered Only | 0.251 | 0.679 | 0.224 | 0.227 | 0.432 | 0.817 |
-| LLM Engineered + Reasoning | 0.304 | 0.691 | 0.248 | 0.293 | 0.358 | 0.864 |
-
-## LLM Engineered Run-Family Leaderboard
+# LLM Engineered Run-Family Leaderboard
 
 | Set ID | Regression | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -32,11 +22,3 @@
 | set_09 | LLM Engineered + Reasoning | 0.276 | 0.698 | 0.232 | 0.280 | 0.259 | 0.873 |
 | set_10 | LLM Engineered Only | 0.246 | 0.679 | 0.203 | 0.231 | 0.333 | 0.840 |
 | set_10 | LLM Engineered + Reasoning | 0.284 | 0.688 | 0.232 | 0.284 | 0.284 | 0.871 |
-
-### Average Improvement (Engineered + Reasoning vs Engineered Only)
-- F0.5: +0.030
-- ROC-AUC: +0.016
-- PR-AUC: +0.023
-- Prec: +0.037
-- Rec: +0.001
-- Acc: +0.013
