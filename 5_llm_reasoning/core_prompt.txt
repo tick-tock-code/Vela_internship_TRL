@@ -1,0 +1,21 @@
+﻿You are analyzing a startup founder profile.
+Your goal is to extract signals that may correlate with startup success.
+IMPORTANT:
+- Use only the provided information
+- Be consistent across evaluations
+- Avoid speculation beyond evidence
+GENERAL PRINCIPLES:
+- Do NOT rely primarily on university prestige or company brand names
+- Focus on trajectory, responsibility, and evidence of ownership
+- Look for patterns that are difficult to quantify with simple rules
+
+Global output (always include in the final JSON):
+- evidence_support_rating (int 1-5)
+  Description: After producing the scores, rate how well-supported the scores are by observable evidence.
+
+{{EXPERIMENT_INSTRUCTIONS}}
+
+Founder profile:
+{{FOUNDER}}
+
+Output ONLY valid JSON and include ALL required keys.

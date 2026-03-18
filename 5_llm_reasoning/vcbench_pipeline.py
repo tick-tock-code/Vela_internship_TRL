@@ -16,6 +16,7 @@ import os
 import json
 import importlib.util
 import math
+import asyncio
 from pathlib import Path
 from datetime import datetime
 import traceback
@@ -51,6 +52,59 @@ def _load_base_feature_extractor(script_path: Path):
             f"Base script missing _extract_human_features: {script_path}"
         )
     return module._extract_human_features  # type: ignore[attr-defined]
+
+
+def _load_llm_engineered_cache(
+    cache_dir: Path,
+    expected_rows: int,
+    expected_n: int,
+    model: str,
+    providers: dict[str, bool],
+    google_model: str | None,
+) -> tuple[pd.DataFrame | None, list[str] | None]:
+    cache_path = cache_dir / "llm_features.parquet"
+    meta_path = cache_dir / "llm_features_meta.json"
+    if not cache_path.exists() or not meta_path.exists():
+        return None, None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        if (
+            meta.get("n_rows") == expected_rows
+            and meta.get("n_features") == expected_n
+            and meta.get("model") == model
+            and meta.get("providers") == providers
+            and meta.get("google_model") == google_model
+            and isinstance(meta.get("feature_names"), list)
+        ):
+            df = pd.read_parquet(cache_path)
+            return df, list(meta.get("feature_names"))
+    except Exception:
+        return None, None
+    return None, None
+
+
+def _save_llm_engineered_cache(
+    cache_dir: Path,
+    df: pd.DataFrame,
+    feature_names: list[str],
+    model: str,
+    providers: dict[str, bool],
+    google_model: str | None,
+    n_features: int,
+) -> None:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / "llm_features.parquet"
+    meta_path = cache_dir / "llm_features_meta.json"
+    df.to_parquet(cache_path, index=False)
+    meta = {
+        "n_rows": len(df),
+        "n_features": n_features,
+        "feature_names": feature_names,
+        "model": model,
+        "providers": providers,
+        "google_model": google_model,
+    }
+    meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
 
 def _custom_feature_df(
@@ -267,9 +321,14 @@ def _parse_args() -> argparse.Namespace:
         help="Enable LLM reasoning features (can be combined with other modes).",
     )
     p.add_argument(
-        "--llm_reasoning_prompts",
-        default=str(Path(__file__).parent / "llm_reasoning_prompts.json"),
-        help="Path to JSON prompts for LLM reasoning features.",
+        "--llm_reasoning_core_prompt",
+        default=str(Path(__file__).parent / "core_prompt.txt"),
+        help="Path to core prompt template for LLM reasoning features.",
+    )
+    p.add_argument(
+        "--llm_reasoning_experiments",
+        default=str(Path(__file__).parent / "experiments.json"),
+        help="Path to experiments JSON for LLM reasoning features.",
     )
     p.add_argument(
         "--llm_reasoning_dataset_size",
@@ -281,6 +340,16 @@ def _parse_args() -> argparse.Namespace:
         type=int,
         default=20,
         help="Batch size for LLM reasoning (default 20).",
+    )
+    p.add_argument(
+        "--llm_reasoning_dry_run",
+        action="store_true",
+        help="Run LLM reasoning without API calls (mock outputs).",
+    )
+    p.add_argument(
+        "--llm_reasoning_dry_run_fast",
+        action="store_true",
+        help="Run a fast dry-run (small subset, no sleep, no training).",
     )
     p.add_argument(
         "--llm_sweep_repeats",
@@ -445,6 +514,119 @@ def main() -> None:
     rs = args.random_state
     input_csv = _resolve_input_csv(args.dataset, args.input_csv)
 
+    # Load config early for reasoning paths/options
+    selected_features: list[str] = []
+    cfg_use_llm: bool | None = None
+    cfg_llm_n: int | None = None
+    cfg_use_llm_reasoning: bool | None = None
+    cfg_llm_reasoning_features: list[str] | None = None
+    cfg_llm_reasoning_experiments: list[str] | None = None
+    cfg_llm_reasoning_mode: str | None = None
+    cfg_llm_reasoning_sequential: list[str] | None = None
+    cfg_llm_reasoning_combined: list[str] | None = None
+    cfg_llm_temperature: float | None = None
+    cfg_llm_reasoning_dataset_size: str | None = None
+    cfg_llm_reasoning_prompts_path: str | None = None
+    cfg_llm_reasoning_core_prompt_path: str | None = None
+    cfg_llm_reasoning_experiments_path: str | None = None
+    cfg_llm_reasoning_dry_run: bool | None = None
+    cfg_llm_reasoning_dry_run_fast: bool | None = None
+    cfg_llm_providers: dict[str, bool] | None = None
+    cfg_llm_google_model: str | None = None
+    cfg_llm_reasoning_batch_size: int | None = None
+    cfg_llm_reasoning_log_every: int | None = None
+    cfg_llm_reasoning_concurrency: int | None = None
+    cfg_llm_reasoning_repair_nan: bool | None = None
+    cfg_llm_reasoning_repair_existing: bool | None = None
+    cfg_llm_engineered_for_reasoning: bool | None = None
+    cfg_llm_engineered_cache: bool | None = None
+    cfg_path = Path(args.feature_config) if args.feature_config else None
+    if cfg_path is not None and cfg_path.exists():
+        data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
+        selected_features = [f for f in data.get("features", []) if isinstance(f, str)]
+        if "use_llm" in data:
+            cfg_use_llm = bool(data.get("use_llm"))
+        if "llm_n_features" in data:
+            try:
+                cfg_llm_n = int(data.get("llm_n_features"))
+            except Exception:
+                cfg_llm_n = None
+        if "use_llm_reasoning" in data:
+            cfg_use_llm_reasoning = bool(data.get("use_llm_reasoning"))
+        if isinstance(data.get("llm_reasoning_features"), list):
+            cfg_llm_reasoning_features = [
+                f for f in data.get("llm_reasoning_features", []) if isinstance(f, str)
+            ]
+        if isinstance(data.get("llm_reasoning_dataset_size"), str):
+            cfg_llm_reasoning_dataset_size = data.get("llm_reasoning_dataset_size")
+        if isinstance(data.get("llm_reasoning_prompts_path"), str):
+            cfg_llm_reasoning_prompts_path = data.get("llm_reasoning_prompts_path")
+        if isinstance(data.get("llm_reasoning_core_prompt_path"), str):
+            cfg_llm_reasoning_core_prompt_path = data.get("llm_reasoning_core_prompt_path")
+        if isinstance(data.get("llm_reasoning_experiments_path"), str):
+            cfg_llm_reasoning_experiments_path = data.get("llm_reasoning_experiments_path")
+        if isinstance(data.get("llm_reasoning_experiments"), list):
+            cfg_llm_reasoning_experiments = [
+                e for e in data.get("llm_reasoning_experiments", []) if isinstance(e, str)
+            ]
+        if isinstance(data.get("llm_reasoning_mode"), str):
+            cfg_llm_reasoning_mode = data.get("llm_reasoning_mode")
+        if isinstance(data.get("llm_reasoning_sequential"), list):
+            cfg_llm_reasoning_sequential = [
+                e for e in data.get("llm_reasoning_sequential", []) if isinstance(e, str)
+            ]
+        if isinstance(data.get("llm_reasoning_combined"), list):
+            cfg_llm_reasoning_combined = [
+                e for e in data.get("llm_reasoning_combined", []) if isinstance(e, str)
+            ]
+        if "llm_reasoning_dry_run" in data:
+            cfg_llm_reasoning_dry_run = bool(data.get("llm_reasoning_dry_run"))
+        if "llm_reasoning_dry_run_fast" in data:
+            cfg_llm_reasoning_dry_run_fast = bool(data.get("llm_reasoning_dry_run_fast"))
+        if isinstance(data.get("llm_providers"), dict):
+            cfg_llm_providers = {
+                "openai": bool(data.get("llm_providers", {}).get("openai", False)),
+                "google": bool(data.get("llm_providers", {}).get("google", False)),
+            }
+        if isinstance(data.get("llm_google_model"), str):
+            cfg_llm_google_model = data.get("llm_google_model")
+        if isinstance(data.get("llm_reasoning_batch_size"), int):
+            cfg_llm_reasoning_batch_size = data.get("llm_reasoning_batch_size")
+        if isinstance(data.get("llm_reasoning_log_every"), int):
+            cfg_llm_reasoning_log_every = data.get("llm_reasoning_log_every")
+        if isinstance(data.get("llm_reasoning_concurrency"), int):
+            cfg_llm_reasoning_concurrency = data.get("llm_reasoning_concurrency")
+        if "llm_reasoning_repair_nan" in data:
+            cfg_llm_reasoning_repair_nan = bool(data.get("llm_reasoning_repair_nan"))
+        if "llm_reasoning_repair_existing" in data:
+            cfg_llm_reasoning_repair_existing = bool(data.get("llm_reasoning_repair_existing"))
+        if "llm_engineered_for_reasoning" in data:
+            cfg_llm_engineered_for_reasoning = bool(data.get("llm_engineered_for_reasoning"))
+        if "llm_engineered_cache" in data:
+            cfg_llm_engineered_cache = bool(data.get("llm_engineered_cache"))
+        if "llm_temperature" in data:
+            try:
+                cfg_llm_temperature = float(data.get("llm_temperature"))
+            except Exception:
+                cfg_llm_temperature = None
+    # Set up run-level logging early for full traceability
+    run_log = None
+    log_root = None
+    use_llm_reasoning_early = (
+        args.llm_reasoning
+        or (cfg_use_llm_reasoning is True)
+        or (args.mode in ("reasoning", "hybrid"))
+    )
+    if use_llm_reasoning_early:
+        log_root = Path(__file__).parent / "logging" / f"llm_reasoning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        log_root.mkdir(parents=True, exist_ok=True)
+        run_log = log_root / "run_log.txt"
+        run_log.write_text("run_log started\n", encoding="utf-8")
+
+    def _log_run(msg: str) -> None:
+        if run_log is not None:
+            with run_log.open("a", encoding="utf-8") as f:
+                f.write(f"[{datetime.now().isoformat()}] {msg}\n")
     log_lines: list[str] = []
     sweep_terminal_log: Path | None = None
 
@@ -463,19 +645,30 @@ def main() -> None:
     _log(f"  Dataset: {args.dataset}")
     _log(f"  Input CSV: {input_csv}")
 
+    _log_run(f"Loading dataset from: {input_csv}")
     records, labels = load_vcbench(
         input_csv,
         args.label_column,
         0,
         rs,
     )
+    _log_run(f"Loaded records: {len(records)} labels: {len(labels)}")
 
     # Resolve LLM reasoning settings early to allow dataset sizing
-    reasoning_prompts_path = (
-        Path(cfg_llm_reasoning_prompts_path)
-        if cfg_llm_reasoning_prompts_path
-        else Path(args.llm_reasoning_prompts)
+    reasoning_core_prompt_path = (
+        Path(cfg_llm_reasoning_core_prompt_path)
+        if cfg_llm_reasoning_core_prompt_path
+        else Path(args.llm_reasoning_core_prompt)
     )
+    reasoning_experiments_path = (
+        Path(cfg_llm_reasoning_experiments_path)
+        if cfg_llm_reasoning_experiments_path
+        else Path(args.llm_reasoning_experiments)
+    )
+    if not reasoning_core_prompt_path.is_absolute():
+        reasoning_core_prompt_path = Path(__file__).parent / reasoning_core_prompt_path
+    if not reasoning_experiments_path.is_absolute():
+        reasoning_experiments_path = Path(__file__).parent / reasoning_experiments_path
     llm_providers = cfg_llm_providers or {"openai": True, "google": False}
     llm_google_model = cfg_llm_google_model
     llm_reasoning_batch_size = (
@@ -483,6 +676,15 @@ def main() -> None:
         if cfg_llm_reasoning_batch_size is not None
         else args.llm_reasoning_batch_size
     )
+    llm_reasoning_log_every = cfg_llm_reasoning_log_every if cfg_llm_reasoning_log_every is not None else 10
+    llm_reasoning_concurrency = cfg_llm_reasoning_concurrency if cfg_llm_reasoning_concurrency is not None else 1
+    llm_reasoning_repair_nan = cfg_llm_reasoning_repair_nan if cfg_llm_reasoning_repair_nan is not None else True
+    llm_reasoning_repair_existing = cfg_llm_reasoning_repair_existing if cfg_llm_reasoning_repair_existing is not None else False
+    llm_engineered_for_reasoning = cfg_llm_engineered_for_reasoning if cfg_llm_engineered_for_reasoning is not None else False
+    llm_engineered_cache = cfg_llm_engineered_cache if cfg_llm_engineered_cache is not None else True
+    llm_temperature = cfg_llm_temperature if cfg_llm_temperature is not None else 0.0
+    llm_reasoning_dry_run = bool(args.llm_reasoning_dry_run) or bool(cfg_llm_reasoning_dry_run)
+    llm_reasoning_dry_run_fast = bool(args.llm_reasoning_dry_run_fast) or bool(cfg_llm_reasoning_dry_run_fast)
     reasoning_dataset_size = (
         cfg_llm_reasoning_dataset_size
         if cfg_llm_reasoning_dataset_size is not None
@@ -493,6 +695,12 @@ def main() -> None:
         or (cfg_use_llm_reasoning is True)
         or (args.mode in ("reasoning", "hybrid"))
     )
+    _log_run(f"Use LLM reasoning: {use_llm_reasoning}")
+    if llm_reasoning_dry_run_fast:
+        llm_reasoning_dry_run = True
+        use_llm_reasoning = True
+        if mode == "human":
+            mode = "reasoning"
 
     if use_llm_reasoning and args.dataset == "sample":
         raise RuntimeError("LLM reasoning does not allow dataset=sample. Use full or a size override.")
@@ -516,6 +724,51 @@ def main() -> None:
     _log(
         f"  Positives: train={int(y_train.sum())}, test={int(y_test.sum())}"
     )
+    _log_run(f"Split train={len(train_idx)} test={len(test_idx)}")
+    _log_run(f"OPENAI_API_KEY set: {bool(os.getenv('OPENAI_API_KEY'))}")
+
+    if llm_reasoning_dry_run_fast:
+        _log("  Dry-run fast enabled: generating reasoning features only.")
+        output_dir = Path(__file__).parent / "features_storage" / "llm_reasoning"
+        meta_path = output_dir / f"llm_reasoning_dry_run_fast_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        config = ReasoningConfig(
+            model=args.llm_model,
+            dataset_size=reasoning_dataset_size,
+            random_state=rs,
+            core_prompt_path=reasoning_core_prompt_path,
+            experiments_path=reasoning_experiments_path,
+            providers=llm_providers,
+            google_model=llm_google_model,
+            batch_size=llm_reasoning_batch_size,
+            concurrency=llm_reasoning_concurrency,
+            experiments=cfg_llm_reasoning_experiments,
+            dry_run=True,
+            dry_run_fast=True,
+            repair_nan=llm_reasoning_repair_nan,
+            repair_existing=llm_reasoning_repair_existing,
+        )
+        reasoning_df, all_reasoning_names = generate_reasoning_features(
+            records=records,
+            labels=labels,
+            config=config,
+            output_dir=output_dir,
+            metadata_path=meta_path,
+        )
+        _log(f"  Dry-run fast output rows: {len(reasoning_df)}")
+        _log("  Dry-run fast complete; skipping training.")
+        _write_log(
+            log_lines,
+            args,
+            input_csv,
+            all_reasoning_names,
+            len(train_idx),
+            len(test_idx),
+            int(y_train.sum()),
+            int(y_test.sum()),
+            {"threshold": None},
+            log_dir=_log_dir_for_mode("reasoning", True, True),
+        )
+        return
 
     base_script = Path(args.base_script)
     extract_base = _load_base_feature_extractor(base_script)
@@ -523,47 +776,6 @@ def main() -> None:
     base_train = pd.DataFrame([extract_base(r) for r in train_recs])
     base_test = pd.DataFrame([extract_base(r) for r in test_recs])
     base_feature_names = list(base_train.columns)
-
-    selected_features: list[str] = []
-    cfg_use_llm: bool | None = None
-    cfg_llm_n: int | None = None
-    cfg_use_llm_reasoning: bool | None = None
-    cfg_llm_reasoning_features: list[str] | None = None
-    cfg_llm_reasoning_dataset_size: str | None = None
-    cfg_llm_reasoning_prompts_path: str | None = None
-    cfg_llm_providers: dict[str, bool] | None = None
-    cfg_llm_google_model: str | None = None
-    cfg_llm_reasoning_batch_size: int | None = None
-    cfg_path = Path(args.feature_config) if args.feature_config else None
-    if cfg_path is not None and cfg_path.exists():
-        data = json.loads(cfg_path.read_text(encoding="utf-8"))
-        selected_features = [f for f in data.get("features", []) if isinstance(f, str)]
-        if "use_llm" in data:
-            cfg_use_llm = bool(data.get("use_llm"))
-        if "llm_n_features" in data:
-            try:
-                cfg_llm_n = int(data.get("llm_n_features"))
-            except Exception:
-                cfg_llm_n = None
-        if "use_llm_reasoning" in data:
-            cfg_use_llm_reasoning = bool(data.get("use_llm_reasoning"))
-        if isinstance(data.get("llm_reasoning_features"), list):
-            cfg_llm_reasoning_features = [
-                f for f in data.get("llm_reasoning_features", []) if isinstance(f, str)
-            ]
-        if isinstance(data.get("llm_reasoning_dataset_size"), str):
-            cfg_llm_reasoning_dataset_size = data.get("llm_reasoning_dataset_size")
-        if isinstance(data.get("llm_reasoning_prompts_path"), str):
-            cfg_llm_reasoning_prompts_path = data.get("llm_reasoning_prompts_path")
-        if isinstance(data.get("llm_providers"), dict):
-            cfg_llm_providers = {
-                "openai": bool(data.get("llm_providers", {}).get("openai", False)),
-                "google": bool(data.get("llm_providers", {}).get("google", False)),
-            }
-        if isinstance(data.get("llm_google_model"), str):
-            cfg_llm_google_model = data.get("llm_google_model")
-        if isinstance(data.get("llm_reasoning_batch_size"), int):
-            cfg_llm_reasoning_batch_size = data.get("llm_reasoning_batch_size")
 
     if selected_features:
         base_selected = [f for f in selected_features if f in base_feature_names]
@@ -614,6 +826,7 @@ def main() -> None:
     reasoning_all = pd.DataFrame(index=range(len(records)))
     reasoning_train = pd.DataFrame(index=range(len(train_recs)))
     reasoning_test = pd.DataFrame(index=range(len(test_recs)))
+    llm_engineered_feature_names: list[str] = []
 
     mode = args.mode
     if cfg_use_llm is True and mode == "human":
@@ -631,7 +844,6 @@ def main() -> None:
     use_llm_reasoning = use_llm_reasoning or (mode in ("reasoning", "hybrid"))
     if use_llm:
         _log(f"  OPENAI_API_KEY set: {bool(os.getenv('OPENAI_API_KEY'))}")
-        import asyncio
         if sweep_enabled:
             sweep_dir = Path(__file__).parent / "training_logs" / f"llm_sweep_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             sweep_dir.mkdir(parents=True, exist_ok=True)
@@ -797,37 +1009,162 @@ def main() -> None:
             )
 
     if use_llm_reasoning:
-        reasoning_features = (
-            cfg_llm_reasoning_features
-            if cfg_llm_reasoning_features is not None
-            else []
-        )
-        prompts_path = reasoning_prompts_path
-        output_dir = Path(__file__).parent / "features_storage" / "llm_reasoning"
-        meta_path = output_dir / f"llm_reasoning_{reasoning_dataset_size}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        config = ReasoningConfig(
-            model=args.llm_model,
-            dataset_size=reasoning_dataset_size,
-            random_state=rs,
-            prompts_path=prompts_path,
-            providers=llm_providers,
-            google_model=llm_google_model,
-            batch_size=llm_reasoning_batch_size,
-        )
-        reasoning_df, all_reasoning_names = generate_reasoning_features(
-            records=records,
-            labels=labels,
-            config=config,
-            output_dir=output_dir,
-            metadata_path=meta_path,
-        )
-        if reasoning_features:
-            reasoning_feature_names = [n for n in all_reasoning_names if n in reasoning_features]
+        output_root = Path(__file__).parent / "features_storage" / "llm_reasoning"
+        if log_root is None:
+            log_root = Path(__file__).parent / "logging" / f"llm_reasoning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            log_root.mkdir(parents=True, exist_ok=True)
+            run_log = log_root / "run_log.txt"
+        reasoning_mode = cfg_llm_reasoning_mode or "single"
+        sequential = cfg_llm_reasoning_sequential or []
+        combined = cfg_llm_reasoning_combined or []
+        if reasoning_mode == "sequential_and_combined" and (sequential or combined):
+            _log_run(f"Reasoning mode: sequential_and_combined")
+            # Sequential runs
+            for exp_id in sequential:
+                _log_run(f"Starting sequential experiment {exp_id}")
+                exp_dir = output_root / f"run_{exp_id}"
+                exp_dir.mkdir(parents=True, exist_ok=True)
+                meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{exp_id}.json"
+                config = ReasoningConfig(
+                    model=args.llm_model,
+                    dataset_size=reasoning_dataset_size,
+                    random_state=rs,
+                    core_prompt_path=reasoning_core_prompt_path,
+                    experiments_path=reasoning_experiments_path,
+                    providers=llm_providers,
+                    google_model=llm_google_model,
+                    batch_size=llm_reasoning_batch_size,
+                    concurrency=llm_reasoning_concurrency,
+                    experiments=[exp_id],
+                    dry_run=llm_reasoning_dry_run,
+                    dry_run_fast=llm_reasoning_dry_run_fast,
+                    log_dir=log_root / f"{exp_id}_progress",
+                    log_every=llm_reasoning_log_every,
+                    repair_nan=llm_reasoning_repair_nan,
+                    repair_existing=llm_reasoning_repair_existing,
+                )
+                generate_reasoning_features(
+                    records=records,
+                    labels=labels,
+                    config=config,
+                    output_dir=exp_dir,
+                    metadata_path=meta_path,
+                )
+                _log_run(f"Completed sequential experiment {exp_id}")
+
+            # Combined run
+            if combined:
+                combo_id = "combined_" + "".join(combined)
+                _log_run(f"Starting combined experiment {combo_id}")
+                exp_dir = output_root / combo_id
+                exp_dir.mkdir(parents=True, exist_ok=True)
+                meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{combo_id}.json"
+                config = ReasoningConfig(
+                    model=args.llm_model,
+                    dataset_size=reasoning_dataset_size,
+                    random_state=rs,
+                    core_prompt_path=reasoning_core_prompt_path,
+                    experiments_path=reasoning_experiments_path,
+                    providers=llm_providers,
+                    google_model=llm_google_model,
+                    batch_size=llm_reasoning_batch_size,
+                    concurrency=llm_reasoning_concurrency,
+                    experiments=combined,
+                    dry_run=llm_reasoning_dry_run,
+                    dry_run_fast=llm_reasoning_dry_run_fast,
+                    log_dir=log_root / f"{combo_id}_progress",
+                    log_every=llm_reasoning_log_every,
+                    repair_nan=llm_reasoning_repair_nan,
+                    repair_existing=llm_reasoning_repair_existing,
+                )
+                generate_reasoning_features(
+                    records=records,
+                    labels=labels,
+                    config=config,
+                    output_dir=exp_dir,
+                    metadata_path=meta_path,
+                )
+                _log_run(f"Completed combined experiment {combo_id}")
+            # Skip training path for sequential/combined batch generation
+            return
         else:
+            output_dir = output_root
+            meta_path = output_dir / f"llm_reasoning_{reasoning_dataset_size}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            config = ReasoningConfig(
+                model=args.llm_model,
+                dataset_size=reasoning_dataset_size,
+                random_state=rs,
+                core_prompt_path=reasoning_core_prompt_path,
+                experiments_path=reasoning_experiments_path,
+                providers=llm_providers,
+                google_model=llm_google_model,
+                batch_size=llm_reasoning_batch_size,
+                concurrency=llm_reasoning_concurrency,
+                experiments=cfg_llm_reasoning_experiments,
+                dry_run=llm_reasoning_dry_run,
+                dry_run_fast=llm_reasoning_dry_run_fast,
+                log_dir=log_root / "single_progress",
+                log_every=llm_reasoning_log_every,
+                repair_nan=llm_reasoning_repair_nan,
+                repair_existing=llm_reasoning_repair_existing,
+            )
+            reasoning_df, all_reasoning_names = generate_reasoning_features(
+                records=records,
+                labels=labels,
+                config=config,
+                output_dir=output_dir,
+                metadata_path=meta_path,
+            )
             reasoning_feature_names = all_reasoning_names
-        reasoning_all = reasoning_df.drop(columns=[c for c in ["founder_uuid", "success"] if c in reasoning_df.columns])
-        reasoning_train = reasoning_all.iloc[train_idx].reset_index(drop=True)
-        reasoning_test = reasoning_all.iloc[test_idx].reset_index(drop=True)
+            reasoning_all = reasoning_df[reasoning_feature_names]
+            reasoning_train = reasoning_all.iloc[train_idx].reset_index(drop=True)
+            reasoning_test = reasoning_all.iloc[test_idx].reset_index(drop=True)
+
+    # Optional: LLM-engineered features for reasoning experiments
+    if llm_engineered_for_reasoning:
+        cache_dir = Path(__file__).parent / "features_storage" / "llm_engineered"
+        llm_cached_all = None
+        llm_cached_names = None
+        if llm_engineered_cache:
+            llm_cached_all, llm_cached_names = _load_llm_engineered_cache(
+                cache_dir=cache_dir,
+                expected_rows=len(records),
+                expected_n=llm_n,
+                model=args.llm_model,
+                providers=llm_providers,
+                google_model=llm_google_model,
+            )
+        if llm_cached_all is not None and llm_cached_names is not None:
+            llm_all = llm_cached_all
+            llm_feature_names = llm_cached_names
+            llm_train = llm_all.iloc[train_idx].reset_index(drop=True)
+            llm_test = llm_all.iloc[test_idx].reset_index(drop=True)
+            _log("  Loaded cached LLM-engineered features.")
+        else:
+            _log(f"\n  Generating {llm_n} LLM-engineered features with {args.llm_model}...")
+            llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
+                generate_llm_features(
+                    train_recs=train_recs,
+                    y_train=y_train,
+                    test_recs=test_recs,
+                    model=args.llm_model,
+                    n_features=llm_n,
+                    all_recs=records,
+                    providers=llm_providers,
+                    google_model=llm_google_model,
+                )
+            )
+            if llm_engineered_cache:
+                _save_llm_engineered_cache(
+                    cache_dir=cache_dir,
+                    df=llm_all,
+                    feature_names=llm_feature_names,
+                    model=args.llm_model,
+                    providers=llm_providers,
+                    google_model=llm_google_model,
+                    n_features=llm_n,
+                )
+        llm_engineered_feature_names = llm_feature_names
 
 
     if mode == "human":
@@ -862,7 +1199,7 @@ def main() -> None:
         )
 
     # Verify selected features match config (when provided)
-    if selected_features and mode != "llm":
+    if selected_features and mode in ("human", "hybrid"):
         expected_set = {f for f in selected_features if f in feature_names}
         actual_set = set(feature_names)
         if expected_set != actual_set:
@@ -916,6 +1253,7 @@ def main() -> None:
             int(y_train.sum()),
             int(y_test.sum()),
             {"threshold": None},
+            log_dir=_log_dir_for_mode(mode, llm_reasoning_dry_run, llm_reasoning_dry_run_fast),
         )
         return
 
@@ -930,7 +1268,7 @@ def main() -> None:
             args,
             input_csv,
             "LLM Reasoning Only",
-            log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning_only",
+            log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only",
         )
 
         human_train = pd.concat([base_train, custom_train], axis=1)
@@ -950,8 +1288,34 @@ def main() -> None:
             args,
             input_csv,
             "LLM Reasoning + Human",
-            log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning_plus_human",
+            log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human",
         )
+        if llm_engineered_feature_names:
+            _train_and_log(
+                llm_engineered_feature_names,
+                llm_train,
+                llm_test,
+                y_train,
+                y_test,
+                args,
+                input_csv,
+                "LLM Engineered Only",
+                log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "only",
+            )
+            llm_plus_reasoning_train = pd.concat([llm_train, reasoning_train], axis=1)
+            llm_plus_reasoning_test = pd.concat([llm_test, reasoning_test], axis=1)
+            llm_plus_reasoning_names = llm_engineered_feature_names + reasoning_feature_names
+            _train_and_log(
+                llm_plus_reasoning_names,
+                llm_plus_reasoning_train,
+                llm_plus_reasoning_test,
+                y_train,
+                y_test,
+                args,
+                input_csv,
+                "LLM Engineered + Reasoning",
+                log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
+            )
 
     # Placeholder for future multiple training loops over feature subsets.
     # TODO: add loop over named feature sets and aggregate metrics.
@@ -997,6 +1361,7 @@ def main() -> None:
         int(y_train.sum()),
         int(y_test.sum()),
         metrics,
+        log_dir=_log_dir_for_mode(mode, llm_reasoning_dry_run, llm_reasoning_dry_run_fast),
     )
 
 
@@ -1046,6 +1411,25 @@ def _write_log(
     report_path = log_dir / f"run_report_{ts}.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"  Run report saved to: {report_path}")
+
+
+def _log_dir_for_mode(
+    mode: str,
+    dry_run: bool,
+    dry_run_fast: bool,
+) -> Path:
+    root = Path(__file__).parent / "training_logs"
+    if dry_run or dry_run_fast:
+        return root / "dry_runs" / mode
+    if mode == "human":
+        return root / "human"
+    if mode == "llm":
+        return root / "llm_engineered"
+    if mode == "reasoning":
+        return root / "llm_reasoning"
+    if mode == "hybrid":
+        return root / "hybrid"
+    return root
 
 
 if __name__ == "__main__":

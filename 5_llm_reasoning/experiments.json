@@ -1,0 +1,56 @@
+﻿[
+  {
+    "id": "A",
+    "instructions": "Score the following from 1 to 5:\n\n- trajectory_strength\n- ownership_signal\n- career_coherence\n- scrappiness\n\nFor each score, provide a one-sentence justification.\n\nOutput keys:\n- trajectory_strength\n- trajectory_strength_justification\n- ownership_signal\n- ownership_signal_justification\n- career_coherence\n- career_coherence_justification\n- scrappiness\n- scrappiness_justification\n\nOutput format:\n{\n  \"trajectory_strength\": int,\n  \"trajectory_strength_justification\": \"...\",\n  \"ownership_signal\": int,\n  \"ownership_signal_justification\": \"...\",\n  \"career_coherence\": int,\n  \"career_coherence_justification\": \"...\",\n  \"scrappiness\": int,\n  \"scrappiness_justification\": \"...\"\n}",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification"
+    ]
+  },
+  {
+    "id": "B",
+    "instructions": "Use the following rubric:\n\nTop founder:\n- rapid progression or early leadership\n- ownership in ambiguous environments\n- operates in high-growth or technical contexts\n\nWeak founder:\n- limited ownership\n- slow progression\n- inconsistent direction\n\nScore relative to this rubric (1-5). Provide a one-sentence justification for the score.\n\nOutput keys:\n- rubric_score\n- rubric_score_justification\n\nOutput format:\n{\n  \"rubric_score\": int,\n  \"rubric_score_justification\": \"...\"\n}",
+    "numeric_keys": ["rubric_score"],
+    "text_keys": ["rubric_score_justification"]
+  },
+  {
+    "id": "C",
+    "instructions": "Identify 3 signals that are NOT directly measurable (e.g. not degree, company name, or years of experience).\n\nThen score:\n- latent_strength: 1-5\n- latent_risk: 1-5\n\nProvide a one-sentence justification for each score that explicitly mentions the 3 signals.\n\nOutput keys:\n- latent_strength\n- latent_strength_justification\n- latent_risk\n- latent_risk_justification\n- signal_1\n- signal_2\n- signal_3\n\nOutput format:\n{\n  \"latent_strength\": int,\n  \"latent_strength_justification\": \"...\",\n  \"latent_risk\": int,\n  \"latent_risk_justification\": \"...\",\n  \"signal_1\": \"...\",\n  \"signal_2\": \"...\",\n  \"signal_3\": \"...\"\n}",
+    "numeric_keys": ["latent_strength", "latent_risk"],
+    "text_keys": [
+      "latent_strength_justification",
+      "latent_risk_justification",
+      "signal_1",
+      "signal_2",
+      "signal_3"
+    ]
+  },
+  {
+    "id": "D",
+    "instructions": "List:\n\n- top_3_strengths (categorical labels)\n- top_3_weaknesses (categorical labels)\n\nThen, considering these, score:\n- overall_founder_quality: 1-5\n\nProvide a one-sentence justification that explicitly mentions the top_3_strengths and top_3_weaknesses.\n\nOutput keys:\n- top_3_strengths\n- top_3_weaknesses\n- overall_founder_quality\n- overall_founder_quality_justification\n\nOutput format:\n{\n  \"top_3_strengths\": \"...\",\n  \"top_3_weaknesses\": \"...\",\n  \"overall_founder_quality\": int,\n  \"overall_founder_quality_justification\": \"...\"\n}",
+    "numeric_keys": ["overall_founder_quality"],
+    "text_keys": [
+      "top_3_strengths",
+      "top_3_weaknesses",
+      "overall_founder_quality_justification"
+    ]
+  },
+  {
+    "id": "E",
+    "instructions": "What aspects of this founder would be underrated or misleading if judged only by traditional metrics?\n\nThen score:\n- hidden_upside: 1-5\n- hidden_risk: 1-5\n\nProvide a one-sentence justification for each score that explicitly mentions the underrated/misleading aspects.\n\nOutput keys:\n- hidden_upside\n- hidden_upside_justification\n- hidden_risk\n- hidden_risk_justification\n- underrated_aspects\n\nOutput format:\n{\n  \"hidden_upside\": int,\n  \"hidden_upside_justification\": \"...\",\n  \"hidden_risk\": int,\n  \"hidden_risk_justification\": \"...\",\n  \"underrated_aspects\": \"...\"\n}",
+    "numeric_keys": ["hidden_upside", "hidden_risk"],
+    "text_keys": [
+      "hidden_upside_justification",
+      "hidden_risk_justification",
+      "underrated_aspects"
+    ]
+  }
+]

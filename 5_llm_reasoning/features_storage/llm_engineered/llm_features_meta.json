@@ -1,0 +1,20 @@
+{
+  "n_rows": 4500,
+  "n_features": 8,
+  "feature_names": [
+    "has_phd",
+    "has_mba",
+    "industry_experience_in_success",
+    "multiple_educations",
+    "industry_experience_in_high_ranking_qs",
+    "recent_job_experience",
+    "leadership_role",
+    "industry_experience_success"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash"
+}
