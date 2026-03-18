@@ -1,0 +1,31 @@
+Requested n_rules: 15
+Repeat: 1
+Set ID: set_01
+Resultant features: 15
+Features used: has_phd, ex_investment, industry_high_tech, has_education, industry_contains_tech, lead_in_high_experience_jobs, industry_extractive, has_bachelors, industry_in_logistics, has_multiple_educations, industry_in_research, industry_contains_finance, industry_contains_education, has_experience_in_large_company, industry_in_consumer_goods
+[LLM Only] 15 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+industry_extractive                         1.353
+industry_contains_education                -1.241
+ex_investment                               1.173
+industry_high_tech                          0.789
+industry_contains_tech                      0.443
+lead_in_high_experience_jobs               -0.371
+has_experience_in_large_company             0.352
+has_bachelors                              -0.338
+industry_in_research                        0.338
+has_multiple_educations                    -0.320
+industry_in_consumer_goods                 -0.296
+has_phd                                     0.237
+has_education                              -0.127
+industry_in_logistics                      -0.007
+industry_contains_finance                   0.000
+ROC-AUC=0.676+/-0.044 PR-AUC=0.193+/-0.045 Prec=0.218+/-0.056 Rec=0.202+/-0.073 F0.5=0.211+/-0.052 Acc=0.862+/-0.015
+
+  Top-k precision:
+    precision@1%=0.280+/-0.183
+    precision@5%=0.232+/-0.069
+    precision@10%=0.220+/-0.058

@@ -1,0 +1,22 @@
+Requested n_rules: 6
+Repeat: 5
+Set ID: set_05
+Resultant features: 6
+Features used: has_phd, ipo_valued_over_500m, industry_in_research, has_executive_experience, industry_in_tech, has_investment_experience
+[LLM Only] 6 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+ipo_valued_over_500m                        1.652
+industry_in_research                        0.629
+industry_in_tech                            0.504
+has_phd                                     0.314
+has_executive_experience                    0.190
+has_investment_experience                   0.085
+ROC-AUC=0.587+/-0.042 PR-AUC=0.131+/-0.026 Prec=0.135+/-0.033 Rec=0.169+/-0.164 F0.5=0.132+/-0.032 Acc=0.829+/-0.068
+
+  Top-k precision:
+    precision@1%=0.240+/-0.174
+    precision@5%=0.182+/-0.064
+    precision@10%=0.150+/-0.050

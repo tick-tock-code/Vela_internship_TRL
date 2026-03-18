@@ -1,0 +1,18 @@
+Requested n_rules: 2
+Repeat: 6
+Set ID: set_06
+Resultant features: 2
+Features used: has_phd_or_high_qs_rank, has_executive_experience_in_industry
+[LLM Only] 2 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_phd_or_high_qs_rank                     0.878
+has_executive_experience_in_industry       -0.379
+ROC-AUC=0.595+/-0.035 PR-AUC=0.119+/-0.012 Prec=0.160+/-0.025 Rec=0.348+/-0.054 F0.5=0.179+/-0.027 Acc=0.776+/-0.017
+
+  Top-k precision:
+    precision@1%=0.300+/-0.313
+    precision@5%=0.123+/-0.058
+    precision@10%=0.132+/-0.052

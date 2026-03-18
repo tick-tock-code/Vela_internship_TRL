@@ -1,0 +1,31 @@
+Requested n_rules: 15
+Repeat: 6
+Set ID: set_06
+Resultant features: 15
+Features used: has_phd, has_ipo_experience, industry_in_high_tech, has_experience_in_finance, has_experience_in_healthcare, has_education_high_qs, industry_has_exit_events, has_experience_in_education, industry_in_biotech_or_nanotech, has_international_experience, has_entrepreneurial_experience, has_experience_in_large_companies, has_experience_in_small_startups, has_experience_in_academic_roles, industry_has_mature_exit
+[LLM Only] 15 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+industry_in_biotech_or_nanotech             1.073
+has_education_high_qs                       0.657
+has_experience_in_healthcare               -0.619
+industry_has_mature_exit                    0.613
+industry_has_exit_events                    0.613
+has_ipo_experience                          0.525
+industry_in_high_tech                       0.412
+has_experience_in_small_startups           -0.404
+has_experience_in_finance                   0.337
+has_experience_in_large_companies           0.242
+has_experience_in_academic_roles            0.223
+has_experience_in_education                -0.216
+has_phd                                     0.103
+has_entrepreneurial_experience             -0.044
+has_international_experience                0.000
+ROC-AUC=0.670+/-0.041 PR-AUC=0.209+/-0.041 Prec=0.318+/-0.085 Rec=0.192+/-0.060 F0.5=0.280+/-0.076 Acc=0.890+/-0.011
+
+  Top-k precision:
+    precision@1%=0.320+/-0.160
+    precision@5%=0.305+/-0.111
+    precision@10%=0.248+/-0.053

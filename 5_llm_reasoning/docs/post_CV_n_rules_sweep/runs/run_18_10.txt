@@ -1,0 +1,35 @@
+Requested n_rules: 18
+Repeat: 10
+Set ID: set_10
+Resultant features: 19
+Features used: has_phd, in_industry_high_edu, has_ipo, has_acquisition, has_exited, industry_qs_rank_low, industry_qs_rank_high, has_experience_in_large_company, has_experience_in_small_company, industry_experience, has_multiple_educations, has_leadership_role, industry_involves_research, has_international_experience, has_volunteered_in_ngo, studied_in_top_qs_rank, studied_in_lower_qs_rank, has_bachelor_degree, has_masters_or_higher
+[LLM Only] 19 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+in_industry_high_edu                        0.908
+has_exited                                  0.791
+has_ipo                                     0.649
+industry_involves_research                 -0.606
+studied_in_top_qs_rank                      0.527
+industry_qs_rank_low                        0.436
+has_phd                                     0.435
+has_experience_in_large_company             0.410
+industry_experience                         0.409
+has_experience_in_small_company            -0.376
+has_masters_or_higher                      -0.346
+has_acquisition                             0.336
+has_bachelor_degree                        -0.291
+studied_in_lower_qs_rank                   -0.254
+has_multiple_educations                    -0.225
+has_leadership_role                         0.020
+industry_qs_rank_high                      -0.013
+has_volunteered_in_ngo                     -0.005
+has_international_experience                0.000
+ROC-AUC=0.675+/-0.036 PR-AUC=0.198+/-0.029 Prec=0.225+/-0.028 Rec=0.260+/-0.040 F0.5=0.231+/-0.027 Acc=0.852+/-0.012
+
+  Top-k precision:
+    precision@1%=0.240+/-0.150
+    precision@5%=0.250+/-0.055
+    precision@10%=0.234+/-0.032

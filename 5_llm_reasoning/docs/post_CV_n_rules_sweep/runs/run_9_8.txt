@@ -1,0 +1,25 @@
+Requested n_rules: 9
+Repeat: 8
+Set ID: set_08
+Resultant features: 9
+Features used: has_phd, has_ipos, industry_high_ranking, has_investment_experience, industry_experience, has_masters_or_bachelors, industry_diverse_background, exit_event, long_term_experience_in_startup
+[LLM Only] 9 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+exit_event                                  1.167
+industry_high_ranking                       0.720
+has_ipos                                    0.570
+has_phd                                     0.310
+long_term_experience_in_startup            -0.253
+has_investment_experience                   0.209
+industry_diverse_background                -0.070
+industry_experience                         0.010
+has_masters_or_bachelors                   -0.003
+ROC-AUC=0.615+/-0.043 PR-AUC=0.165+/-0.030 Prec=0.199+/-0.088 Rec=0.101+/-0.055 F0.5=0.158+/-0.064 Acc=0.881+/-0.014
+
+  Top-k precision:
+    precision@1%=0.320+/-0.183
+    precision@5%=0.209+/-0.068
+    precision@10%=0.170+/-0.051

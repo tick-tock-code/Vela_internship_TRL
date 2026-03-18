@@ -1,0 +1,17 @@
+Requested n_rules: 1
+Repeat: 6
+Set ID: set_06
+Resultant features: 1
+Features used: has_phd_or_high_qs
+[LLM Only] 1 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_phd_or_high_qs                          0.885
+ROC-AUC=0.588+/-0.028 PR-AUC=0.117+/-0.011 Prec=0.159+/-0.022 Rec=0.366+/-0.058 F0.5=0.180+/-0.025 Acc=0.769+/-0.015
+
+  Top-k precision:
+    precision@1%=0.360+/-0.250
+    precision@5%=0.132+/-0.077
+    precision@10%=0.134+/-0.049

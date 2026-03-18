@@ -1,0 +1,20 @@
+{
+  "set_features": {
+    "set_10": [
+      "has_phd",
+      "ipo_experience",
+      "exited_via_acquisition",
+      "industry_in_high_education",
+      "has_qs_high_rank_education"
+    ]
+  },
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-18T22:06:11.488100"
+}

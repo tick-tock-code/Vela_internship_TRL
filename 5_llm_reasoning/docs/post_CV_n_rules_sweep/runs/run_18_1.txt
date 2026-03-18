@@ -1,0 +1,34 @@
+Requested n_rules: 18
+Repeat: 1
+Set ID: set_01
+Resultant features: 18
+Features used: has_phd, has_institution_qs_rank_below_10, industry_is_high_education, has_executive_experience_over_5_years, has_ipo_value_high, has_leadership_role, industry_includes_tech, has_multiple_high_qs_institutions, has_experience_in_multiple_industries, industry_is_innovation_or_vc, has_experience_over_10_years, has_bachelor_degree, has_mba_or_msc_or_phd, industry_is_in_healthcare_or_biotech, has_experience_in_startups, has_experience_in_finance_or_legal, has_experience_in_management_or_strategy, has_education_in_certain_high_qs_ranking
+[LLM Only] 18 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipo_value_high                          1.736
+has_experience_in_finance_or_legal         -0.939
+has_education_in_certain_high_qs_ranking    0.566
+has_institution_qs_rank_below_10            0.526
+industry_includes_tech                      0.502
+industry_is_high_education                 -0.468
+industry_is_innovation_or_vc                0.437
+has_bachelor_degree                        -0.380
+industry_is_in_healthcare_or_biotech        0.303
+has_executive_experience_over_5_years      -0.253
+has_phd                                     0.192
+has_experience_in_startups                  0.128
+has_experience_over_10_years                0.127
+has_multiple_high_qs_institutions          -0.066
+has_experience_in_management_or_strategy   -0.047
+has_leadership_role                        -0.045
+has_mba_or_msc_or_phd                      -0.025
+has_experience_in_multiple_industries      -0.008
+ROC-AUC=0.642+/-0.042 PR-AUC=0.176+/-0.037 Prec=0.200+/-0.053 Rec=0.247+/-0.082 F0.5=0.208+/-0.056 Acc=0.845+/-0.011
+
+  Top-k precision:
+    precision@1%=0.220+/-0.140
+    precision@5%=0.209+/-0.082
+    precision@10%=0.209+/-0.059

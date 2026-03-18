@@ -1,0 +1,43 @@
+{
+  "set_features": {
+    "set_01": [
+      "has_phd"
+    ],
+    "set_02": [
+      "has_phd"
+    ],
+    "set_03": [
+      "has_phd"
+    ],
+    "set_04": [
+      "has_phd"
+    ],
+    "set_05": [
+      "has_phd"
+    ],
+    "set_06": [
+      "has_phd_or_high_qs"
+    ],
+    "set_07": [
+      "has_phd"
+    ],
+    "set_08": [
+      "has_phd"
+    ],
+    "set_09": [
+      "has_phd"
+    ],
+    "set_10": [
+      "has_phd"
+    ]
+  },
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-18T21:38:24.481288"
+}

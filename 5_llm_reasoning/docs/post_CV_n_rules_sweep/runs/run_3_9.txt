@@ -1,0 +1,19 @@
+Requested n_rules: 3
+Repeat: 9
+Set ID: set_09
+Resultant features: 3
+Features used: has_high_qs_ranking_degree, has_executive_experience, industry_in_tech
+[LLM Only] 3 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_high_qs_ranking_degree                  0.795
+industry_in_tech                            0.392
+has_executive_experience                   -0.009
+ROC-AUC=0.607+/-0.046 PR-AUC=0.132+/-0.021 Prec=0.175+/-0.045 Rec=0.215+/-0.054 F0.5=0.182+/-0.046 Acc=0.838+/-0.015
+
+  Top-k precision:
+    precision@1%=0.120+/-0.133
+    precision@5%=0.150+/-0.054
+    precision@10%=0.175+/-0.039

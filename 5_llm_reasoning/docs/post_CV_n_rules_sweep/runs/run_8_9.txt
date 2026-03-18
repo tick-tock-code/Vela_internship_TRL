@@ -1,0 +1,24 @@
+Requested n_rules: 8
+Repeat: 9
+Set ID: set_09
+Resultant features: 8
+Features used: has_phd, ipo_experience, industry_medical_or_biotech, education_high_qs, has_exit_event, industry_tech_or_finance, has_experience_in_large_company, industry_nonprofit_or_education
+[LLM Only] 8 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+industry_nonprofit_or_education            -1.440
+has_exit_event                              1.127
+education_high_qs                           0.684
+ipo_experience                              0.553
+has_experience_in_large_company             0.404
+industry_medical_or_biotech                 0.282
+industry_tech_or_finance                    0.205
+has_phd                                     0.158
+ROC-AUC=0.657+/-0.060 PR-AUC=0.176+/-0.037 Prec=0.196+/-0.063 Rec=0.164+/-0.067 F0.5=0.184+/-0.059 Acc=0.861+/-0.027
+
+  Top-k precision:
+    precision@1%=0.360+/-0.196
+    precision@5%=0.245+/-0.068
+    precision@10%=0.198+/-0.047

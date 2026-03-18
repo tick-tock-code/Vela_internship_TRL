@@ -1,0 +1,23 @@
+Requested n_rules: 7
+Repeat: 5
+Set ID: set_05
+Resultant features: 7
+Features used: has_phd, involved_in_ipo, industry_high_tech, has_startup_experience, has_exited, industry_education, has_relevant_experience
+[LLM Only] 7 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited                                  1.274
+involved_in_ipo                             0.599
+has_phd                                     0.493
+industry_high_tech                          0.212
+has_startup_experience                     -0.118
+has_relevant_experience                    -0.013
+industry_education                          0.000
+ROC-AUC=0.582+/-0.048 PR-AUC=0.153+/-0.035 Prec=0.267+/-0.095 Rec=0.096+/-0.040 F0.5=0.195+/-0.073 Acc=0.895+/-0.006
+
+  Top-k precision:
+    precision@1%=0.320+/-0.204
+    precision@5%=0.218+/-0.053
+    precision@10%=0.170+/-0.049

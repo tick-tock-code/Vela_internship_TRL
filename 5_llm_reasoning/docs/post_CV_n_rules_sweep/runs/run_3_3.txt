@@ -1,0 +1,19 @@
+Requested n_rules: 3
+Repeat: 3
+Set ID: set_03
+Resultant features: 3
+Features used: has_phd, ipo_experience, industry_experience
+[LLM Only] 3 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+ipo_experience                              1.512
+has_phd                                     0.444
+industry_experience                         0.374
+ROC-AUC=0.554+/-0.035 PR-AUC=0.126+/-0.027 Prec=0.144+/-0.084 Rec=0.094+/-0.098 F0.5=0.111+/-0.061 Acc=0.859+/-0.058
+
+  Top-k precision:
+    precision@1%=0.300+/-0.257
+    precision@5%=0.164+/-0.094
+    precision@10%=0.139+/-0.051

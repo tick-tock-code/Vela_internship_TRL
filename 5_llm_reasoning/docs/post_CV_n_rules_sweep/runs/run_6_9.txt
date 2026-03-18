@@ -1,0 +1,22 @@
+Requested n_rules: 6
+Repeat: 9
+Set ID: set_09
+Resultant features: 6
+Features used: has_phd, ipo_experience, exit_event, industry_experience, high_qs_rank_education, long_experience
+[LLM Only] 6 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+exit_event                                  1.082
+high_qs_rank_education                      0.729
+ipo_experience                              0.610
+industry_experience                         0.452
+long_experience                            -0.430
+has_phd                                     0.286
+ROC-AUC=0.644+/-0.037 PR-AUC=0.170+/-0.029 Prec=0.221+/-0.074 Rec=0.144+/-0.051 F0.5=0.191+/-0.050 Acc=0.872+/-0.019
+
+  Top-k precision:
+    precision@1%=0.280+/-0.160
+    precision@5%=0.227+/-0.067
+    precision@10%=0.214+/-0.046

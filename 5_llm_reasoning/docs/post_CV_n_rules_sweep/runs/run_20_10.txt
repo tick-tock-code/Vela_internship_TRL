@@ -1,0 +1,36 @@
+Requested n_rules: 20
+Repeat: 10
+Set ID: set_10
+Resultant features: 20
+Features used: has_phd, has_ipo, industry_high_tech, has_executive_experience, industry_innovation, has_mba, industry_finance, industry_healthcare, has_experience_over_9_years, industry_consumer, has_bachelor, industry_venture_capital, industry_education, has_mostly_advanced_degrees, industry_research, industry_nonprofit, industry_manufacturing, has_experience_in_corporate_development, industry_software, has_experience_in_government_policy
+[LLM Only] 20 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipo                                     1.459
+industry_education                         -1.447
+has_experience_in_government_policy        -0.841
+industry_nonprofit                         -0.730
+industry_research                           0.725
+industry_venture_capital                    0.471
+industry_consumer                          -0.358
+has_phd                                     0.302
+industry_healthcare                        -0.269
+industry_high_tech                          0.213
+industry_software                           0.213
+has_experience_in_corporate_development    -0.178
+has_executive_experience                    0.155
+has_mba                                     0.132
+industry_manufacturing                      0.079
+industry_innovation                         0.043
+has_mostly_advanced_degrees                -0.024
+has_bachelor                                0.016
+industry_finance                            0.000
+has_experience_over_9_years                 0.000
+ROC-AUC=0.602+/-0.051 PR-AUC=0.148+/-0.037 Prec=0.167+/-0.085 Rec=0.114+/-0.039 F0.5=0.148+/-0.061 Acc=0.861+/-0.025
+
+  Top-k precision:
+    precision@1%=0.240+/-0.233
+    precision@5%=0.186+/-0.072
+    precision@10%=0.159+/-0.051

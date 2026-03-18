@@ -1,0 +1,27 @@
+Requested n_rules: 11
+Repeat: 8
+Set ID: set_08
+Resultant features: 11
+Features used: has_phd, industry_high_tech, has_exited, education_qs_high, lead_investor, industry_exits, long_work_experience, multiple_educations, industry_diverse, startup_leadership, industry_experience_years
+[LLM Only] 11 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited                                  1.246
+education_qs_high                           0.797
+lead_investor                               0.554
+has_phd                                     0.465
+long_work_experience                       -0.388
+multiple_educations                        -0.303
+industry_exits                             -0.281
+industry_high_tech                          0.182
+startup_leadership                         -0.146
+industry_diverse                            0.031
+industry_experience_years                   0.023
+ROC-AUC=0.645+/-0.052 PR-AUC=0.173+/-0.041 Prec=0.201+/-0.064 Rec=0.134+/-0.086 F0.5=0.174+/-0.066 Acc=0.877+/-0.022
+
+  Top-k precision:
+    precision@1%=0.240+/-0.150
+    precision@5%=0.227+/-0.073
+    precision@10%=0.186+/-0.051

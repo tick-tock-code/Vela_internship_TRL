@@ -1,0 +1,29 @@
+Requested n_rules: 14
+Repeat: 5
+Set ID: set_05
+Resultant features: 13
+Features used: has_phd, involves_ipos, industry_high_tech, industry_experience_years, has_exited, industry_internet, education_high_qs, role_founder_ceo, industry_finance, experience_in_industry, education_in_science_or_engineering, industry_in_bio_pharma, has_mba
+[LLM Only] 13 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited                                  1.075
+industry_in_bio_pharma                      0.951
+education_high_qs                           0.633
+involves_ipos                               0.551
+industry_internet                           0.363
+industry_high_tech                          0.363
+industry_experience_years                  -0.345
+education_in_science_or_engineering         0.105
+experience_in_industry                     -0.054
+has_phd                                     0.044
+has_mba                                     0.004
+role_founder_ceo                           -0.002
+industry_finance                            0.000
+ROC-AUC=0.654+/-0.040 PR-AUC=0.189+/-0.033 Prec=0.254+/-0.062 Rec=0.169+/-0.051 F0.5=0.228+/-0.057 Acc=0.880+/-0.012
+
+  Top-k precision:
+    precision@1%=0.260+/-0.128
+    precision@5%=0.286+/-0.071
+    precision@10%=0.216+/-0.037

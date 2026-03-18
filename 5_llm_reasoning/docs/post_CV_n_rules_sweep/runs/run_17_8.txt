@@ -1,0 +1,31 @@
+Requested n_rules: 17
+Repeat: 8
+Set ID: set_08
+Resultant features: 15
+Features used: has_phd, prior_ipo, industry_includes_tech, has_mba, industry_nan, industry_is_internet, has_qs_rank_1, has_exited, industry_includes_health, has_experience_in_large_company, industry_includes_finance, has_bachelors, has_experience_in_startup, industry_includes_education, has_postgrad_degree
+[LLM Only] 15 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited                                  1.302
+has_qs_rank_1                               0.834
+industry_includes_tech                      0.491
+has_bachelors                              -0.406
+has_experience_in_large_company             0.386
+has_experience_in_startup                  -0.381
+industry_includes_health                   -0.250
+has_phd                                     0.241
+industry_includes_education                 0.117
+industry_is_internet                       -0.027
+has_mba                                     0.013
+prior_ipo                                   0.000
+industry_nan                                0.000
+industry_includes_finance                   0.000
+has_postgrad_degree                         0.000
+ROC-AUC=0.639+/-0.041 PR-AUC=0.179+/-0.042 Prec=0.210+/-0.060 Rec=0.169+/-0.089 F0.5=0.195+/-0.058 Acc=0.869+/-0.014
+
+  Top-k precision:
+    precision@1%=0.280+/-0.183
+    precision@5%=0.236+/-0.083
+    precision@10%=0.211+/-0.057

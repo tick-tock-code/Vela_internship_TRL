@@ -1,0 +1,113 @@
+{
+  "set_features": {
+    "set_01": [
+      "has_phd",
+      "has_ipos",
+      "has_exited",
+      "industry_high_tech",
+      "education_qs_rank_low",
+      "has_experience_in_industry",
+      "has_multiple_educations",
+      "industry_has_exit"
+    ],
+    "set_02": [
+      "has_phd",
+      "ipo_experience",
+      "industry_high_qs",
+      "prior_exit",
+      "industry_experience",
+      "long_term_experience",
+      "education_in_top_qs",
+      "multiple_educations"
+    ],
+    "set_03": [
+      "has_phd",
+      "ipo_experience",
+      "industry_research",
+      "has_education_qs_rank_below_50",
+      "industry_involves_tech",
+      "has_executive_roles",
+      "industry_experience_years",
+      "industry_is_biotech_or_medicine"
+    ],
+    "set_04": [
+      "has_phd",
+      "ipo_experience",
+      "industry_in_tech",
+      "has_executive_role",
+      "industry_high_qs",
+      "has_startup_experience",
+      "industry_experience_years",
+      "education_in_field"
+    ],
+    "set_05": [
+      "has_phd",
+      "has_exited_successfully",
+      "industry_has_high_qs_rank",
+      "has_advanced_education_in_field",
+      "has_prior_experience_in_industry",
+      "has_experience_in_leadership_roles",
+      "industry_has_high_qs_rank",
+      "has_experience_in_startup_roles"
+    ],
+    "set_06": [
+      "has_phd",
+      "has_ipos",
+      "industry_high_tech",
+      "education_qs_rank_low",
+      "has_iexperience_in_industry",
+      "has_exited_successfully",
+      "industry_has_exited",
+      "has_multiple_high_degree_levels"
+    ],
+    "set_07": [
+      "has_phd",
+      "ipo_experience",
+      "industry_high_qs",
+      "has_executive_role",
+      "industry_experience_years",
+      "education_in_top_qs_field",
+      "industry_leadership",
+      "has_multiple_educations"
+    ],
+    "set_08": [
+      "has_high_qs_rank_education",
+      "has_executive_experience_over_9_years",
+      "industry_includes_technology",
+      "has_ipo_value_over_500m",
+      "has_education_in_medical_or_biotech",
+      "has_led_startup_more_than_9_years",
+      "industry_is_investment_or_finance",
+      "having_multiple_high_level_roles"
+    ],
+    "set_09": [
+      "has_phd",
+      "ipo_experience",
+      "industry_medical_or_biotech",
+      "education_high_qs",
+      "has_exit_event",
+      "industry_tech_or_finance",
+      "has_experience_in_large_company",
+      "industry_nonprofit_or_education"
+    ],
+    "set_10": [
+      "has_phd",
+      "has_ipos",
+      "industry_high_tech",
+      "has_experience_in_certain_roles",
+      "education_qs_rank_high",
+      "industry_extractive_or_biotech",
+      "has_exits",
+      "education_in_top_qs_rank"
+    ]
+  },
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-18T22:10:31.676513"
+}

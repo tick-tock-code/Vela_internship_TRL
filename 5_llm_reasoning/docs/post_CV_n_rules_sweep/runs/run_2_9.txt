@@ -1,0 +1,18 @@
+Requested n_rules: 2
+Repeat: 9
+Set ID: set_09
+Resultant features: 2
+Features used: has_qs_rank_high, industry_experience_in_tech
+[LLM Only] 2 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_qs_rank_high                            1.054
+industry_experience_in_tech                 0.373
+ROC-AUC=0.592+/-0.030 PR-AUC=0.134+/-0.013 Prec=0.195+/-0.028 Rec=0.260+/-0.052 F0.5=0.205+/-0.030 Acc=0.837+/-0.013
+
+  Top-k precision:
+    precision@1%=0.160+/-0.196
+    precision@5%=0.195+/-0.058
+    precision@10%=0.175+/-0.032

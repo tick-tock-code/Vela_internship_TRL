@@ -1,0 +1,21 @@
+Requested n_rules: 5
+Repeat: 10
+Set ID: set_10
+Resultant features: 5
+Features used: has_phd, ipo_experience, exited_via_acquisition, industry_in_high_education, has_qs_high_rank_education
+[LLM Only] 5 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+ipo_experience                              1.115
+exited_via_acquisition                      1.108
+has_qs_high_rank_education                  0.715
+industry_in_high_education                  0.416
+has_phd                                     0.127
+ROC-AUC=0.622+/-0.045 PR-AUC=0.158+/-0.029 Prec=0.228+/-0.067 Rec=0.166+/-0.052 F0.5=0.212+/-0.063 Acc=0.875+/-0.010
+
+  Top-k precision:
+    precision@1%=0.240+/-0.080
+    precision@5%=0.218+/-0.078
+    precision@10%=0.198+/-0.052

@@ -1,0 +1,93 @@
+{
+  "set_features": {
+    "set_01": [
+      "has_phd",
+      "ipo_experience",
+      "industry_experience_in_target",
+      "has_executive_role",
+      "education_qs_rank_low",
+      "has_mostly_experience_in_tech"
+    ],
+    "set_02": [
+      "has_phd",
+      "ipo_experience",
+      "industry_high_qs",
+      "prior_executive_roles",
+      "has_experience_in_industry",
+      "multiple_educations"
+    ],
+    "set_03": [
+      "has_phd",
+      "led_ipo",
+      "industry_experience",
+      "education_high_qs",
+      "has_exit_event",
+      "multiple_jobs_experience"
+    ],
+    "set_04": [
+      "has_phd",
+      "ipo_experience",
+      "industry_experience",
+      "has_exited",
+      "education_qs_rank",
+      "industry_type"
+    ],
+    "set_05": [
+      "has_phd",
+      "ipo_valued_over_500m",
+      "industry_in_research",
+      "has_executive_experience",
+      "industry_in_tech",
+      "has_investment_experience"
+    ],
+    "set_06": [
+      "has_phd",
+      "ipo_experience",
+      "industry_high_qs",
+      "has_executive_role",
+      "industry_experience",
+      "multiple_educations"
+    ],
+    "set_07": [
+      "has_phd",
+      "industry_tech_or_internet",
+      "ipo_experience",
+      "has_exited",
+      "education_qs_rank_low",
+      "industry_investment_or_finance"
+    ],
+    "set_08": [
+      "has_phd",
+      "ipo_experience",
+      "industry_experience",
+      "has_multiple_exits",
+      "education_qs_rank",
+      "industry_diversity_in_jobs"
+    ],
+    "set_09": [
+      "has_phd",
+      "ipo_experience",
+      "exit_event",
+      "industry_experience",
+      "high_qs_rank_education",
+      "long_experience"
+    ],
+    "set_10": [
+      "has_phd",
+      "has_ipos",
+      "industry_is_tech",
+      "has_experience_over_9_years",
+      "has_experience_in_high_qs_rank",
+      "industry_is_biotech_or_health"
+    ]
+  },
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-18T22:07:22.110086"
+}

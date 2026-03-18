@@ -1,0 +1,35 @@
+Requested n_rules: 20
+Repeat: 1
+Set ID: set_01
+Resultant features: 20
+Features used: has_phd, in_industry_with_exits, industry_known, has_high_qs_ranking_education, has_experienced_long_duration_job, has_experience_in_industry, has_investment_event, industry_has_exit, education_in_top_qs_rank, has_work_in_large_company, has_educations, has_job_experience, industry_with_exits, has_multiple_jobs, has_high_qs_ranking_education, industry_known_for_exits, has_long_term_job, has_investor_experience, education_with_high_qs_rank, industry_has_high_exit_value
+[LLM Only] 20 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+education_in_top_qs_rank                    0.600
+in_industry_with_exits                      0.419
+has_investment_event                        0.419
+has_long_term_job                           0.419
+has_job_experience                          0.398
+industry_known                              0.393
+has_work_in_large_company                   0.375
+has_experienced_long_duration_job          -0.360
+has_investor_experience                    -0.323
+has_high_qs_ranking_education               0.320
+has_phd                                     0.247
+has_multiple_jobs                          -0.192
+has_experience_in_industry                  0.059
+industry_known_for_exits                   -0.059
+has_educations                             -0.045
+industry_has_exit                           0.000
+industry_with_exits                         0.000
+has_high_qs_ranking_education               0.000
+education_with_high_qs_rank                 0.000
+ROC-AUC=0.659+/-0.040 PR-AUC=0.181+/-0.026 Prec=0.225+/-0.050 Rec=0.192+/-0.073 F0.5=0.212+/-0.044 Acc=0.866+/-0.020
+
+  Top-k precision:
+    precision@1%=0.240+/-0.174
+    precision@5%=0.245+/-0.051
+    precision@10%=0.227+/-0.038

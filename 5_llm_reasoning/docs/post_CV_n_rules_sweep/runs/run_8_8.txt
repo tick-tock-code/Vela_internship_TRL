@@ -1,0 +1,24 @@
+Requested n_rules: 8
+Repeat: 8
+Set ID: set_08
+Resultant features: 8
+Features used: has_high_qs_rank_education, has_executive_experience_over_9_years, industry_includes_technology, has_ipo_value_over_500m, has_education_in_medical_or_biotech, has_led_startup_more_than_9_years, industry_is_investment_or_finance, having_multiple_high_level_roles
+[LLM Only] 8 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipo_value_over_500m                     1.387
+has_high_qs_rank_education                  1.070
+industry_is_investment_or_finance           0.709
+industry_includes_technology                0.685
+has_led_startup_more_than_9_years          -0.569
+having_multiple_high_level_roles            0.436
+has_education_in_medical_or_biotech        -0.347
+has_executive_experience_over_9_years      -0.173
+ROC-AUC=0.636+/-0.032 PR-AUC=0.161+/-0.024 Prec=0.245+/-0.062 Rec=0.136+/-0.062 F0.5=0.203+/-0.051 Acc=0.882+/-0.019
+
+  Top-k precision:
+    precision@1%=0.260+/-0.220
+    precision@5%=0.227+/-0.054
+    precision@10%=0.205+/-0.038

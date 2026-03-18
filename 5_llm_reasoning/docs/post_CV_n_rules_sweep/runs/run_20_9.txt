@@ -1,0 +1,36 @@
+Requested n_rules: 20
+Repeat: 9
+Set ID: set_09
+Resultant features: 20
+Features used: has_phd, ipo_experience, industry_tech_or_software, has_experience_in_high_education, education_qs_rank_low, industry_innovation, has_startup_experience, has_exited_company, industry_has_high_growth_potential, has_advanced_degree, industry_education_match, has_international_experience, industry_experience_duration, industry_diversity_experience, education_qs_rank_high, has_experience_in_clinical_health, has_experience_in_management_or_strategy, has_experience_in_vc_or_private_equity, has_experience_in_non_profit, has_experience_in_energy_or_utilities
+[LLM Only] 20 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited_company                          1.084
+has_experience_in_vc_or_private_equity      0.832
+industry_has_high_growth_potential          0.828
+ipo_experience                              0.568
+education_qs_rank_high                     -0.554
+has_experience_in_clinical_health          -0.500
+education_qs_rank_low                       0.488
+has_phd                                     0.312
+has_experience_in_energy_or_utilities       0.307
+has_international_experience                0.277
+industry_tech_or_software                  -0.263
+has_startup_experience                     -0.215
+industry_education_match                    0.201
+has_experience_in_high_education            0.115
+industry_experience_duration               -0.108
+industry_diversity_experience               0.050
+has_advanced_degree                         0.021
+has_experience_in_management_or_strategy    0.006
+industry_innovation                         0.000
+has_experience_in_non_profit                0.000
+ROC-AUC=0.681+/-0.050 PR-AUC=0.201+/-0.048 Prec=0.227+/-0.111 Rec=0.197+/-0.102 F0.5=0.213+/-0.097 Acc=0.867+/-0.020
+
+  Top-k precision:
+    precision@1%=0.260+/-0.156
+    precision@5%=0.241+/-0.115
+    precision@10%=0.223+/-0.055

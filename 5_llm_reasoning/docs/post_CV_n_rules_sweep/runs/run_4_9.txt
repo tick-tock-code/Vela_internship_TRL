@@ -1,0 +1,20 @@
+Requested n_rules: 4
+Repeat: 9
+Set ID: set_09
+Resultant features: 4
+Features used: has_phd_or_doctorate, involves_ipos, has_exited_via_acquisition, industry_in_tech
+[LLM Only] 4 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+involves_ipos                               1.246
+has_exited_via_acquisition                  1.130
+industry_in_tech                            0.567
+has_phd_or_doctorate                        0.431
+ROC-AUC=0.607+/-0.048 PR-AUC=0.152+/-0.031 Prec=0.205+/-0.072 Rec=0.141+/-0.075 F0.5=0.181+/-0.074 Acc=0.876+/-0.014
+
+  Top-k precision:
+    precision@1%=0.360+/-0.265
+    precision@5%=0.223+/-0.062
+    precision@10%=0.207+/-0.065

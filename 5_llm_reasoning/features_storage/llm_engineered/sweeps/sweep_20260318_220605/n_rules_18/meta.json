@@ -1,0 +1,52 @@
+{
+  "set_features": {
+    "set_01": [
+      "has_phd",
+      "has_institution_qs_rank_below_10",
+      "industry_is_high_education",
+      "has_executive_experience_over_5_years",
+      "has_ipo_value_high",
+      "has_leadership_role",
+      "industry_includes_tech",
+      "has_multiple_high_qs_institutions",
+      "has_experience_in_multiple_industries",
+      "industry_is_innovation_or_vc",
+      "has_experience_over_10_years",
+      "has_bachelor_degree",
+      "has_mba_or_msc_or_phd",
+      "industry_is_in_healthcare_or_biotech",
+      "has_experience_in_startups",
+      "has_experience_in_finance_or_legal",
+      "has_experience_in_management_or_strategy",
+      "has_education_in_certain_high_qs_ranking"
+    ],
+    "set_02": [
+      "has_phd",
+      "prior_ipo",
+      "industry_high_tech",
+      "has_experience_in_finance",
+      "industry_experience_years",
+      "educations_qs_rank_high",
+      "industry_experience_in_startup",
+      "has_exited",
+      "industry_innovation_sector",
+      "has_multiple_educations",
+      "has_leadership_roles",
+      "industry_experience_large_company",
+      "educations_qs_rank",
+      "has_experience_in_high_growth_roles",
+      "has_experience_in_venture_capital",
+      "has_international_experience",
+      "has_experience_in_tech_roles"
+    ]
+  },
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-18T22:34:07.356864"
+}

@@ -1,0 +1,37 @@
+Requested n_rules: 20
+Repeat: 2
+Set ID: set_02
+Resultant features: 22
+Features used: has_phd, has_investment_experience, industry_tech_or_finance, has_ipo, has_acquisition, industry_high_qs, multiple_educations, has_executive_role, industry_experience_large_company, industry_experience_small_company, industry_focus_education, has_mba, has_bachelor, industry_involves_startups, industry_involves_management, industry_experience_in_industry, has_education_qs_rank_1, has_long_experience, industry_experience_in_industry, has_education_in_field, has_strong_education, has_experience_in_multiple_industries
+[LLM Only] 22 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipo                                     1.103
+has_acquisition                             1.034
+has_investment_experience                   0.615
+industry_tech_or_finance                    0.570
+has_phd                                     0.437
+industry_experience_small_company          -0.418
+has_education_qs_rank_1                     0.394
+multiple_educations                        -0.387
+has_bachelor                               -0.386
+has_executive_role                          0.379
+has_long_experience                        -0.358
+industry_high_qs                            0.354
+has_education_in_field                      0.354
+industry_involves_management               -0.261
+industry_experience_large_company           0.219
+industry_involves_startups                 -0.092
+industry_experience_in_industry            -0.078
+industry_focus_education                    0.063
+industry_experience_in_industry             0.063
+has_strong_education                        0.010
+has_mba                                     0.002
+ROC-AUC=0.674+/-0.037 PR-AUC=0.193+/-0.027 Prec=0.200+/-0.035 Rec=0.199+/-0.073 F0.5=0.194+/-0.026 Acc=0.852+/-0.031
+
+  Top-k precision:
+    precision@1%=0.300+/-0.205
+    precision@5%=0.218+/-0.064
+    precision@10%=0.202+/-0.040

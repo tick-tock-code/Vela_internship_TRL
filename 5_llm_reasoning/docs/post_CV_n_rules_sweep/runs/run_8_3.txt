@@ -1,0 +1,24 @@
+Requested n_rules: 8
+Repeat: 3
+Set ID: set_03
+Resultant features: 8
+Features used: has_phd, ipo_experience, industry_research, has_education_qs_rank_below_50, industry_involves_tech, has_executive_roles, industry_experience_years, industry_is_biotech_or_medicine
+[LLM Only] 8 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+ipo_experience                              1.433
+has_education_qs_rank_below_50              0.727
+industry_involves_tech                      0.494
+industry_is_biotech_or_medicine             0.318
+industry_experience_years                  -0.114
+has_phd                                     0.110
+industry_research                           0.103
+has_executive_roles                        -0.008
+ROC-AUC=0.635+/-0.046 PR-AUC=0.168+/-0.040 Prec=0.172+/-0.064 Rec=0.169+/-0.075 F0.5=0.170+/-0.065 Acc=0.852+/-0.019
+
+  Top-k precision:
+    precision@1%=0.240+/-0.150
+    precision@5%=0.236+/-0.105
+    precision@10%=0.186+/-0.072

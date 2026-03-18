@@ -1,0 +1,25 @@
+Requested n_rules: 9
+Repeat: 7
+Set ID: set_07
+Resultant features: 9
+Features used: has_phd, industry_in_high_tech, has_ipo_event, experienced_in_high_growth, industry_in_healthcare, has_advanced_degree_in_science, industry_in_finance_or_consulting, has_experience_in_startup, industry_experience_in_advanced_tech
+[LLM Only] 9 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipo_event                               1.580
+industry_in_healthcare                     -0.591
+has_phd                                     0.453
+experienced_in_high_growth                 -0.338
+has_advanced_degree_in_science              0.232
+industry_in_high_tech                       0.181
+industry_experience_in_advanced_tech        0.062
+has_experience_in_startup                  -0.011
+industry_in_finance_or_consulting           0.000
+ROC-AUC=0.587+/-0.042 PR-AUC=0.147+/-0.036 Prec=0.141+/-0.034 Rec=0.164+/-0.104 F0.5=0.136+/-0.052 Acc=0.844+/-0.037
+
+  Top-k precision:
+    precision@1%=0.220+/-0.166
+    precision@5%=0.173+/-0.081
+    precision@10%=0.164+/-0.054

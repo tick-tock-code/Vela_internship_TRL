@@ -1,0 +1,27 @@
+Requested n_rules: 12
+Repeat: 2
+Set ID: set_02
+Resultant features: 11
+Features used: has_phd, prior_ipo, has_experience_in_industry, has_exit_event, education_qs_rank_low, industry_experience, company_size_experience, education_in_field, has_multiple_degrees, experience_in_high_ranking_universities, has_relevant_experience
+[LLM Only] 11 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exit_event                              1.172
+prior_ipo                                   0.596
+has_experience_in_industry                  0.426
+education_qs_rank_low                       0.396
+experience_in_high_ranking_universities     0.396
+has_multiple_degrees                       -0.383
+company_size_experience                     0.380
+has_phd                                     0.346
+industry_experience                        -0.227
+education_in_field                          0.149
+has_relevant_experience                    -0.134
+ROC-AUC=0.658+/-0.043 PR-AUC=0.178+/-0.026 Prec=0.199+/-0.039 Rec=0.250+/-0.071 F0.5=0.207+/-0.042 Acc=0.843+/-0.012
+
+  Top-k precision:
+    precision@1%=0.280+/-0.204
+    precision@5%=0.205+/-0.042
+    precision@10%=0.195+/-0.043

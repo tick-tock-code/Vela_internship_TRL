@@ -1,0 +1,35 @@
+Requested n_rules: 20
+Repeat: 3
+Set ID: set_03
+Resultant features: 19
+Features used: has_phd, has_institution_qs_rank_below_10, industry_is_tech_or_software, has_exited_company, has_experience_in_leading_startups, has_work_experience_over_5_years, has_education_in_high_qs_rank_institution, industry_includes_health_or_biotech, education_contains_mba_or_ms, has_multiple_educations, industry_is_finance_or_venture_capital, has_education_in_qs_rank_below_100, has_experience_in_management_roles, has_startup_experience_in_tech_industry, has_experience_in_leadership_roles, has_education_in_stem_fields, has_education_from_top_qs_rank_institution, industry_is_consumer_or_retail, experience_in_education_or_research
+[LLM Only] 19 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited_company                          1.120
+has_institution_qs_rank_below_10            0.883
+industry_is_tech_or_software                0.463
+has_multiple_educations                    -0.417
+industry_is_finance_or_venture_capital      0.407
+industry_includes_health_or_biotech         0.378
+has_education_in_qs_rank_below_100          0.343
+has_experience_in_leadership_roles          0.322
+has_education_in_stem_fields                0.261
+industry_is_consumer_or_retail             -0.261
+has_work_experience_over_5_years           -0.259
+has_experience_in_management_roles          0.233
+has_phd                                     0.220
+has_experience_in_leading_startups         -0.197
+has_education_from_top_qs_rank_institution   -0.164
+has_education_in_high_qs_rank_institution    0.089
+education_contains_mba_or_ms                0.086
+experience_in_education_or_research        -0.040
+has_startup_experience_in_tech_industry     0.000
+ROC-AUC=0.672+/-0.028 PR-AUC=0.185+/-0.027 Prec=0.230+/-0.047 Rec=0.192+/-0.066 F0.5=0.217+/-0.046 Acc=0.869+/-0.017
+
+  Top-k precision:
+    precision@1%=0.220+/-0.166
+    precision@5%=0.227+/-0.057
+    precision@10%=0.218+/-0.041

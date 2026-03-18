@@ -1,0 +1,76 @@
+{
+  "set_features": {
+    "set_01": [
+      "has_phd",
+      "ipo_experience",
+      "industry_experience",
+      "education_qs_rank",
+      "has_executive_role"
+    ],
+    "set_02": [
+      "has_phd",
+      "ipo_involved",
+      "industry_experience",
+      "has_education_ranking",
+      "industry_experience_in_industry"
+    ],
+    "set_03": [
+      "has_qs_rank_high",
+      "has_experience_in_industry",
+      "has_exited_startup",
+      "has_high_education_degree",
+      "industry_is_tech_related"
+    ],
+    "set_04": [
+      "has_phd",
+      "industry_involvement_in_ipo",
+      "has_experience_in_high_qs",
+      "has_exited_startup",
+      "industry_has_tech_focus"
+    ],
+    "set_05": [
+      "has_phd",
+      "ipo_experience",
+      "industry_experience",
+      "has_executive_role",
+      "education_qs_rank"
+    ],
+    "set_06": [
+      "has_phd",
+      "ipo_experience",
+      "industry_experience",
+      "education_qs_rank",
+      "has_executive_role"
+    ],
+    "set_07": [
+      "has_high_qs_rank_in_education",
+      "founder_experience_in_industry",
+      "has_exited_startup",
+      "has_advanced_degree",
+      "has_education_in_field"
+    ],
+    "set_08": [
+      "has_phd",
+      "prior_ipo",
+      "industry_in_high_tech",
+      "has_experience_in_scale",
+      "education_qs_rank_low"
+    ],
+    "set_09": [
+      "has_phd_or_doctorate",
+      "involvement_in_ipo",
+      "has_executive_role",
+      "industry_in_tech_related",
+      "has_advanced_education_qs_rank_low"
+    ]
+  },
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-18T21:44:29.196048"
+}

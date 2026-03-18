@@ -1,0 +1,32 @@
+Requested n_rules: 17
+Repeat: 2
+Set ID: set_02
+Resultant features: 16
+Features used: has_phd, in_qs_top_10, industry_in_high_tech, has_executive_experience, industry_with_exit, has_international_experience, multiple_educations, industry_experience_years, has_startup_experience, industry_diversity, has_advanced_degree, QS_rank_better_than_50, industry_experience_in_high_value_sector, has_mba_or_higher, industry_experience_in_fortune_500, has_exited_startup
+[LLM Only] 16 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+industry_experience_in_high_value_sector    0.780
+in_qs_top_10                                0.662
+industry_with_exit                          0.581
+has_exited_startup                          0.581
+industry_in_high_tech                       0.435
+has_international_experience                0.431
+QS_rank_better_than_50                      0.426
+multiple_educations                        -0.389
+industry_experience_years                  -0.300
+has_phd                                     0.287
+has_executive_experience                    0.244
+has_mba_or_higher                           0.208
+industry_diversity                         -0.200
+has_advanced_degree                        -0.109
+industry_experience_in_fortune_500          0.096
+has_startup_experience                      0.014
+ROC-AUC=0.676+/-0.038 PR-AUC=0.195+/-0.023 Prec=0.237+/-0.036 Rec=0.222+/-0.053 F0.5=0.231+/-0.033 Acc=0.865+/-0.014
+
+  Top-k precision:
+    precision@1%=0.280+/-0.133
+    precision@5%=0.236+/-0.045
+    precision@10%=0.236+/-0.031

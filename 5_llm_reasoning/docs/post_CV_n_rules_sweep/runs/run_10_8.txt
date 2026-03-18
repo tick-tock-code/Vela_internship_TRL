@@ -1,0 +1,26 @@
+Requested n_rules: 10
+Repeat: 8
+Set ID: set_08
+Resultant features: 10
+Features used: has_phd, has_ipo, industry_in_high_tech, has_experience_in_leadership, education_qs_high, industry_extractive_or_biotech, has_international_experience, has_multiple_educations, industry_in_venture_capital_related, has_mba_or_higher
+[LLM Only] 10 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipo                                     1.310
+industry_extractive_or_biotech              1.271
+industry_in_venture_capital_related         0.928
+education_qs_high                           0.788
+industry_in_high_tech                       0.667
+has_multiple_educations                    -0.417
+has_international_experience                0.266
+has_mba_or_higher                           0.259
+has_phd                                     0.120
+has_experience_in_leadership               -0.018
+ROC-AUC=0.664+/-0.050 PR-AUC=0.181+/-0.033 Prec=0.192+/-0.053 Rec=0.181+/-0.117 F0.5=0.180+/-0.056 Acc=0.860+/-0.025
+
+  Top-k precision:
+    precision@1%=0.260+/-0.128
+    precision@5%=0.241+/-0.058
+    precision@10%=0.207+/-0.037

@@ -1,0 +1,20 @@
+Requested n_rules: 4
+Repeat: 4
+Set ID: set_04
+Resultant features: 4
+Features used: has_qs_rank_8_or_better, has_experience_in_industry, has_exited_company, education_with_high_qs
+[LLM Only] 4 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited_company                          1.113
+has_qs_rank_8_or_better                     0.714
+has_experience_in_industry                  0.437
+education_with_high_qs                      0.415
+ROC-AUC=0.645+/-0.034 PR-AUC=0.160+/-0.020 Prec=0.211+/-0.026 Rec=0.313+/-0.058 F0.5=0.225+/-0.028 Acc=0.833+/-0.012
+
+  Top-k precision:
+    precision@1%=0.200+/-0.126
+    precision@5%=0.214+/-0.058
+    precision@10%=0.218+/-0.045

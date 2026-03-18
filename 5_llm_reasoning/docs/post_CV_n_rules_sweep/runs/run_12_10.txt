@@ -1,0 +1,28 @@
+Requested n_rules: 12
+Repeat: 10
+Set ID: set_10
+Resultant features: 12
+Features used: has_phd, has_ipo, industry_high_tech, has_experience_over_9_years, industry_in_education, has_exited, has_high_qs_ranking_education, has_experience_in_industry, has_experience_in_leadership, has_govt_or_legal_education, industry_has_high_qs_rank, has_multidisciplinary_education
+[LLM Only] 12 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+industry_in_education                      -1.312
+has_exited                                  1.056
+has_high_qs_ranking_education               1.050
+has_govt_or_legal_education                -0.512
+has_phd                                     0.506
+has_ipo                                     0.496
+has_experience_in_industry                  0.487
+has_multidisciplinary_education            -0.428
+has_experience_over_9_years                -0.407
+industry_high_tech                          0.110
+has_experience_in_leadership               -0.046
+industry_has_high_qs_rank                   0.000
+ROC-AUC=0.669+/-0.025 PR-AUC=0.194+/-0.031 Prec=0.259+/-0.057 Rec=0.247+/-0.072 F0.5=0.254+/-0.057 Acc=0.868+/-0.016
+
+  Top-k precision:
+    precision@1%=0.260+/-0.156
+    precision@5%=0.277+/-0.077
+    precision@10%=0.248+/-0.048

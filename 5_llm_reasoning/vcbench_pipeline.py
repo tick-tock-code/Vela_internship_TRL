@@ -783,13 +783,19 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--llm_sweep_repeats",
         type=int,
-        default=3,
+        default=10,
         help="Repeat each LLM sweep n_rules value this many times.",
     )
     p.add_argument(
         "--llm_sweep_range",
-        default="1-15",
-        help="Range for LLM sweep when --llm_sweep is set (default: 1-15).",
+        default="1-20",
+        help="Range for LLM sweep when --llm_sweep is set (default: 1-20).",
+    )
+    p.add_argument(
+        "--llm_sweep_seed_holdout_pct",
+        type=float,
+        default=0.2,
+        help="Holdout fraction of seed_100 for LLM rule validation during sweep (default: 0.2).",
     )
     p.add_argument(
         "--llm_retry_attempts",
@@ -886,7 +892,7 @@ def _parse_sweep_range(spec: str) -> list[int]:
                 vals.append(v)
         except Exception:
             continue
-    return sorted(set(vals)) if vals else list(range(1, 16))
+    return sorted(set(vals)) if vals else list(range(1, 21))
 
 
 def _select_dataset(
@@ -982,6 +988,9 @@ def main() -> None:
     cfg_cv_folds: int | None = None
     cfg_cv_use_fixed_folds: bool | None = None
     cfg_cv_folds_path: str | None = None
+    cfg_llm_sweep_range: str | None = None
+    cfg_llm_sweep_repeats: int | None = None
+    cfg_llm_sweep_seed_holdout_pct: float | None = None
     cfg_path = Path(args.feature_config) if args.feature_config else None
     if cfg_path is not None and cfg_path.exists():
         data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
@@ -1032,6 +1041,18 @@ def main() -> None:
             }
         if isinstance(data.get("llm_google_model"), str):
             cfg_llm_google_model = data.get("llm_google_model")
+        if isinstance(data.get("llm_sweep_range"), str):
+            cfg_llm_sweep_range = data.get("llm_sweep_range")
+        if "llm_sweep_repeats" in data:
+            try:
+                cfg_llm_sweep_repeats = int(data.get("llm_sweep_repeats"))
+            except Exception:
+                cfg_llm_sweep_repeats = None
+        if "llm_sweep_seed_holdout_pct" in data:
+            try:
+                cfg_llm_sweep_seed_holdout_pct = float(data.get("llm_sweep_seed_holdout_pct"))
+            except Exception:
+                cfg_llm_sweep_seed_holdout_pct = None
         if isinstance(data.get("llm_reasoning_batch_size"), int):
             cfg_llm_reasoning_batch_size = data.get("llm_reasoning_batch_size")
         if isinstance(data.get("llm_reasoning_log_every"), int):
@@ -1366,8 +1387,14 @@ def main() -> None:
 
     llm_n = cfg_llm_n if cfg_llm_n is not None else args.llm_n_features
     sweep_enabled = args.llm_sweep
-    sweep_rules = _parse_sweep_range(args.llm_sweep_range)
-    sweep_repeats = max(1, int(args.llm_sweep_repeats))
+    sweep_range_spec = cfg_llm_sweep_range or args.llm_sweep_range
+    sweep_rules = _parse_sweep_range(sweep_range_spec)
+    sweep_repeats = max(1, int(cfg_llm_sweep_repeats if cfg_llm_sweep_repeats is not None else args.llm_sweep_repeats))
+    sweep_seed_holdout_pct = (
+        cfg_llm_sweep_seed_holdout_pct
+        if cfg_llm_sweep_seed_holdout_pct is not None
+        else args.llm_sweep_seed_holdout_pct
+    )
     use_llm = mode in ("llm", "hybrid") or args.llm_features
     use_llm_reasoning = use_llm_reasoning or (mode in ("reasoning", "hybrid"))
     if use_llm:
@@ -1376,28 +1403,101 @@ def main() -> None:
             sweep_dir = Path(__file__).parent / "training_logs" / f"llm_sweep_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             sweep_dir.mkdir(parents=True, exist_ok=True)
             features_storage = Path(__file__).parent / "features_storage" / "llm_engineered"
-            features_storage.mkdir(parents=True, exist_ok=True)
+            sweep_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            sweep_features_root = features_storage / "sweeps" / f"sweep_{sweep_id}"
+            sweep_features_root.mkdir(parents=True, exist_ok=True)
             sweep_terminal_log = sweep_dir / "terminal_log.txt"
             _log("Sweep terminal log started.")
             summary_rows = []
-            sweep_idx = np.arange(len(records))
-            sweep_train_idx, sweep_test_idx = train_test_split(
-                sweep_idx,
-                test_size=args.test_size,
-                stratify=labels,
-                random_state=rs,
+            # Seed-only holdout for rule generation (do not use pool data here).
+            holdout_pct = float(sweep_seed_holdout_pct)
+            if holdout_pct <= 0 or holdout_pct >= 1:
+                holdout_pct = 0.2
+            sss = StratifiedShuffleSplit(
+                n_splits=1, test_size=holdout_pct, random_state=rs
             )
-            y_sweep_train = labels[sweep_train_idx]
-            y_sweep_test = labels[sweep_test_idx]
-            sweep_test_recs = [records[i] for i in sweep_test_idx]
+            seed_idx_arr = np.arange(len(seed_recs))
+            seed_train_idx, seed_holdout_idx = next(sss.split(seed_idx_arr, seed_labels))
+            seed_train_recs = [seed_recs[i] for i in seed_train_idx]
+            seed_train_labels = seed_labels[seed_train_idx]
+            seed_holdout_recs = [seed_recs[i] for i in seed_holdout_idx]
             start_rule = max(1, int(args.llm_sweep_start_rule))
             start_repeat = max(1, int(args.llm_sweep_start_repeat))
             for n_rules in sweep_rules:
+                n_dir = sweep_features_root / f"n_rules_{n_rules}"
+                n_dir.mkdir(parents=True, exist_ok=True)
+                features_path = n_dir / "features.parquet"
+                meta_path = n_dir / "meta.json"
+                existing_df: pd.DataFrame | None = None
+                existing_meta: dict[str, Any] = {}
+                if features_path.exists():
+                    existing_df = pd.read_parquet(features_path)
+                    if meta_path.exists():
+                        try:
+                            existing_meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                        except Exception:
+                            existing_meta = {}
                 for repeat_idx in range(1, sweep_repeats + 1):
                     if n_rules < start_rule:
                         continue
                     if n_rules == start_rule and repeat_idx < start_repeat:
                         continue
+                    set_id = f"set_{repeat_idx:02d}"
+                    # Skip generation if this set already exists in consolidated parquet
+                    if existing_df is not None and "set_id" in existing_df.columns:
+                        if (existing_df["set_id"] == set_id).any():
+                            llm_feature_names = []
+                            if isinstance(existing_meta.get("set_features"), dict):
+                                llm_feature_names = list(
+                                    existing_meta.get("set_features", {}).get(set_id, [])
+                                )
+                            if not llm_feature_names:
+                                # Fall back to using all non-id columns if metadata is missing
+                                llm_feature_names = [
+                                    c
+                                    for c in existing_df.columns
+                                    if c not in ("founder_uuid", "success", "set_id")
+                                ]
+                            llm_set = existing_df[existing_df["set_id"] == set_id].reset_index(drop=True)
+                            llm_all = llm_set[llm_feature_names]
+                            feature_names = llm_feature_names
+                            mode_label = "LLM Only"
+                            metrics_mean, metrics_std = _cv_evaluate(
+                                llm_all,
+                                labels,
+                                feature_names,
+                                args,
+                                cv_folds,
+                                rs,
+                                splits=cv_splits,
+                            )
+                            row = {
+                                "run_id": f"run_{n_rules}_{repeat_idx}",
+                                "repeat": repeat_idx,
+                                "set_id": set_id,
+                                "n_rules": n_rules,
+                                "resultant_features": len(feature_names),
+                                "roc_auc": metrics_mean["roc_auc"],
+                                "roc_auc_std": metrics_std["roc_auc"],
+                                "f0.5": metrics_mean["f0.5"],
+                                "f0.5_std": metrics_std["f0.5"],
+                                "precision": metrics_mean["precision"],
+                                "precision_std": metrics_std["precision"],
+                                "recall": metrics_mean["recall"],
+                                "recall_std": metrics_std["recall"],
+                                "accuracy": metrics_mean["accuracy"],
+                                "accuracy_std": metrics_std["accuracy"],
+                                "precision@1%": metrics_mean["precision@1%"],
+                                "precision@1%_std": metrics_std["precision@1%"],
+                                "precision@5%": metrics_mean["precision@5%"],
+                                "precision@5%_std": metrics_std["precision@5%"],
+                                "precision@10%": metrics_mean["precision@10%"],
+                                "precision@10%_std": metrics_std["precision@10%"],
+                                "cv_folds": cv_folds,
+                                "cv_folds_path": str(folds_path),
+                            }
+                            summary_rows.append(row)
+                            continue
                     _log(
                         f"\n  Generating {n_rules} LLM features with {args.llm_model}... (repeat {repeat_idx}/{sweep_repeats})"
                     )
@@ -1407,9 +1507,9 @@ def main() -> None:
                             llm_all, _, _, llm_feature_names = asyncio.run(
                                 asyncio.wait_for(
                                     generate_llm_features(
-                                        train_recs=seed_recs,
-                                        y_train=seed_labels,
-                                        test_recs=sweep_test_recs,
+                                        train_recs=seed_train_recs,
+                                        y_train=seed_train_labels,
+                                        test_recs=seed_holdout_recs,
                                         model=args.llm_model,
                                         n_features=n_rules,
                                         all_recs=records,
@@ -1453,25 +1553,38 @@ def main() -> None:
                     model = LogisticRegression(max_iter=1000, random_state=rs)
                     model.fit(full_all.values.astype(float), labels)
 
-                    # Save features for this n_rules + repeat
+                    # Save features into consolidated parquet for this n_rules
                     llm_df = pd.concat(
                         [
                             pd.Series([r.get("founder_uuid") for r in records], name="founder_uuid"),
                             pd.Series(labels, name="success"),
+                            pd.Series([set_id] * len(records), name="set_id"),
                             full_all,
                         ],
                         axis=1,
                     )
-                    llm_df.to_parquet(
-                        features_storage / f"llm_features_{n_rules}_r{repeat_idx}.parquet",
-                        index=False,
-                    )
+                    if existing_df is None:
+                        combined = llm_df
+                    else:
+                        combined = pd.concat([existing_df, llm_df], ignore_index=True, sort=False)
+                    combined.to_parquet(features_path, index=False)
+                    existing_df = combined
+                    existing_meta.setdefault("set_features", {})
+                    existing_meta["set_features"][set_id] = list(feature_names)
+                    existing_meta["model"] = args.llm_model
+                    existing_meta["providers"] = llm_providers
+                    existing_meta["google_model"] = llm_google_model
+                    existing_meta["seed_hash"] = seed_hash
+                    existing_meta["seed_size"] = llm_engineered_seed_size
+                    existing_meta["timestamp"] = datetime.now().isoformat()
+                    meta_path.write_text(json.dumps(existing_meta, indent=2), encoding="utf-8")
 
                     # Write run log
                     run_id = f"run_{n_rules}_{repeat_idx}"
                     run_lines = []
                     run_lines.append(f"Requested n_rules: {n_rules}")
                     run_lines.append(f"Repeat: {repeat_idx}")
+                    run_lines.append(f"Set ID: {set_id}")
                     run_lines.append(f"Resultant features: {len(feature_names)}")
                     run_lines.append(f"Features used: {', '.join(feature_names)}")
                     run_lines.append(f"[{mode_label}] {len(feature_names)} features, CV={cv_folds} folds")
@@ -1505,6 +1618,7 @@ def main() -> None:
                     row = {
                         "run_id": run_id,
                         "repeat": repeat_idx,
+                        "set_id": set_id,
                         "n_rules": n_rules,
                         "resultant_features": len(feature_names),
                         "roc_auc": metrics_mean["roc_auc"],
@@ -1532,10 +1646,35 @@ def main() -> None:
 
             summary_df = pd.DataFrame(summary_rows)
             summary_df.to_csv(sweep_dir / "llm_sweep_summary.csv", index=False)
+            if not summary_df.empty:
+                agg = (
+                    summary_df.groupby("n_rules")
+                    .agg(
+                        roc_auc=("roc_auc", "mean"),
+                        roc_auc_std=("roc_auc", "std"),
+                        f0_5=("f0.5", "mean"),
+                        f0_5_std=("f0.5", "std"),
+                        precision=("precision", "mean"),
+                        precision_std=("precision", "std"),
+                        recall=("recall", "mean"),
+                        recall_std=("recall", "std"),
+                        accuracy=("accuracy", "mean"),
+                        accuracy_std=("accuracy", "std"),
+                        precision_at_1=("precision@1%", "mean"),
+                        precision_at_1_std=("precision@1%", "std"),
+                        precision_at_5=("precision@5%", "mean"),
+                        precision_at_5_std=("precision@5%", "std"),
+                        precision_at_10=("precision@10%", "mean"),
+                        precision_at_10_std=("precision@10%", "std"),
+                        resultant_features=("resultant_features", "mean"),
+                    )
+                    .reset_index()
+                )
+                agg.to_csv(sweep_dir / "llm_sweep_summary_agg.csv", index=False)
             try:
                 import matplotlib.pyplot as plt  # type: ignore
                 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
-                x = summary_df["resultant_features"]
+                x = summary_df["n_rules"]
                 axes[0, 0].scatter(x, summary_df["roc_auc"])
                 axes[0, 0].set_title("ROC-AUC")
                 axes[0, 1].scatter(x, summary_df["f0.5"])
@@ -1548,7 +1687,7 @@ def main() -> None:
                 axes[1, 1].scatter(x, summary_df["accuracy"])
                 axes[1, 1].set_title("Accuracy")
                 for ax in axes.flat:
-                    ax.set_xlabel("Resultant features")
+                    ax.set_xlabel("n_rules")
                 plt.tight_layout()
                 plt.savefig(sweep_dir / "llm_sweep_metrics.png", dpi=150)
                 plt.close(fig)

@@ -1,0 +1,21 @@
+Requested n_rules: 5
+Repeat: 7
+Set ID: set_07
+Resultant features: 5
+Features used: has_high_qs_rank_in_education, founder_experience_in_industry, has_exited_startup, has_advanced_degree, has_education_in_field
+[LLM Only] 5 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited_startup                          1.096
+has_high_qs_rank_in_education               0.944
+has_education_in_field                      0.604
+founder_experience_in_industry              0.403
+has_advanced_degree                         0.005
+ROC-AUC=0.665+/-0.040 PR-AUC=0.175+/-0.034 Prec=0.225+/-0.060 Rec=0.174+/-0.085 F0.5=0.204+/-0.055 Acc=0.869+/-0.030
+
+  Top-k precision:
+    precision@1%=0.280+/-0.204
+    precision@5%=0.236+/-0.090
+    precision@10%=0.195+/-0.049

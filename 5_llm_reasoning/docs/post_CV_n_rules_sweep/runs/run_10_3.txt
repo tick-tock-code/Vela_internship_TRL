@@ -1,0 +1,26 @@
+Requested n_rules: 10
+Repeat: 3
+Set ID: set_03
+Resultant features: 10
+Features used: has_phd, ipo_experience, exit_event, industry_high_qs, lead_in_tech, multiple_experiences, education_in_field, industry_experience, early_start, industry_diversity
+[LLM Only] 10 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+ipo_experience                              1.001
+industry_high_qs                            0.878
+exit_event                                  0.842
+lead_in_tech                                0.723
+has_phd                                     0.310
+education_in_field                          0.131
+early_start                                 0.076
+industry_experience                        -0.062
+multiple_experiences                       -0.044
+industry_diversity                          0.000
+ROC-AUC=0.651+/-0.031 PR-AUC=0.194+/-0.027 Prec=0.286+/-0.064 Rec=0.157+/-0.041 F0.5=0.244+/-0.057 Acc=0.889+/-0.008
+
+  Top-k precision:
+    precision@1%=0.280+/-0.133
+    precision@5%=0.291+/-0.082
+    precision@10%=0.223+/-0.032

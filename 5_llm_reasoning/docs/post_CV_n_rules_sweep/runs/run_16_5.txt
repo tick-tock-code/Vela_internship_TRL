@@ -1,0 +1,31 @@
+Requested n_rules: 16
+Repeat: 5
+Set ID: set_05
+Resultant features: 15
+Features used: has_phd, industry_is_high_education, has_investment_experience, has_executive_role, education_qs_rank_better_than_50, industry_involves_technology, has_work_experience_in_large_company, has_multiple_degrees, industry_is_health, has_education_in_ranked_institution, industry_is_research, has_experience_in_startup, industry_is_finance_or_legal, has_education_in_science_or_engineering, industry_is_consumer_or_retail
+[LLM Only] 15 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+industry_is_high_education                 -1.173
+has_investment_experience                   1.118
+industry_is_finance_or_legal               -0.876
+has_education_in_ranked_institution         0.630
+industry_is_research                        0.598
+has_experience_in_startup                  -0.574
+has_work_experience_in_large_company        0.456
+education_qs_rank_better_than_50            0.406
+has_multiple_degrees                       -0.397
+industry_is_consumer_or_retail             -0.374
+industry_involves_technology                0.267
+industry_is_health                         -0.153
+has_education_in_science_or_engineering     0.126
+has_phd                                     0.121
+has_executive_role                         -0.118
+ROC-AUC=0.669+/-0.040 PR-AUC=0.187+/-0.031 Prec=0.260+/-0.041 Rec=0.197+/-0.049 F0.5=0.242+/-0.036 Acc=0.877+/-0.010
+
+  Top-k precision:
+    precision@1%=0.200+/-0.126
+    precision@5%=0.282+/-0.053
+    precision@10%=0.234+/-0.042

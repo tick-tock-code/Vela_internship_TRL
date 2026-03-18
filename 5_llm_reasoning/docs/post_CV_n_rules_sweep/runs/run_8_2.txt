@@ -1,0 +1,24 @@
+Requested n_rules: 8
+Repeat: 2
+Set ID: set_02
+Resultant features: 8
+Features used: has_phd, ipo_experience, industry_high_qs, prior_exit, industry_experience, long_term_experience, education_in_top_qs, multiple_educations
+[LLM Only] 8 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+prior_exit                                  1.046
+education_in_top_qs                         0.673
+ipo_experience                              0.580
+industry_high_qs                            0.471
+industry_experience                         0.459
+long_term_experience                       -0.439
+has_phd                                     0.386
+multiple_educations                        -0.325
+ROC-AUC=0.662+/-0.026 PR-AUC=0.184+/-0.025 Prec=0.209+/-0.030 Rec=0.308+/-0.071 F0.5=0.222+/-0.034 Acc=0.833+/-0.018
+
+  Top-k precision:
+    precision@1%=0.260+/-0.156
+    precision@5%=0.241+/-0.073
+    precision@10%=0.225+/-0.036

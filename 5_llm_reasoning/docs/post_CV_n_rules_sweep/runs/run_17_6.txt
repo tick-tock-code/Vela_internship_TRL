@@ -1,0 +1,32 @@
+Requested n_rules: 17
+Repeat: 6
+Set ID: set_06
+Resultant features: 16
+Features used: has_phd, qs_rank_1_or_better, industry_in_tech, has_ipos, has_acquisitions, industry_not_empty, high_experience_years, has_masters, has_bachelors, industry_in_education_services, has_education, industry_nan, industry_in_healthcare, has_job_experience, job_in_tech, duration_in_experience
+[LLM Only] 16 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_ipos                                    1.216
+has_acquisitions                            1.116
+industry_in_education_services             -1.064
+qs_rank_1_or_better                         0.944
+industry_not_empty                         -0.521
+has_job_experience                          0.470
+has_phd                                     0.466
+industry_in_tech                            0.463
+has_masters                                -0.397
+job_in_tech                                 0.363
+has_bachelors                              -0.354
+industry_in_healthcare                     -0.195
+has_education                               0.099
+industry_nan                                0.097
+high_experience_years                      -0.091
+duration_in_experience                     -0.013
+ROC-AUC=0.629+/-0.046 PR-AUC=0.180+/-0.048 Prec=0.223+/-0.101 Rec=0.126+/-0.069 F0.5=0.186+/-0.083 Acc=0.880+/-0.019
+
+  Top-k precision:
+    precision@1%=0.320+/-0.223
+    precision@5%=0.218+/-0.105
+    precision@10%=0.193+/-0.065

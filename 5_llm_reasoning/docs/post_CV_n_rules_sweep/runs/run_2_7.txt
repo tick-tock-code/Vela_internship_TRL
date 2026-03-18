@@ -1,0 +1,18 @@
+Requested n_rules: 2
+Repeat: 7
+Set ID: set_07
+Resultant features: 2
+Features used: has_phd, prior_ipo
+[LLM Only] 2 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_phd                                     0.456
+prior_ipo                                   0.000
+ROC-AUC=0.527+/-0.025 PR-AUC=0.098+/-0.006 Prec=0.128+/-0.036 Rec=0.167+/-0.051 F0.5=0.134+/-0.038 Acc=0.823+/-0.013
+
+  Top-k precision:
+    precision@1%=0.080+/-0.098
+    precision@5%=0.118+/-0.030
+    precision@10%=0.111+/-0.037

@@ -1,0 +1,21 @@
+Requested n_rules: 5
+Repeat: 3
+Set ID: set_03
+Resultant features: 5
+Features used: has_qs_rank_high, has_experience_in_industry, has_exited_startup, has_high_education_degree, industry_is_tech_related
+[LLM Only] 5 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_exited_startup                          1.247
+has_qs_rank_high                            0.718
+has_high_education_degree                   0.327
+industry_is_tech_related                    0.195
+has_experience_in_industry                 -0.148
+ROC-AUC=0.636+/-0.043 PR-AUC=0.165+/-0.028 Prec=0.193+/-0.059 Rec=0.159+/-0.082 F0.5=0.166+/-0.036 Acc=0.858+/-0.030
+
+  Top-k precision:
+    precision@1%=0.300+/-0.100
+    precision@5%=0.236+/-0.064
+    precision@10%=0.189+/-0.042

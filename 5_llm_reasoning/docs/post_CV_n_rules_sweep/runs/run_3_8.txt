@@ -1,0 +1,19 @@
+Requested n_rules: 3
+Repeat: 8
+Set ID: set_08
+Resultant features: 3
+Features used: has_phd, in_industry_with_exits, has_high_qs_ranking_education
+[LLM Only] 3 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+in_industry_with_exits                      1.216
+has_high_qs_ranking_education               0.962
+has_phd                                     0.301
+ROC-AUC=0.617+/-0.034 PR-AUC=0.147+/-0.023 Prec=0.207+/-0.021 Rec=0.331+/-0.055 F0.5=0.223+/-0.023 Acc=0.826+/-0.011
+
+  Top-k precision:
+    precision@1%=0.300+/-0.161
+    precision@5%=0.205+/-0.065
+    precision@10%=0.218+/-0.034

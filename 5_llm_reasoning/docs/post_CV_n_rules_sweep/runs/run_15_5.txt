@@ -1,0 +1,30 @@
+Requested n_rules: 15
+Repeat: 5
+Set ID: set_05
+Resultant features: 14
+Features used: has_phd, industry_is_tech, has_ipos, has_acquisitions, education_qs_rank_below_50, industry_is_healthcare, has_executive_experience, education_in_qs_top_100, industry_is_finance, has_investment_experience, industry_is_education, has_mba_or_msc, industry_is_biotech_or_nanotech, has_own_startup
+[LLM Only] 14 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+has_acquisitions                            1.126
+industry_is_education                      -1.122
+has_ipos                                    1.068
+industry_is_biotech_or_nanotech             0.878
+industry_is_finance                         0.786
+education_qs_rank_below_50                  0.386
+education_in_qs_top_100                     0.379
+industry_is_tech                            0.342
+has_investment_experience                   0.195
+has_phd                                     0.191
+has_own_startup                            -0.155
+industry_is_healthcare                     -0.111
+has_executive_experience                    0.104
+has_mba_or_msc                             -0.062
+ROC-AUC=0.651+/-0.046 PR-AUC=0.186+/-0.032 Prec=0.249+/-0.057 Rec=0.139+/-0.041 F0.5=0.209+/-0.040 Acc=0.883+/-0.012
+
+  Top-k precision:
+    precision@1%=0.300+/-0.134
+    precision@5%=0.255+/-0.071
+    precision@10%=0.207+/-0.030

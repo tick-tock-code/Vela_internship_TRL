@@ -1,0 +1,34 @@
+Requested n_rules: 19
+Repeat: 1
+Set ID: set_01
+Resultant features: 18
+Features used: has_phd, in_qs_top_10, industry_match, has_executive_job, has_investment_experience, ipo_experience, acquisition_experience, industry_experience_years, education_in_field, company_size_experience, multiple_educations, education_degree_count, industry_diversity_in_jobs, has_international_experience, education_qs_ranked_below_50, industry_experience_over_5_years, has_mbas_or_mphils, has_technical_degree
+[LLM Only] 18 features, CV=10 folds
+
+Weights:
+feature                                      coef
+--------------------------------------------------
+ipo_experience                              0.999
+acquisition_experience                      0.940
+has_investment_experience                   0.664
+in_qs_top_10                                0.632
+company_size_experience                     0.490
+has_phd                                     0.468
+education_qs_ranked_below_50                0.414
+multiple_educations                        -0.401
+education_degree_count                     -0.354
+has_technical_degree                        0.315
+industry_experience_over_5_years           -0.266
+education_in_field                          0.220
+industry_match                             -0.213
+has_mbas_or_mphils                          0.195
+industry_diversity_in_jobs                 -0.108
+has_international_experience               -0.035
+has_executive_job                           0.029
+industry_experience_years                   0.010
+ROC-AUC=0.671+/-0.053 PR-AUC=0.187+/-0.032 Prec=0.212+/-0.049 Rec=0.212+/-0.063 F0.5=0.209+/-0.045 Acc=0.856+/-0.018
+
+  Top-k precision:
+    precision@1%=0.260+/-0.128
+    precision@5%=0.223+/-0.043
+    precision@10%=0.205+/-0.050
