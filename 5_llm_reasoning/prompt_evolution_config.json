@@ -17,5 +17,8 @@
   "output_root": "prompt_evolution",
   "dry_run": false,
   "initial_mutations": 9,
-  "critic_sample_size": 20
+  "critic_sample_size": 20,
+  "cv_folds": 10,
+  "cv_use_fixed_folds": true,
+  "cv_folds_path": ""
 }

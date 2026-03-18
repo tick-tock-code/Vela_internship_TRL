@@ -1,0 +1,26 @@
+run_log started
+[2026-03-18T20:39:52.282605] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-18T20:39:52.655579] Loaded records: 4500 labels: 4500
+[2026-03-18T20:39:52.656161] Use LLM reasoning: True
+[2026-03-18T20:39:52.656460] Config flags: llm_engineered_run_family=False llm_engineered_freeze=False llm_engineered_run_family_id=20260318_182731
+[2026-03-18T20:39:52.662431] Seed size=100 pool size=4400
+[2026-03-18T20:39:52.662775] OPENAI_API_KEY set: True
+
+[ERROR] Unhandled exception:
+Traceback (most recent call last):
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 2602, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 1198, in main
+    cv_splits, fold_ids, folds_path = load_or_create_folds(
+                                      ~~~~~~~~~~~~~~~~~~~~^
+        founder_ids=founder_ids,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        use_fixed=cv_use_fixed_folds,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\cv_folds.py", line 61, in load_or_create_folds
+    raise RuntimeError("Missing founder_uuid values; cannot build fixed folds.")
+RuntimeError: Missing founder_uuid values; cannot build fixed folds.

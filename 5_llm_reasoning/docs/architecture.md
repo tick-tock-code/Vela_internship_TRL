@@ -1,6 +1,6 @@
 # VCBench Pipeline Architecture
 
-This pipeline implements a modular feature and training flow for VCBench, now including LLM‑reasoning features.
+This pipeline implements a modular feature and training flow for VCBench, including LLM-reasoning features.
 
 ## High-level flow (plain text)
 1. **Load data**  
@@ -9,17 +9,17 @@ This pipeline implements a modular feature and training flow for VCBench, now in
 2. **Feature extraction**  
    - **Baseline features**: 15 features loaded from the example script.  
    - **Custom features**: registry-defined features (QS tiers, exits, durations).  
-   - **LLM-engineered features**: rules generated from the train set, evaluated on all.  
-   - **LLM-reasoning features**: per-founder prompt outputs from core + experiments.
+   - **LLM-engineered features**: rules generated from a fixed seed_100, applied to the pool.  
+   - **LLM-reasoning features**: per-founder prompt outputs from core + experiments (batched within folds).
 
 3. **Feature dataset output**  
    Save Parquet with `founder_uuid`, `success`, and extracted features.
 
-4. **Train/test split**  
-   Split records into train/test (default 80/20).
+4. **Fixed CV folds**  
+   Use a fixed stratified K-fold split (default 10) stored on disk for repeatability.
 
 5. **Model training**  
-   Train a scikit-learn Logistic Regression model (N inputs → 1 output).
+   Train a scikit-learn Logistic Regression model (N inputs -> 1 output) evaluated via CV.
 
 6. **Evaluation & reporting**  
    Report ROC-AUC, PR-AUC, precision@k, F0.5, and coefficients.
@@ -37,8 +37,8 @@ flowchart TD
   B --> C["records + labels"]
   C --> D["feature extraction"]
   D --> E["feature dataset (Parquet)"]
-  D --> F["train/test split"]
-  F --> G["scikit-learn logistic regression"]
+  D --> F["fixed CV folds (cached)"]
+  F --> G["scikit-learn logistic regression (CV)"]
   G --> H["metrics + coefficients"]
 ```
 

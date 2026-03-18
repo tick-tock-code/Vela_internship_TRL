@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import json
+import hashlib
 import importlib.util
 import math
 import asyncio
@@ -35,8 +37,9 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, StratifiedShuffleSplit
 
+from cv_folds import load_or_create_folds, resolve_folds_path
 from think_reason_learn.datasets import load_vcbench
 
 from feature_registry import FEATURE_REGISTRY, FEATURE_SETS
@@ -68,6 +71,63 @@ def _install_excepthook() -> None:
 _install_excepthook()
 
 
+def _hash_seed(indices: Sequence[int], uuids: Sequence[str]) -> str:
+    payload = {
+        "indices": [int(i) for i in list(indices)],
+        "uuids": [str(u) for u in list(uuids)],
+    }
+    data = json.dumps(payload, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
+
+
+def _load_or_create_seed(
+    records: list[dict[str, Any]],
+    labels: np.ndarray,
+    founder_ids: list[str],
+    seed_size: int,
+    random_state: int,
+    seed_path: Path,
+) -> tuple[np.ndarray, list[str], str]:
+    if seed_path.exists():
+        data = json.loads(seed_path.read_text(encoding="utf-8"))
+        indices = data.get("indices", [])
+        if not isinstance(indices, list) or len(indices) != seed_size:
+            raise RuntimeError(
+                f"Seed file invalid or wrong size ({seed_path}). "
+                "Delete it to regenerate."
+            )
+        seed_idx = np.array(indices, dtype=int)
+        seed_uuids = [founder_ids[i] for i in seed_idx]
+        seed_hash = data.get("seed_hash") or _hash_seed(seed_idx, seed_uuids)
+        return seed_idx, seed_uuids, seed_hash
+
+    if seed_size <= 0 or seed_size >= len(records):
+        raise ValueError("Seed size must be >0 and < dataset size.")
+    sss = StratifiedShuffleSplit(
+        n_splits=1, train_size=seed_size, random_state=random_state
+    )
+    seed_idx, _ = next(sss.split(np.zeros(len(labels)), labels))
+    seed_idx = np.array(seed_idx, dtype=int)
+    seed_uuids = [founder_ids[i] for i in seed_idx]
+    seed_hash = _hash_seed(seed_idx, seed_uuids)
+    seed_meta = {
+        "seed_size": seed_size,
+        "random_state": random_state,
+        "dataset_size": len(records),
+        "indices": seed_idx.tolist(),
+        "uuids": seed_uuids,
+        "label_counts": {
+            "positive": int(labels[seed_idx].sum()),
+            "negative": int(seed_size - int(labels[seed_idx].sum())),
+        },
+        "seed_hash": seed_hash,
+        "created_at": datetime.now().isoformat(),
+    }
+    seed_path.parent.mkdir(parents=True, exist_ok=True)
+    seed_path.write_text(json.dumps(seed_meta, indent=2), encoding="utf-8")
+    return seed_idx, seed_uuids, seed_hash
+
+
 def _load_base_feature_extractor(script_path: Path):
     spec = importlib.util.spec_from_file_location("vcbench_base_features", script_path)
     if spec is None or spec.loader is None:
@@ -88,11 +148,19 @@ def _load_llm_engineered_cache(
     model: str,
     providers: dict[str, bool],
     google_model: str | None,
+    seed_hash: str | None = None,
 ) -> tuple[pd.DataFrame | None, list[str] | None]:
-    cache_path = cache_dir / "llm_features.parquet"
-    meta_path = cache_dir / "llm_features_meta.json"
+    current_dir = cache_dir / "current"
+    cache_path = current_dir / "llm_features.parquet"
+    meta_path = current_dir / "llm_features_meta.json"
     if not cache_path.exists() or not meta_path.exists():
-        return None, None
+        # Backward-compat: check legacy location
+        legacy_cache = cache_dir / "llm_features.parquet"
+        legacy_meta = cache_dir / "llm_features_meta.json"
+        if not legacy_cache.exists() or not legacy_meta.exists():
+            return None, None
+        cache_path = legacy_cache
+        meta_path = legacy_meta
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         if (
@@ -102,6 +170,7 @@ def _load_llm_engineered_cache(
             and meta.get("providers") == providers
             and meta.get("google_model") == google_model
             and isinstance(meta.get("feature_names"), list)
+            and (seed_hash is None or meta.get("seed_hash") == seed_hash)
         ):
             df = pd.read_parquet(cache_path)
             return df, list(meta.get("feature_names"))
@@ -118,10 +187,12 @@ def _save_llm_engineered_cache(
     providers: dict[str, bool],
     google_model: str | None,
     n_features: int,
+    seed_hash: str | None = None,
 ) -> None:
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = cache_dir / "llm_features.parquet"
-    meta_path = cache_dir / "llm_features_meta.json"
+    current_dir = cache_dir / "current"
+    current_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = current_dir / "llm_features.parquet"
+    meta_path = current_dir / "llm_features_meta.json"
     df.to_parquet(cache_path, index=False)
     meta = {
         "n_rows": len(df),
@@ -130,8 +201,31 @@ def _save_llm_engineered_cache(
         "model": model,
         "providers": providers,
         "google_model": google_model,
+        "seed_hash": seed_hash,
     }
     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+
+def _rotate_llm_engineered_cache(cache_dir: Path) -> None:
+    current_dir = cache_dir / "current"
+    cache_path = current_dir / "llm_features.parquet"
+    meta_path = current_dir / "llm_features_meta.json"
+    legacy_cache = cache_dir / "llm_features.parquet"
+    legacy_meta = cache_dir / "llm_features_meta.json"
+    has_current = cache_path.exists() and meta_path.exists()
+    has_legacy = legacy_cache.exists() and legacy_meta.exists()
+    if not has_current and not has_legacy:
+        return
+    old_root = cache_dir / "old"
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    dest_dir = old_root / f"run_{stamp}"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    if has_current:
+        shutil.move(str(cache_path), str(dest_dir / "llm_features.parquet"))
+        shutil.move(str(meta_path), str(dest_dir / "llm_features_meta.json"))
+    if has_legacy:
+        shutil.move(str(legacy_cache), str(dest_dir / "llm_features_legacy.parquet"))
+        shutil.move(str(legacy_meta), str(dest_dir / "llm_features_legacy_meta.json"))
 
 
 def _custom_feature_df(
@@ -249,6 +343,171 @@ def _format_topk(metrics: dict[str, float]) -> list[str]:
     ]
 
 
+def _format_mean_std(mean: float, std: float) -> str:
+    if std != std:
+        return f"{mean:.3f}"
+    return f"{mean:.3f}+/-{std:.3f}"
+
+
+def _compute_cv_splits(
+    y: np.ndarray, n_splits: int, random_state: int
+) -> tuple[list[tuple[np.ndarray, np.ndarray]], np.ndarray]:
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    splits: list[tuple[np.ndarray, np.ndarray]] = []
+    fold_ids = np.full(len(y), -1, dtype=int)
+    for fold_idx, (train_idx, test_idx) in enumerate(skf.split(np.zeros(len(y)), y)):
+        splits.append((train_idx, test_idx))
+        fold_ids[test_idx] = fold_idx
+    if (fold_ids < 0).any():
+        raise RuntimeError("Failed to assign fold ids for all records.")
+    return splits, fold_ids
+
+
+def _cv_evaluate(
+    feature_df: pd.DataFrame,
+    y: np.ndarray,
+    feature_names: list[str],
+    args: argparse.Namespace,
+    n_splits: int,
+    random_state: int,
+    splits: list[tuple[np.ndarray, np.ndarray]] | None = None,
+) -> tuple[dict[str, float], dict[str, float]]:
+    metrics_list: list[dict[str, float]] = []
+    if splits is None:
+        skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+        splits = list(skf.split(feature_df, y))
+    for train_idx, test_idx in splits:
+        X_train = feature_df.iloc[train_idx].copy()
+        X_test = feature_df.iloc[test_idx].copy()
+        if X_train.isna().any().any() or X_test.isna().any().any():
+            fill_values = X_train.mean()
+            X_train = X_train.fillna(fill_values)
+            X_test = X_test.fillna(fill_values)
+        X_train, X_test = _standardize_continuous(X_train, X_test, feature_names)
+        train_scores, test_scores, _ = _train_sklearn(
+            X_train.values.astype(float),
+            y[train_idx],
+            X_test.values.astype(float),
+            args.random_state,
+        )
+        metrics = _report_metrics(y[train_idx], train_scores, y[test_idx], test_scores)
+        acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y[test_idx]))
+        metrics["accuracy"] = acc
+        metrics_list.append(metrics)
+
+    keys = [
+        "roc_auc",
+        "pr_auc",
+        "precision",
+        "recall",
+        "f0.5",
+        "accuracy",
+        "precision@1%",
+        "precision@5%",
+        "precision@10%",
+    ]
+    means = {k: float(np.nanmean([m[k] for m in metrics_list])) for k in keys}
+    stds = {k: float(np.nanstd([m[k] for m in metrics_list])) for k in keys}
+    return means, stds
+
+
+def _write_cv_log(
+    log_lines: list[str],
+    args: argparse.Namespace,
+    input_csv: str,
+    feature_names: list[str],
+    n_samples: int,
+    pos_count: int,
+    cv_folds: int,
+    metrics_mean: dict[str, float],
+    metrics_std: dict[str, float],
+    log_dir: Path | None = None,
+) -> None:
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if log_dir is None:
+        log_dir = Path(__file__).parent / "training_logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"training_log_{ts}.txt"
+    log_path.write_text("\n".join(log_lines), encoding="utf-8")
+    try:
+        print(f"\n  Training log saved to: {log_path}")
+    except OSError:
+        pass
+
+    report = {
+        "dataset": input_csv,
+        "random_state": args.random_state,
+        "cv_folds": cv_folds,
+        "n_samples": n_samples,
+        "positives": pos_count,
+        "features": feature_names,
+        "metrics_mean": metrics_mean,
+        "metrics_std": metrics_std,
+    }
+    report_path = log_dir / f"run_report_{ts}.json"
+    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    try:
+        print(f"  Run report saved to: {report_path}")
+    except OSError:
+        pass
+
+
+def _train_and_log_cv(
+    feature_names: list[str],
+    full_df: pd.DataFrame,
+    y: np.ndarray,
+    args: argparse.Namespace,
+    input_csv: str,
+    mode_label: str,
+    cv_folds: int,
+    log_dir: Path | None = None,
+    cv_splits: list[tuple[np.ndarray, np.ndarray]] | None = None,
+) -> tuple[dict[str, float], dict[str, float]]:
+    means, stds = _cv_evaluate(
+        full_df, y, feature_names, args, cv_folds, args.random_state, splits=cv_splits
+    )
+    log_lines: list[str] = []
+    log_lines.append(f"Features used: {', '.join(feature_names)}")
+    log_lines.append(
+        f"\n[{mode_label}]   {len(feature_names)} features, CV={cv_folds} folds"
+    )
+    log_lines.append(
+        "ROC-AUC={roc}  PR-AUC={pr}  Prec={prec}  Rec={rec}  F0.5={f0}  Acc={acc}".format(
+            roc=_format_mean_std(means["roc_auc"], stds["roc_auc"]),
+            pr=_format_mean_std(means["pr_auc"], stds["pr_auc"]),
+            prec=_format_mean_std(means["precision"], stds["precision"]),
+            rec=_format_mean_std(means["recall"], stds["recall"]),
+            f0=_format_mean_std(means["f0.5"], stds["f0.5"]),
+            acc=_format_mean_std(means["accuracy"], stds["accuracy"]),
+        )
+    )
+    log_lines.append(
+        "\n  Top-k precision:"
+    )
+    log_lines.append(
+        f"    precision@1%={_format_mean_std(means['precision@1%'], stds['precision@1%'])}"
+    )
+    log_lines.append(
+        f"    precision@5%={_format_mean_std(means['precision@5%'], stds['precision@5%'])}"
+    )
+    log_lines.append(
+        f"    precision@10%={_format_mean_std(means['precision@10%'], stds['precision@10%'])}"
+    )
+
+    _write_cv_log(
+        log_lines,
+        args,
+        input_csv,
+        feature_names,
+        len(y),
+        int(y.sum()),
+        cv_folds,
+        means,
+        stds,
+        log_dir=log_dir,
+    )
+    return means, stds
+
 def _train_and_log(
     feature_names: list[str],
     full_train: pd.DataFrame,
@@ -337,15 +596,21 @@ def _write_f05_table(rows: list[dict[str, float]], report_path: Path) -> str:
     sep = "|---|---:|---:|---:|---:|---:|---:|"
     lines = [header, sep]
     for row in rows:
+        f0 = _format_mean_std(row["F0.5"], row.get("F0.5_std", float("nan")))
+        roc = _format_mean_std(row["ROC-AUC"], row.get("ROC-AUC_std", float("nan")))
+        pr = _format_mean_std(row["PR-AUC"], row.get("PR-AUC_std", float("nan")))
+        prec = _format_mean_std(row["Prec"], row.get("Prec_std", float("nan")))
+        rec = _format_mean_std(row["Rec"], row.get("Rec_std", float("nan")))
+        acc = _format_mean_std(row["Acc"], row.get("Acc_std", float("nan")))
         lines.append(
-            "| {name} | {f0:.3f} | {roc:.3f} | {pr:.3f} | {prec:.3f} | {rec:.3f} | {acc:.3f} |".format(
+            "| {name} | {f0} | {roc} | {pr} | {prec} | {rec} | {acc} |".format(
                 name=row["name"],
-                f0=row["F0.5"],
-                roc=row["ROC-AUC"],
-                pr=row["PR-AUC"],
-                prec=row["Prec"],
-                rec=row["Rec"],
-                acc=row["Acc"],
+                f0=f0,
+                roc=roc,
+                pr=pr,
+                prec=prec,
+                rec=rec,
+                acc=acc,
             )
         )
     table = "\n".join(lines)
@@ -357,7 +622,13 @@ def _write_f05_table(rows: list[dict[str, float]], report_path: Path) -> str:
     return table
 
 
-def _write_family_leaderboard(rows: list[dict[str, Any]], report_path: Path, csv_path: Path) -> None:
+def _write_family_leaderboard(
+    rows: list[dict[str, Any]],
+    report_path: Path,
+    csv_path: Path,
+    cv_folds: int,
+    pool_size: int,
+) -> None:
     if not rows:
         return
     df = pd.DataFrame(rows)
@@ -407,7 +678,8 @@ def _write_family_leaderboard(rows: list[dict[str, Any]], report_path: Path, csv
         + leaderboard_table
         + "\n\n"
         + "\n".join(avg_lines)
-        + "\n"
+        + "\n\n"
+        + f"*Metrics are {cv_folds}-fold stratified CV on {pool_size} founders (seed excluded).*\n"
     )
     report_path.parent.mkdir(parents=True, exist_ok=True)
     if report_path.exists():
@@ -417,6 +689,20 @@ def _write_family_leaderboard(rows: list[dict[str, Any]], report_path: Path, csv
         report_path.write_text(
             "# LLM Regression Summary (F0.5)\n\n" + section, encoding="utf-8"
         )
+
+
+def _write_snapshot_combined_report() -> None:
+    snapshot_dir = Path(__file__).parent / "docs" / "post_CV_implementation_before_recalculating_features"
+    report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+    if not snapshot_dir.exists() or not report_path.exists():
+        return
+    combined_path = snapshot_dir / "post_cv_combined_report.md"
+    text = report_path.read_text(encoding="utf-8")
+    combined = "# Post‑CV Summary (5 Fits + Family Leaderboard)\n\n" + text.strip() + "\n"
+    combined_path.write_text(combined, encoding="utf-8")
+    for entry in snapshot_dir.iterdir():
+        if entry.is_file() and entry.name != combined_path.name:
+            entry.unlink()
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="VCBench in-depth pipeline.")
@@ -683,12 +969,19 @@ def main() -> None:
     cfg_llm_reasoning_repair_existing: bool | None = None
     cfg_llm_engineered_for_reasoning: bool | None = None
     cfg_llm_reasoning_split_batches: bool | None = None
+    cfg_llm_reasoning_batch_within_folds: bool | None = None
     cfg_llm_engineered_cache: bool | None = None
     cfg_llm_engineered_freeze: bool | None = None
+    cfg_llm_engineered_force_recompute: bool | None = None
     cfg_llm_engineered_run_family: bool | None = None
     cfg_llm_engineered_run_family_size: int | None = None
     cfg_llm_engineered_run_family_n: int | None = None
     cfg_llm_engineered_run_family_id: str | None = None
+    cfg_llm_engineered_family_allow_seed_mismatch: bool | None = None
+    cfg_llm_engineered_seed_size: int | None = None
+    cfg_cv_folds: int | None = None
+    cfg_cv_use_fixed_folds: bool | None = None
+    cfg_cv_folds_path: str | None = None
     cfg_path = Path(args.feature_config) if args.feature_config else None
     if cfg_path is not None and cfg_path.exists():
         data = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
@@ -751,12 +1044,18 @@ def main() -> None:
             cfg_llm_reasoning_repair_existing = bool(data.get("llm_reasoning_repair_existing"))
         if "llm_reasoning_split_batches" in data:
             cfg_llm_reasoning_split_batches = bool(data.get("llm_reasoning_split_batches"))
+        if "llm_reasoning_batch_within_folds" in data:
+            cfg_llm_reasoning_batch_within_folds = bool(
+                data.get("llm_reasoning_batch_within_folds")
+            )
         if "llm_engineered_for_reasoning" in data:
             cfg_llm_engineered_for_reasoning = bool(data.get("llm_engineered_for_reasoning"))
         if "llm_engineered_cache" in data:
             cfg_llm_engineered_cache = bool(data.get("llm_engineered_cache"))
         if "llm_engineered_freeze" in data:
             cfg_llm_engineered_freeze = bool(data.get("llm_engineered_freeze"))
+        if "llm_engineered_force_recompute" in data:
+            cfg_llm_engineered_force_recompute = bool(data.get("llm_engineered_force_recompute"))
         if "llm_engineered_run_family" in data:
             cfg_llm_engineered_run_family = bool(data.get("llm_engineered_run_family"))
         if "llm_engineered_run_family_size" in data:
@@ -771,6 +1070,24 @@ def main() -> None:
                 cfg_llm_engineered_run_family_n = None
         if "llm_engineered_run_family_id" in data:
             cfg_llm_engineered_run_family_id = str(data.get("llm_engineered_run_family_id"))
+        if "llm_engineered_family_allow_seed_mismatch" in data:
+            cfg_llm_engineered_family_allow_seed_mismatch = bool(
+                data.get("llm_engineered_family_allow_seed_mismatch")
+            )
+        if "llm_engineered_seed_size" in data:
+            try:
+                cfg_llm_engineered_seed_size = int(data.get("llm_engineered_seed_size"))
+            except Exception:
+                cfg_llm_engineered_seed_size = None
+        if "cv_folds" in data:
+            try:
+                cfg_cv_folds = int(data.get("cv_folds"))
+            except Exception:
+                cfg_cv_folds = None
+        if "cv_use_fixed_folds" in data:
+            cfg_cv_use_fixed_folds = bool(data.get("cv_use_fixed_folds"))
+        if "cv_folds_path" in data:
+            cfg_cv_folds_path = str(data.get("cv_folds_path") or "")
         if "llm_temperature" in data:
             try:
                 cfg_llm_temperature = float(data.get("llm_temperature"))
@@ -853,12 +1170,30 @@ def main() -> None:
     llm_reasoning_split_batches = (
         cfg_llm_reasoning_split_batches if cfg_llm_reasoning_split_batches is not None else True
     )
+    llm_reasoning_batch_within_folds = (
+        cfg_llm_reasoning_batch_within_folds
+        if cfg_llm_reasoning_batch_within_folds is not None
+        else llm_reasoning_split_batches
+    )
     llm_engineered_cache = cfg_llm_engineered_cache if cfg_llm_engineered_cache is not None else True
     llm_engineered_freeze = cfg_llm_engineered_freeze if cfg_llm_engineered_freeze is not None else False
+    llm_engineered_force_recompute = (
+        cfg_llm_engineered_force_recompute if cfg_llm_engineered_force_recompute is not None else False
+    )
     llm_engineered_run_family = cfg_llm_engineered_run_family if cfg_llm_engineered_run_family is not None else False
     llm_engineered_run_family_size = cfg_llm_engineered_run_family_size if cfg_llm_engineered_run_family_size is not None else 10
     llm_engineered_run_family_n = cfg_llm_engineered_run_family_n if cfg_llm_engineered_run_family_n is not None else None
     llm_engineered_run_family_id = cfg_llm_engineered_run_family_id
+    llm_engineered_seed_size = cfg_llm_engineered_seed_size if cfg_llm_engineered_seed_size is not None else 100
+    llm_engineered_family_allow_seed_mismatch = (
+        cfg_llm_engineered_family_allow_seed_mismatch
+        if cfg_llm_engineered_family_allow_seed_mismatch is not None
+        else False
+    )
+    llm_engineered_rotated = False
+    cv_folds = cfg_cv_folds if cfg_cv_folds is not None else 10
+    cv_use_fixed_folds = cfg_cv_use_fixed_folds if cfg_cv_use_fixed_folds is not None else True
+    cv_folds_path = cfg_cv_folds_path if cfg_cv_folds_path else ""
     llm_temperature = cfg_llm_temperature if cfg_llm_temperature is not None else 0.0
     llm_reasoning_dry_run = bool(args.llm_reasoning_dry_run) or bool(cfg_llm_reasoning_dry_run)
     llm_reasoning_dry_run_fast = bool(args.llm_reasoning_dry_run_fast) or bool(cfg_llm_reasoning_dry_run_fast)
@@ -877,6 +1212,7 @@ def main() -> None:
         "Config flags: "
         f"llm_engineered_run_family={llm_engineered_run_family} "
         f"llm_engineered_freeze={llm_engineered_freeze} "
+        f"llm_engineered_force_recompute={llm_engineered_force_recompute} "
         f"llm_engineered_run_family_id={llm_engineered_run_family_id}"
     )
     if llm_reasoning_dry_run_fast:
@@ -891,24 +1227,51 @@ def main() -> None:
     if use_llm_reasoning and reasoning_dataset_size != "full":
         records, labels = _select_dataset(records, labels, reasoning_dataset_size, rs)
 
-    idx = np.arange(len(records))
-    train_idx, test_idx = train_test_split(
-        idx,
-        test_size=args.test_size,
-        stratify=labels,
-        random_state=rs,
+    all_records = records
+    all_labels = labels
+    all_founder_ids = [r.get("founder_uuid") for r in all_records]
+    seed_path = (
+        Path(__file__).parent
+        / "features_storage"
+        / "llm_engineered"
+        / f"seed_{llm_engineered_seed_size}.json"
     )
-    if set(train_idx) & set(test_idx):
-        raise RuntimeError("Train/test split overlap detected.")
-    train_recs = [records[i] for i in train_idx]
-    test_recs = [records[i] for i in test_idx]
-    y_train, y_test = labels[train_idx], labels[test_idx]
-    _log(f"  Split: {len(train_idx)} train / {len(test_idx)} test")
-    _log(
-        f"  Positives: train={int(y_train.sum())}, test={int(y_test.sum())}"
+    seed_idx, seed_uuids, seed_hash = _load_or_create_seed(
+        all_records,
+        all_labels,
+        all_founder_ids,
+        llm_engineered_seed_size,
+        rs,
+        seed_path,
     )
-    _log_run(f"Split train={len(train_idx)} test={len(test_idx)}")
+    seed_recs = [all_records[i] for i in seed_idx]
+    seed_labels = all_labels[seed_idx]
+    pool_mask = np.ones(len(all_records), dtype=bool)
+    pool_mask[seed_idx] = False
+    pool_idx = np.where(pool_mask)[0]
+    records = [all_records[i] for i in pool_idx]
+    labels = all_labels[pool_idx]
+    founder_ids = [all_founder_ids[i] for i in pool_idx]
+    _log(f"  Seed set: {len(seed_idx)} founders (excluded from training)")
+    _log(f"  Pool set: {len(records)} founders for CV")
+    _log_run(f"Seed size={len(seed_idx)} pool size={len(records)}")
     _log_run(f"OPENAI_API_KEY set: {bool(os.getenv('OPENAI_API_KEY'))}")
+
+    folds_path = resolve_folds_path(Path(__file__).parent, cv_folds, rs, cv_folds_path)
+    cv_splits, fold_ids, folds_path = load_or_create_folds(
+        founder_ids=founder_ids,
+        labels=labels,
+        cv_folds=cv_folds,
+        random_state=rs,
+        folds_path=folds_path,
+        dataset_label=input_csv,
+        use_fixed=cv_use_fixed_folds,
+    )
+    fold_sizes = np.bincount(fold_ids, minlength=cv_folds)
+    fold_sizes_str = ", ".join(str(int(s)) for s in fold_sizes)
+    _log(f"  CV folds: {cv_folds} (sizes: {fold_sizes_str})")
+    _log_run(f"CV fold sizes: {fold_sizes_str}")
+    _log_run(f"CV fold cache: {folds_path}")
 
     if llm_reasoning_dry_run_fast:
         _log("  Dry-run fast enabled: generating reasoning features only.")
@@ -944,10 +1307,10 @@ def main() -> None:
             args,
             input_csv,
             all_reasoning_names,
-            len(train_idx),
-            len(test_idx),
-            int(y_train.sum()),
-            int(y_test.sum()),
+            len(records),
+            0,
+            int(labels.sum()),
+            0,
             {"threshold": None},
             log_dir=_log_dir_for_mode("reasoning", True, True),
         )
@@ -956,9 +1319,7 @@ def main() -> None:
     base_script = Path(args.base_script)
     extract_base = _load_base_feature_extractor(base_script)
     base_all = pd.DataFrame([extract_base(r) for r in records])
-    base_train = pd.DataFrame([extract_base(r) for r in train_recs])
-    base_test = pd.DataFrame([extract_base(r) for r in test_recs])
-    base_feature_names = list(base_train.columns)
+    base_feature_names = list(base_all.columns)
 
     if selected_features:
         base_selected = [f for f in selected_features if f in base_feature_names]
@@ -980,35 +1341,19 @@ def main() -> None:
     # Apply baseline selection if provided
     if selected_features:
         base_all = base_all[base_selected]
-        base_train = base_train[base_selected]
-        base_test = base_test[base_selected]
-        base_feature_names = list(base_train.columns)
+        base_feature_names = list(base_all.columns)
 
     custom_all = (
         _custom_feature_df(records, custom_features)
         if custom_features
         else pd.DataFrame(index=range(len(records)))
     )
-    custom_train = (
-        _custom_feature_df(train_recs, custom_features)
-        if custom_features
-        else pd.DataFrame(index=range(len(train_recs)))
-    )
-    custom_test = (
-        _custom_feature_df(test_recs, custom_features)
-        if custom_features
-        else pd.DataFrame(index=range(len(test_recs)))
-    )
 
     llm_feature_names: list[str] = []
     llm_all = pd.DataFrame(index=range(len(records)))
-    llm_train = pd.DataFrame(index=range(len(train_recs)))
-    llm_test = pd.DataFrame(index=range(len(test_recs)))
 
     reasoning_feature_names: list[str] = []
     reasoning_all = pd.DataFrame(index=range(len(records)))
-    reasoning_train = pd.DataFrame(index=range(len(train_recs)))
-    reasoning_test = pd.DataFrame(index=range(len(test_recs)))
     llm_engineered_feature_names: list[str] = []
 
     mode = args.mode
@@ -1035,6 +1380,16 @@ def main() -> None:
             sweep_terminal_log = sweep_dir / "terminal_log.txt"
             _log("Sweep terminal log started.")
             summary_rows = []
+            sweep_idx = np.arange(len(records))
+            sweep_train_idx, sweep_test_idx = train_test_split(
+                sweep_idx,
+                test_size=args.test_size,
+                stratify=labels,
+                random_state=rs,
+            )
+            y_sweep_train = labels[sweep_train_idx]
+            y_sweep_test = labels[sweep_test_idx]
+            sweep_test_recs = [records[i] for i in sweep_test_idx]
             start_rule = max(1, int(args.llm_sweep_start_rule))
             start_repeat = max(1, int(args.llm_sweep_start_repeat))
             for n_rules in sweep_rules:
@@ -1049,12 +1404,12 @@ def main() -> None:
                     attempt = 0
                     while True:
                         try:
-                            llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
+                            llm_all, _, _, llm_feature_names = asyncio.run(
                                 asyncio.wait_for(
                                     generate_llm_features(
-                                        train_recs=train_recs,
-                                        y_train=y_train,
-                                        test_recs=test_recs,
+                                        train_recs=seed_recs,
+                                        y_train=seed_labels,
+                                        test_recs=sweep_test_recs,
                                         model=args.llm_model,
                                         n_features=n_rules,
                                         all_recs=records,
@@ -1072,7 +1427,7 @@ def main() -> None:
                             _log(err)
                             if attempt > max(0, int(args.llm_retry_attempts)):
                                 _log("  Exceeded retry attempts. Skipping this run.")
-                                llm_all = llm_train = llm_test = pd.DataFrame(index=range(len(records)))
+                                llm_all = pd.DataFrame(index=range(len(records)))
                                 llm_feature_names = []
                                 break
                             _log(f"  Retrying in {args.llm_retry_sleep:.1f}s...")
@@ -1082,20 +1437,21 @@ def main() -> None:
                         continue
 
                     full_all = llm_all
-                    full_train = llm_train
-                    full_test = llm_test
                     feature_names = llm_feature_names
                     mode_label = "LLM Only"
 
-                    X_train = full_train.values.astype(float)
-                    X_test = full_test.values.astype(float)
-
-                    train_scores, test_scores, model = _train_sklearn(
-                        X_train, y_train, X_test, rs
+                    metrics_mean, metrics_std = _cv_evaluate(
+                        full_all,
+                        labels,
+                        feature_names,
+                        args,
+                        cv_folds,
+                        rs,
+                        splits=cv_splits,
                     )
-                    metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
-                    acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
-                    metrics["accuracy"] = acc
+
+                    model = LogisticRegression(max_iter=1000, random_state=rs)
+                    model.fit(full_all.values.astype(float), labels)
 
                     # Save features for this n_rules + repeat
                     llm_df = pd.concat(
@@ -1118,18 +1474,32 @@ def main() -> None:
                     run_lines.append(f"Repeat: {repeat_idx}")
                     run_lines.append(f"Resultant features: {len(feature_names)}")
                     run_lines.append(f"Features used: {', '.join(feature_names)}")
-                    run_lines.append(f"[{mode_label}] {len(feature_names)} features, threshold={metrics['threshold']:.2f}")
+                    run_lines.append(f"[{mode_label}] {len(feature_names)} features, CV={cv_folds} folds")
                     run_lines.append("\nWeights:")
                     run_lines.append(f"{'feature':<40} {'coef':>8}")
                     run_lines.append("-" * 50)
                     for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
                         run_lines.append(f"{name:<40} {c:>8.3f}")
                     run_lines.append(
-                        f"ROC-AUC={metrics['roc_auc']:.3f} PR-AUC={metrics['pr_auc']:.3f} "
-                        f"Prec={metrics['precision']:.3f} Rec={metrics['recall']:.3f} "
-                        f"F0.5={metrics['f0.5']:.3f} Acc={acc:.3f}"
+                        "ROC-AUC={roc} PR-AUC={pr} Prec={prec} Rec={rec} F0.5={f0} Acc={acc}".format(
+                            roc=_format_mean_std(metrics_mean["roc_auc"], metrics_std["roc_auc"]),
+                            pr=_format_mean_std(metrics_mean["pr_auc"], metrics_std["pr_auc"]),
+                            prec=_format_mean_std(metrics_mean["precision"], metrics_std["precision"]),
+                            rec=_format_mean_std(metrics_mean["recall"], metrics_std["recall"]),
+                            f0=_format_mean_std(metrics_mean["f0.5"], metrics_std["f0.5"]),
+                            acc=_format_mean_std(metrics_mean["accuracy"], metrics_std["accuracy"]),
+                        )
                     )
-                    run_lines.extend(_format_topk(metrics))
+                    run_lines.append("\n  Top-k precision:")
+                    run_lines.append(
+                        f"    precision@1%={_format_mean_std(metrics_mean['precision@1%'], metrics_std['precision@1%'])}"
+                    )
+                    run_lines.append(
+                        f"    precision@5%={_format_mean_std(metrics_mean['precision@5%'], metrics_std['precision@5%'])}"
+                    )
+                    run_lines.append(
+                        f"    precision@10%={_format_mean_std(metrics_mean['precision@10%'], metrics_std['precision@10%'])}"
+                    )
                     (sweep_dir / f"{run_id}.txt").write_text("\n".join(run_lines), encoding="utf-8")
 
                     row = {
@@ -1137,14 +1507,24 @@ def main() -> None:
                         "repeat": repeat_idx,
                         "n_rules": n_rules,
                         "resultant_features": len(feature_names),
-                        "roc_auc": metrics["roc_auc"],
-                        "f0.5": metrics["f0.5"],
-                        "precision": metrics["precision"],
-                        "recall": metrics["recall"],
-                        "accuracy": acc,
-                        "precision@1%": metrics["precision@1%"],
-                        "precision@5%": metrics["precision@5%"],
-                        "precision@10%": metrics["precision@10%"],
+                        "roc_auc": metrics_mean["roc_auc"],
+                        "roc_auc_std": metrics_std["roc_auc"],
+                        "f0.5": metrics_mean["f0.5"],
+                        "f0.5_std": metrics_std["f0.5"],
+                        "precision": metrics_mean["precision"],
+                        "precision_std": metrics_std["precision"],
+                        "recall": metrics_mean["recall"],
+                        "recall_std": metrics_std["recall"],
+                        "accuracy": metrics_mean["accuracy"],
+                        "accuracy_std": metrics_std["accuracy"],
+                        "precision@1%": metrics_mean["precision@1%"],
+                        "precision@1%_std": metrics_std["precision@1%"],
+                        "precision@5%": metrics_mean["precision@5%"],
+                        "precision@5%_std": metrics_std["precision@5%"],
+                        "precision@10%": metrics_mean["precision@10%"],
+                        "precision@10%_std": metrics_std["precision@10%"],
+                        "cv_folds": cv_folds,
+                        "cv_folds_path": str(folds_path),
                     }
                     for name, c in sorted(zip(feature_names, model.coef_[0]), key=lambda x: abs(x[1]), reverse=True):
                         row[f"w_{name}"] = c
@@ -1177,19 +1557,52 @@ def main() -> None:
 
             return
         else:
-            _log(f"\n  Generating {llm_n} LLM features with {args.llm_model}...")
-            llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
-                generate_llm_features(
-                    train_recs=train_recs,
-                    y_train=y_train,
-                    test_recs=test_recs,
+            cache_dir = Path(__file__).parent / "features_storage" / "llm_engineered"
+            if llm_engineered_force_recompute and llm_engineered_cache and not llm_engineered_rotated:
+                _rotate_llm_engineered_cache(cache_dir)
+                llm_engineered_rotated = True
+                _log("  Rotated existing LLM-engineered cache to old/.")
+            llm_cached_all = None
+            llm_cached_names = None
+            if llm_engineered_cache:
+                llm_cached_all, llm_cached_names = _load_llm_engineered_cache(
+                    cache_dir=cache_dir,
+                    expected_rows=len(records),
+                    expected_n=llm_n,
                     model=args.llm_model,
-                    n_features=llm_n,
-                    all_recs=records,
                     providers=llm_providers,
                     google_model=llm_google_model,
+                    seed_hash=seed_hash,
                 )
-            )
+            if llm_cached_all is not None and llm_cached_names is not None:
+                llm_all = llm_cached_all
+                llm_feature_names = llm_cached_names
+                _log("  Loaded cached LLM-engineered features.")
+            else:
+                _log(f"\n  Generating {llm_n} LLM features with {args.llm_model}...")
+                llm_all, _, _, llm_feature_names = asyncio.run(
+                    generate_llm_features(
+                        train_recs=seed_recs,
+                        y_train=seed_labels,
+                        test_recs=records,
+                        model=args.llm_model,
+                        n_features=llm_n,
+                        all_recs=records,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                    )
+                )
+                if llm_engineered_cache:
+                    _save_llm_engineered_cache(
+                        cache_dir=cache_dir,
+                        df=llm_all,
+                        feature_names=llm_feature_names,
+                        model=args.llm_model,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                        n_features=llm_n,
+                        seed_hash=seed_hash,
+                    )
 
     if use_llm_reasoning:
         output_root = Path(__file__).parent / "features_storage" / "llm_reasoning"
@@ -1210,6 +1623,10 @@ def main() -> None:
                 if len(df) == len(records):
                     feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
                     return df, feature_cols
+                if len(df) == len(all_records) and len(records) != len(all_records):
+                    df = df.iloc[pool_idx].reset_index(drop=True)
+                    feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
+                    return df, feature_cols
             # Fallback: most recent run in runs/
             if runs_root.exists():
                 run_dirs = sorted(
@@ -1222,6 +1639,10 @@ def main() -> None:
                     if run_path.exists():
                         df = pd.read_parquet(run_path)
                         if len(df) == len(records):
+                            feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
+                            return df, feature_cols
+                        if len(df) == len(all_records) and len(records) != len(all_records):
+                            df = df.iloc[pool_idx].reset_index(drop=True)
                             feature_cols = [c for c in df.columns if c not in ("founder_uuid", "success")]
                             return df, feature_cols
             return None, []
@@ -1255,79 +1676,62 @@ def main() -> None:
                 return False
             return bool(num.isna().any(axis=1).any())
 
-        def _generate_reasoning_split_batches(
+        def _generate_reasoning_fold_batches(
             experiments_list: list[str] | None,
             output_dir: Path,
             meta_path: Path,
             log_label: str,
         ) -> tuple[pd.DataFrame, list[str]]:
-            train_dir = output_dir / "split_train"
-            test_dir = output_dir / "split_test"
-            train_meta = meta_path.with_name(meta_path.stem + "_train.json")
-            test_meta = meta_path.with_name(meta_path.stem + "_test.json")
+            folds_root = output_dir / "folds"
+            fold_meta_paths: list[str] = []
+            feature_cols: list[str] | None = None
+            full_features: pd.DataFrame | None = None
+            for fold_id in range(cv_folds):
+                fold_idx = np.where(fold_ids == fold_id)[0]
+                if fold_idx.size == 0:
+                    continue
+                fold_records = [records[i] for i in fold_idx]
+                fold_labels = labels[fold_idx]
+                fold_dir = folds_root / f"fold_{fold_id}"
+                fold_meta = meta_path.with_name(meta_path.stem + f"_fold{fold_id}.json")
+                fold_meta_paths.append(str(fold_meta))
+                fold_config = ReasoningConfig(
+                    model=args.llm_model,
+                    dataset_size=reasoning_dataset_size,
+                    random_state=rs,
+                    core_prompt_path=reasoning_core_prompt_path,
+                    experiments_path=reasoning_experiments_path,
+                    providers=llm_providers,
+                    google_model=llm_google_model,
+                    batch_size=llm_reasoning_batch_size,
+                    concurrency=llm_reasoning_concurrency,
+                    experiments=experiments_list,
+                    dry_run=llm_reasoning_dry_run,
+                    dry_run_fast=llm_reasoning_dry_run_fast,
+                    log_dir=log_root / f"{log_label}_fold{fold_id}",
+                    log_every=llm_reasoning_log_every,
+                    repair_nan=llm_reasoning_repair_nan,
+                    repair_existing=llm_reasoning_repair_existing,
+                    skip_select=True,
+                )
+                fold_df, _ = generate_reasoning_features(
+                    records=fold_records,
+                    labels=fold_labels,
+                    config=fold_config,
+                    output_dir=fold_dir,
+                    metadata_path=fold_meta,
+                )
+                fold_cols = [c for c in fold_df.columns if c not in ("founder_uuid", "success")]
+                if feature_cols is None:
+                    feature_cols = sorted(fold_cols)
+                    full_features = pd.DataFrame(index=range(len(records)), columns=feature_cols)
+                elif set(fold_cols) != set(feature_cols):
+                    raise RuntimeError("Fold reasoning feature columns do not match.")
+                full_features.iloc[fold_idx] = fold_df[feature_cols].to_numpy()
 
-            train_config = ReasoningConfig(
-                model=args.llm_model,
-                dataset_size=reasoning_dataset_size,
-                random_state=rs,
-                core_prompt_path=reasoning_core_prompt_path,
-                experiments_path=reasoning_experiments_path,
-                providers=llm_providers,
-                google_model=llm_google_model,
-                batch_size=llm_reasoning_batch_size,
-                concurrency=llm_reasoning_concurrency,
-                experiments=experiments_list,
-                dry_run=llm_reasoning_dry_run,
-                dry_run_fast=llm_reasoning_dry_run_fast,
-                log_dir=log_root / f"{log_label}_train",
-                log_every=llm_reasoning_log_every,
-                repair_nan=llm_reasoning_repair_nan,
-                repair_existing=llm_reasoning_repair_existing,
-                skip_select=True,
-            )
-            test_config = ReasoningConfig(
-                model=args.llm_model,
-                dataset_size=reasoning_dataset_size,
-                random_state=rs,
-                core_prompt_path=reasoning_core_prompt_path,
-                experiments_path=reasoning_experiments_path,
-                providers=llm_providers,
-                google_model=llm_google_model,
-                batch_size=llm_reasoning_batch_size,
-                concurrency=llm_reasoning_concurrency,
-                experiments=experiments_list,
-                dry_run=llm_reasoning_dry_run,
-                dry_run_fast=llm_reasoning_dry_run_fast,
-                log_dir=log_root / f"{log_label}_test",
-                log_every=llm_reasoning_log_every,
-                repair_nan=llm_reasoning_repair_nan,
-                repair_existing=llm_reasoning_repair_existing,
-                skip_select=True,
-            )
+            if feature_cols is None or full_features is None:
+                raise RuntimeError("No reasoning features were generated.")
 
-            train_df, _ = generate_reasoning_features(
-                records=train_recs,
-                labels=y_train,
-                config=train_config,
-                output_dir=train_dir,
-                metadata_path=train_meta,
-            )
-            test_df, _ = generate_reasoning_features(
-                records=test_recs,
-                labels=y_test,
-                config=test_config,
-                output_dir=test_dir,
-                metadata_path=test_meta,
-            )
-
-            feature_cols = [c for c in train_df.columns if c not in ("founder_uuid", "success")]
-            test_cols = [c for c in test_df.columns if c not in ("founder_uuid", "success")]
-            if set(feature_cols) != set(test_cols):
-                raise RuntimeError("Train/test reasoning feature columns do not match.")
-            feature_cols = sorted(feature_cols)
-            full_features = pd.DataFrame(index=range(len(records)), columns=feature_cols)
-            full_features.iloc[train_idx] = train_df[feature_cols].to_numpy()
-            full_features.iloc[test_idx] = test_df[feature_cols].to_numpy()
             combined_df = pd.DataFrame(
                 {
                     "founder_uuid": [r.get("founder_uuid") for r in records],
@@ -1360,9 +1764,10 @@ def main() -> None:
                 "experiments_path": str(reasoning_experiments_path),
                 "experiments": experiments_list,
                 "output_parquet": str(combined_path),
-                "train_meta": str(train_meta),
-                "test_meta": str(test_meta),
-                "split_batches": True,
+                "fold_metas": fold_meta_paths,
+                "batch_within_folds": True,
+                "folds": cv_folds,
+                "fold_sizes": [int(s) for s in np.bincount(fold_ids, minlength=cv_folds)],
                 "batch_size": llm_reasoning_batch_size,
                 "concurrency": llm_reasoning_concurrency,
                 "dry_run": llm_reasoning_dry_run,
@@ -1383,8 +1788,8 @@ def main() -> None:
                 exp_dir = runs_root / f"run_{exp_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{exp_id}.json"
-                if llm_reasoning_split_batches:
-                    _generate_reasoning_split_batches([exp_id], exp_dir, meta_path, exp_id)
+                if llm_reasoning_batch_within_folds:
+                    _generate_reasoning_fold_batches([exp_id], exp_dir, meta_path, exp_id)
                 else:
                     config = ReasoningConfig(
                         model=args.llm_model,
@@ -1422,8 +1827,8 @@ def main() -> None:
                 exp_dir = runs_root / f"run_{combo_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{combo_id}.json"
-                if llm_reasoning_split_batches:
-                    _generate_reasoning_split_batches(combined, exp_dir, meta_path, combo_id)
+                if llm_reasoning_batch_within_folds:
+                    _generate_reasoning_fold_batches(combined, exp_dir, meta_path, combo_id)
                 else:
                     config = ReasoningConfig(
                         model=args.llm_model,
@@ -1464,7 +1869,7 @@ def main() -> None:
             exp_id = exp_list[0] if exp_list and len(exp_list) == 1 else None
             run_parquet = run_dir / f"llm_reasoning_{reasoning_dataset_size}.parquet"
             if exp_id and run_dir.exists() and llm_reasoning_repair_existing and _reasoning_has_nans(run_parquet):
-                reasoning_df, all_reasoning_names = _generate_reasoning_split_batches(
+                reasoning_df, all_reasoning_names = _generate_reasoning_fold_batches(
                     exp_list,
                     run_dir,
                     meta_path,
@@ -1477,8 +1882,8 @@ def main() -> None:
                     reasoning_df = cached_df
                     all_reasoning_names = cached_names
                     _log("  Loaded cached LLM reasoning features from run_A output.")
-                elif llm_reasoning_split_batches:
-                    reasoning_df, all_reasoning_names = _generate_reasoning_split_batches(
+                elif llm_reasoning_batch_within_folds:
+                    reasoning_df, all_reasoning_names = _generate_reasoning_fold_batches(
                         exp_list,
                         output_dir,
                         meta_path,
@@ -1527,114 +1932,106 @@ def main() -> None:
                     "Check cached reasoning parquet column types."
                 )
             reasoning_all = reasoning_df[reasoning_feature_names]
-            reasoning_train = reasoning_all.iloc[train_idx].reset_index(drop=True)
-            reasoning_test = reasoning_all.iloc[test_idx].reset_index(drop=True)
 
     # Optional: LLM-engineered features for reasoning experiments
     if llm_engineered_for_reasoning:
-        cache_dir = Path(__file__).parent / "features_storage" / "llm_engineered"
-        llm_cached_all = None
-        llm_cached_names = None
-        if llm_engineered_cache:
-            llm_cached_all, llm_cached_names = _load_llm_engineered_cache(
-                cache_dir=cache_dir,
-                expected_rows=len(records),
-                expected_n=llm_n,
-                model=args.llm_model,
-                providers=llm_providers,
-                google_model=llm_google_model,
-            )
-        if llm_cached_all is not None and llm_cached_names is not None:
-            llm_all = llm_cached_all
-            llm_feature_names = llm_cached_names
-            llm_train = llm_all.iloc[train_idx].reset_index(drop=True)
-            llm_test = llm_all.iloc[test_idx].reset_index(drop=True)
-            _log("  Loaded cached LLM-engineered features.")
+        if llm_feature_names:
+            llm_engineered_feature_names = llm_feature_names
         else:
-            if llm_engineered_freeze:
-                raise RuntimeError(
-                    "LLM-engineered features are frozen but cache is missing. "
-                    "Set llm_engineered_freeze=false or regenerate the cache."
-                )
-            _log(f"\n  Generating {llm_n} LLM-engineered features with {args.llm_model}...")
-            llm_all, llm_train, llm_test, llm_feature_names = asyncio.run(
-                generate_llm_features(
-                    train_recs=train_recs,
-                    y_train=y_train,
-                    test_recs=test_recs,
-                    model=args.llm_model,
-                    n_features=llm_n,
-                    all_recs=records,
-                    providers=llm_providers,
-                    google_model=llm_google_model,
-                )
-            )
+            cache_dir = Path(__file__).parent / "features_storage" / "llm_engineered"
+            if llm_engineered_force_recompute and llm_engineered_cache and not llm_engineered_rotated:
+                _rotate_llm_engineered_cache(cache_dir)
+                llm_engineered_rotated = True
+                _log("  Rotated existing LLM-engineered cache to old/.")
+            llm_cached_all = None
+            llm_cached_names = None
             if llm_engineered_cache:
-                _save_llm_engineered_cache(
+                llm_cached_all, llm_cached_names = _load_llm_engineered_cache(
                     cache_dir=cache_dir,
-                    df=llm_all,
-                    feature_names=llm_feature_names,
+                    expected_rows=len(records),
+                    expected_n=llm_n,
                     model=args.llm_model,
                     providers=llm_providers,
                     google_model=llm_google_model,
-                    n_features=llm_n,
+                    seed_hash=seed_hash,
                 )
-        llm_engineered_feature_names = llm_feature_names
+            if llm_cached_all is not None and llm_cached_names is not None:
+                llm_all = llm_cached_all
+                llm_feature_names = llm_cached_names
+                _log("  Loaded cached LLM-engineered features.")
+            else:
+                if llm_engineered_freeze:
+                    raise RuntimeError(
+                        "LLM-engineered features are frozen but cache is missing. "
+                        "Set llm_engineered_freeze=false or regenerate the cache."
+                    )
+                _log(f"\n  Generating {llm_n} LLM-engineered features with {args.llm_model}...")
+                llm_all, _, _, llm_feature_names = asyncio.run(
+                    generate_llm_features(
+                        train_recs=seed_recs,
+                        y_train=seed_labels,
+                        test_recs=records,
+                        model=args.llm_model,
+                        n_features=llm_n,
+                        all_recs=records,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                    )
+                )
+                if llm_engineered_cache:
+                    _save_llm_engineered_cache(
+                        cache_dir=cache_dir,
+                        df=llm_all,
+                        feature_names=llm_feature_names,
+                        model=args.llm_model,
+                        providers=llm_providers,
+                        google_model=llm_google_model,
+                        n_features=llm_n,
+                        seed_hash=seed_hash,
+                    )
+            llm_engineered_feature_names = llm_feature_names
 
 
     if mode == "human":
         full_all = pd.concat([base_all, custom_all], axis=1)
-        full_train = pd.concat([base_train, custom_train], axis=1)
-        full_test = pd.concat([base_test, custom_test], axis=1)
         feature_names = base_feature_names + custom_features
         mode_label = "Human Only"
     elif mode == "llm":
         full_all = llm_all
-        full_train = llm_train
-        full_test = llm_test
         feature_names = llm_feature_names
         mode_label = "LLM Only"
     elif mode == "reasoning":
         full_all = reasoning_all
-        full_train = reasoning_train
-        full_test = reasoning_test
         feature_names = reasoning_feature_names
         mode_label = "LLM Reasoning Only"
     else:
         full_all = pd.concat([base_all, custom_all, llm_all, reasoning_all], axis=1)
-        full_train = pd.concat([base_train, custom_train, llm_train, reasoning_train], axis=1)
-        full_test = pd.concat([base_test, custom_test, llm_test, reasoning_test], axis=1)
         feature_names = base_feature_names + custom_features + llm_feature_names + reasoning_feature_names
         mode_label = "Hybrid"
 
-    # Standardize continuous custom features only (training stats)
-    if mode in ("human", "hybrid"):
-        full_train, full_test = _standardize_continuous(
-            full_train, full_test, custom_features
-        )
+    # Continuous standardization happens inside CV folds.
 
     # Verify selected features match config (when provided)
     if selected_features and mode in ("human", "hybrid"):
         expected_set = {f for f in selected_features if f in feature_names}
         actual_set = set(feature_names)
-        if expected_set != actual_set:
+        if mode == "human" and expected_set != actual_set:
             missing = sorted(expected_set - actual_set)
             extra = sorted(actual_set - expected_set)
             raise RuntimeError(
                 "Selected feature list mismatch. "
                 f"Missing: {missing} Extra: {extra}"
             )
+        if mode == "hybrid" and not expected_set.issubset(actual_set):
+            missing = sorted(expected_set - actual_set)
+            raise RuntimeError(
+                "Selected feature list mismatch. "
+                f"Missing: {missing}"
+            )
 
-    # Impute missing values using training means (prevents leakage).
-    if full_train.isna().any().any() or full_test.isna().any().any():
-        fill_values = full_train.mean()
-        full_train = full_train.fillna(fill_values)
-        full_test = full_test.fillna(fill_values)
-        full_all = full_all.fillna(fill_values)
-
-    # NaN/Inf checks
-    if not np.isfinite(full_train.values).all() or not np.isfinite(full_test.values).all():
-        raise RuntimeError("NaN or Inf detected in feature matrices.")
+    # NaN/Inf checks (full dataset; per-fold imputation handled in CV).
+    if not np.isfinite(full_all.values).all():
+        raise RuntimeError("NaN or Inf detected in feature matrix.")
 
     # Save feature dataset (founder_uuid, label, features)
     founder_ids = [r.get("founder_uuid") for r in records]
@@ -1670,10 +2067,10 @@ def main() -> None:
             args,
             input_csv,
             feature_names,
-            len(train_idx),
-            len(test_idx),
-            int(y_train.sum()),
-            int(y_test.sum()),
+            len(records),
+            0,
+            int(labels.sum()),
+            0,
             {"threshold": None},
             log_dir=_log_dir_for_mode(mode, llm_reasoning_dry_run, llm_reasoning_dry_run_fast),
         )
@@ -1682,108 +2079,164 @@ def main() -> None:
     # Optional reasoning-only and reasoning+human runs for consistent comparison.
     if use_llm_reasoning and reasoning_feature_names:
         if not llm_engineered_run_family:
+            summary_rows: list[dict[str, float]] = []
+
             human_only_log_dir = Path(__file__).parent / "training_logs" / "human" / "only"
-            human_train = pd.concat([base_train, custom_train], axis=1)
-            human_test = pd.concat([base_test, custom_test], axis=1)
-            human_train, human_test = _standardize_continuous(
-                human_train, human_test, custom_features
-            )
-            _train_and_log(
+            human_full = pd.concat([base_all, custom_all], axis=1)
+            means, stds = _train_and_log_cv(
                 base_feature_names + custom_features,
-                human_train,
-                human_test,
-                y_train,
-                y_test,
+                human_full,
+                labels,
                 args,
                 input_csv,
                 "Human Only",
+                cv_folds=cv_folds,
                 log_dir=human_only_log_dir,
+                cv_splits=cv_splits,
+            )
+            summary_rows.append(
+                {
+                    "name": "Human Only",
+                    "F0.5": means["f0.5"],
+                    "F0.5_std": stds["f0.5"],
+                    "ROC-AUC": means["roc_auc"],
+                    "ROC-AUC_std": stds["roc_auc"],
+                    "PR-AUC": means["pr_auc"],
+                    "PR-AUC_std": stds["pr_auc"],
+                    "Prec": means["precision"],
+                    "Prec_std": stds["precision"],
+                    "Rec": means["recall"],
+                    "Rec_std": stds["recall"],
+                    "Acc": means["accuracy"],
+                    "Acc_std": stds["accuracy"],
+                }
             )
 
-            _train_and_log(
+            means, stds = _train_and_log_cv(
                 reasoning_feature_names,
-                reasoning_train,
-                reasoning_test,
-                y_train,
-                y_test,
+                reasoning_all,
+                labels,
                 args,
                 input_csv,
                 "LLM Reasoning Only",
+                cv_folds=cv_folds,
                 log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only",
+                cv_splits=cv_splits,
+            )
+            summary_rows.append(
+                {
+                    "name": "LLM Reasoning Only",
+                    "F0.5": means["f0.5"],
+                    "F0.5_std": stds["f0.5"],
+                    "ROC-AUC": means["roc_auc"],
+                    "ROC-AUC_std": stds["roc_auc"],
+                    "PR-AUC": means["pr_auc"],
+                    "PR-AUC_std": stds["pr_auc"],
+                    "Prec": means["precision"],
+                    "Prec_std": stds["precision"],
+                    "Rec": means["recall"],
+                    "Rec_std": stds["recall"],
+                    "Acc": means["accuracy"],
+                    "Acc_std": stds["accuracy"],
+                }
             )
 
-            reasoning_plus_human_train = pd.concat([human_train, reasoning_train], axis=1)
-            reasoning_plus_human_test = pd.concat([human_test, reasoning_test], axis=1)
-            reasoning_plus_human_names = base_feature_names + custom_features + reasoning_feature_names
-            _train_and_log(
-                reasoning_plus_human_names,
-                reasoning_plus_human_train,
-                reasoning_plus_human_test,
-                y_train,
-                y_test,
+            reasoning_plus_human = pd.concat([human_full, reasoning_all], axis=1)
+            means, stds = _train_and_log_cv(
+                base_feature_names + custom_features + reasoning_feature_names,
+                reasoning_plus_human,
+                labels,
                 args,
                 input_csv,
                 "LLM Reasoning + Human",
+                cv_folds=cv_folds,
                 log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human",
+                cv_splits=cv_splits,
             )
+            summary_rows.append(
+                {
+                    "name": "LLM Reasoning + Human",
+                    "F0.5": means["f0.5"],
+                    "F0.5_std": stds["f0.5"],
+                    "ROC-AUC": means["roc_auc"],
+                    "ROC-AUC_std": stds["roc_auc"],
+                    "PR-AUC": means["pr_auc"],
+                    "PR-AUC_std": stds["pr_auc"],
+                    "Prec": means["precision"],
+                    "Prec_std": stds["precision"],
+                    "Rec": means["recall"],
+                    "Rec_std": stds["recall"],
+                    "Acc": means["accuracy"],
+                    "Acc_std": stds["accuracy"],
+                }
+            )
+
             if llm_engineered_feature_names:
-                _train_and_log(
+                means, stds = _train_and_log_cv(
                     llm_engineered_feature_names,
-                    llm_train,
-                    llm_test,
-                    y_train,
-                    y_test,
+                    llm_all,
+                    labels,
                     args,
                     input_csv,
                     "LLM Engineered Only",
+                    cv_folds=cv_folds,
                     log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "only",
+                    cv_splits=cv_splits,
                 )
-                llm_plus_reasoning_train = pd.concat([llm_train, reasoning_train], axis=1)
-                llm_plus_reasoning_test = pd.concat([llm_test, reasoning_test], axis=1)
-                llm_plus_reasoning_names = llm_engineered_feature_names + reasoning_feature_names
-                _train_and_log(
-                    llm_plus_reasoning_names,
-                    llm_plus_reasoning_train,
-                    llm_plus_reasoning_test,
-                    y_train,
-                    y_test,
+                summary_rows.append(
+                    {
+                        "name": "LLM Engineered Only",
+                        "F0.5": means["f0.5"],
+                        "F0.5_std": stds["f0.5"],
+                        "ROC-AUC": means["roc_auc"],
+                        "ROC-AUC_std": stds["roc_auc"],
+                        "PR-AUC": means["pr_auc"],
+                        "PR-AUC_std": stds["pr_auc"],
+                        "Prec": means["precision"],
+                        "Prec_std": stds["precision"],
+                        "Rec": means["recall"],
+                        "Rec_std": stds["recall"],
+                        "Acc": means["accuracy"],
+                        "Acc_std": stds["accuracy"],
+                    }
+                )
+                llm_plus_reasoning = pd.concat([llm_all, reasoning_all], axis=1)
+                means, stds = _train_and_log_cv(
+                    llm_engineered_feature_names + reasoning_feature_names,
+                    llm_plus_reasoning,
+                    labels,
                     args,
                     input_csv,
                     "LLM Engineered + Reasoning",
+                    cv_folds=cv_folds,
                     log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
+                    cv_splits=cv_splits,
                 )
-
-            # F0.5 summary table (latest logs)
-            report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
-            rows: list[dict[str, float]] = []
-            log_paths = [
-                (human_only_log_dir / "training_log_*.txt", "Human Only"),
-                (Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / "training_log_*.txt", "LLM Reasoning Only"),
-                (Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human" / "training_log_*.txt", "LLM Reasoning + Human"),
-                (Path(__file__).parent / "training_logs" / "llm_engineered" / "only" / "training_log_*.txt", "LLM Engineered Only"),
-                (Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning" / "training_log_*.txt", "LLM Engineered + Reasoning"),
-            ]
-            for pattern, name in log_paths:
-                candidates = sorted(pattern.parent.glob(pattern.name))
-                if not candidates:
-                    continue
-                metrics = _parse_training_log(candidates[-1])
-                if not metrics:
-                    continue
-                rows.append(
+                summary_rows.append(
                     {
-                        "name": name,
-                        "F0.5": metrics.get("F0.5", float("nan")),
-                        "ROC-AUC": metrics.get("ROC-AUC", float("nan")),
-                        "PR-AUC": metrics.get("PR-AUC", float("nan")),
-                        "Prec": metrics.get("Prec", float("nan")),
-                        "Rec": metrics.get("Rec", float("nan")),
-                        "Acc": metrics.get("Acc", float("nan")),
+                        "name": "LLM Engineered + Reasoning",
+                        "F0.5": means["f0.5"],
+                        "F0.5_std": stds["f0.5"],
+                        "ROC-AUC": means["roc_auc"],
+                        "ROC-AUC_std": stds["roc_auc"],
+                        "PR-AUC": means["pr_auc"],
+                        "PR-AUC_std": stds["pr_auc"],
+                        "Prec": means["precision"],
+                        "Prec_std": stds["precision"],
+                        "Rec": means["recall"],
+                        "Rec_std": stds["recall"],
+                        "Acc": means["accuracy"],
+                        "Acc_std": stds["accuracy"],
                     }
                 )
-            if rows:
-                table = _write_f05_table(rows, report_path)
-                _log("\nF0.5 summary:\n" + table)
+
+            report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+            if summary_rows:
+                table = _write_f05_table(summary_rows, report_path)
+                note = f"\n\n*CV: {cv_folds}-fold stratified on {len(labels)} founders (seed excluded).*\n"
+                report_path.write_text(report_path.read_text(encoding="utf-8") + note, encoding="utf-8")
+                _log("\nCV summary:\n" + table)
+                _write_snapshot_combined_report()
 
         # Run-family mode (multiple engineered feature sets + leaderboard)
         if llm_engineered_run_family:
@@ -1841,23 +2294,29 @@ def main() -> None:
             _log_run(
                 f"Run-family start: id={family_id} n_sets={llm_engineered_run_family_size} n_features={run_n}"
             )
-            def _evaluate_from_consolidated(df: pd.DataFrame, meta: dict[str, Any]) -> list[dict[str, Any]]:
+            def _evaluate_from_consolidated(
+                df: pd.DataFrame, meta: dict[str, Any]
+            ) -> list[dict[str, Any]]:
                 set_features: dict[str, list[str]] = meta.get("set_features", {})
                 out_rows: list[dict[str, Any]] = []
                 for set_id, features in set_features.items():
-                    df_set = df[df["set_id"] == set_id].set_index("row_index")
-                    set_train = df_set.loc[train_idx]
-                    set_test = df_set.loc[test_idx]
-                    metrics_only, _ = _train_and_log(
+                    df_set = df[df["set_id"] == set_id].set_index("row_index").sort_index()
+                    set_all = df_set[features]
+                    metrics_only, _ = _train_and_log_cv(
                         features,
-                        set_train[features],
-                        set_test[features],
-                        y_train,
-                        y_test,
+                        set_all,
+                        labels,
                         args,
                         input_csv,
                         "LLM Engineered Only",
-                        log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "only",
+                        cv_folds=cv_folds,
+                        log_dir=Path(__file__).parent
+                        / "training_logs"
+                        / "llm_engineered"
+                        / f"family_{family_id}"
+                        / set_id
+                        / "only",
+                        cv_splits=cv_splits,
                     )
                     out_rows.append(
                         {
@@ -1872,18 +2331,22 @@ def main() -> None:
                             "reasoning_experiment": reasoning_label,
                         }
                     )
-                    set_plus_train = pd.concat([set_train[features], reasoning_train], axis=1)
-                    set_plus_test = pd.concat([set_test[features], reasoning_test], axis=1)
-                    metrics_plus, _ = _train_and_log(
+                    set_plus_all = pd.concat([set_all, reasoning_all], axis=1)
+                    metrics_plus, _ = _train_and_log_cv(
                         features + reasoning_feature_names,
-                        set_plus_train,
-                        set_plus_test,
-                        y_train,
-                        y_test,
+                        set_plus_all,
+                        labels,
                         args,
                         input_csv,
                         "LLM Engineered + Reasoning",
-                        log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "plus_reasoning",
+                        cv_folds=cv_folds,
+                        log_dir=Path(__file__).parent
+                        / "training_logs"
+                        / "llm_engineered"
+                        / f"family_{family_id}"
+                        / set_id
+                        / "plus_reasoning",
+                        cv_splits=cv_splits,
                     )
                     out_rows.append(
                         {
@@ -1903,11 +2366,22 @@ def main() -> None:
             if llm_engineered_freeze and family_features_path.exists() and family_meta_path.exists():
                 df = pd.read_parquet(family_features_path)
                 meta = json.loads(family_meta_path.read_text(encoding="utf-8"))
+                if meta.get("seed_hash") != seed_hash:
+                    if not llm_engineered_family_allow_seed_mismatch:
+                        raise RuntimeError(
+                            "Run-family cache seed hash mismatch. "
+                            "Delete the family cache or reset the seed file to regenerate."
+                        )
+                    _log(
+                        "  WARNING: Run-family seed hash mismatch; proceeding because "
+                        "llm_engineered_family_allow_seed_mismatch=true."
+                    )
                 rows = _evaluate_from_consolidated(df, meta)
                 report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
                 leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
-                _write_family_leaderboard(rows, report_path, leaderboard_csv)
+                _write_family_leaderboard(rows, report_path, leaderboard_csv, cv_folds, len(labels))
                 _log(f"\nRun-family leaderboard appended to: {report_path}")
+                _write_snapshot_combined_report()
                 return
             for idx in range(1, llm_engineered_run_family_size + 1):
                 set_id = f"set_{idx:02d}"
@@ -1924,6 +2398,7 @@ def main() -> None:
                         model=args.llm_model,
                         providers=llm_providers,
                         google_model=llm_google_model,
+                        seed_hash=seed_hash,
                     )
                 if set_all is None or set_names is None:
                     if llm_engineered_freeze:
@@ -1942,9 +2417,9 @@ def main() -> None:
                         try:
                             async def _run_generate():
                                 return await generate_llm_features(
-                                    train_recs=train_recs,
-                                    y_train=y_train,
-                                    test_recs=test_recs,
+                                    train_recs=seed_recs,
+                                    y_train=seed_labels,
+                                    test_recs=records,
                                     model=args.llm_model,
                                     n_features=run_n,
                                     all_recs=records,
@@ -1953,13 +2428,13 @@ def main() -> None:
                                 )
 
                             if float(args.llm_timeout) > 0:
-                                set_all, set_train, set_test, set_names = asyncio.run(
+                                set_all, _, _, set_names = asyncio.run(
                                     asyncio.wait_for(
                                         _run_generate(), timeout=float(args.llm_timeout)
                                     )
                                 )
                             else:
-                                set_all, set_train, set_test, set_names = asyncio.run(
+                                set_all, _, _, set_names = asyncio.run(
                                     _run_generate()
                                 )
                             break
@@ -1997,10 +2472,10 @@ def main() -> None:
                             providers=llm_providers,
                             google_model=llm_google_model,
                             n_features=run_n,
+                            seed_hash=seed_hash,
                         )
                 else:
-                    set_train = set_all.iloc[train_idx].reset_index(drop=True)
-                    set_test = set_all.iloc[test_idx].reset_index(drop=True)
+                    pass
 
                 if set_all is None or set_names is None:
                     continue
@@ -2017,16 +2492,16 @@ def main() -> None:
                 set_only_log = Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "only"
                 set_plus_log = Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "plus_reasoning"
 
-                metrics_only, _ = _train_and_log(
+                metrics_only, _ = _train_and_log_cv(
                     set_names,
-                    set_train,
-                    set_test,
-                    y_train,
-                    y_test,
+                    set_all,
+                    labels,
                     args,
                     input_csv,
                     "LLM Engineered Only",
+                    cv_folds=cv_folds,
                     log_dir=set_only_log,
+                    cv_splits=cv_splits,
                 )
                 rows.append(
                     {
@@ -2042,18 +2517,17 @@ def main() -> None:
                     }
                 )
 
-                set_plus_train = pd.concat([set_train, reasoning_train], axis=1)
-                set_plus_test = pd.concat([set_test, reasoning_test], axis=1)
-                metrics_plus, _ = _train_and_log(
+                set_plus_all = pd.concat([set_all, reasoning_all], axis=1)
+                metrics_plus, _ = _train_and_log_cv(
                     set_names + reasoning_feature_names,
-                    set_plus_train,
-                    set_plus_test,
-                    y_train,
-                    y_test,
+                    set_plus_all,
+                    labels,
                     args,
                     input_csv,
                     "LLM Engineered + Reasoning",
+                    cv_folds=cv_folds,
                     log_dir=set_plus_log,
+                    cv_splits=cv_splits,
                 )
                 rows.append(
                     {
@@ -2080,6 +2554,8 @@ def main() -> None:
                     "n_features": run_n,
                     "providers": llm_providers,
                     "google_model": llm_google_model,
+                    "seed_hash": seed_hash,
+                    "seed_size": llm_engineered_seed_size,
                     "set_features": family_set_features,
                     "timestamp": datetime.now().isoformat(),
                 }
@@ -2094,7 +2570,7 @@ def main() -> None:
 
             report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
             leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
-            _write_family_leaderboard(rows, report_path, leaderboard_csv)
+            _write_family_leaderboard(rows, report_path, leaderboard_csv, cv_folds, len(labels))
             meta_path = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard_meta.json"
             meta = {
                 "family_id": family_id,
@@ -2102,58 +2578,43 @@ def main() -> None:
                 "n_features": run_n,
                 "reasoning_experiment": reasoning_label,
                 "model": args.llm_model,
+                "cv_folds": cv_folds,
+                "pool_size": len(labels),
+                "seed_hash": seed_hash,
+                "seed_size": llm_engineered_seed_size,
                 "timestamp": datetime.now().isoformat(),
                 "skipped_sets": skipped_sets,
             }
             meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
             _log(f"\nRun-family leaderboard appended to: {report_path}")
+            _write_snapshot_combined_report()
             return
 
     # Placeholder for future multiple training loops over feature subsets.
     # TODO: add loop over named feature sets and aggregate metrics.
 
-    X_train = full_train.values.astype(float)
-    X_test = full_test.values.astype(float)
-
-    train_scores, test_scores, model = _train_sklearn(
-        X_train, y_train, X_test, rs
-    )
-
-    metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
-
-    # Output format
-    _log(f"\n  Features used: {', '.join(feature_names)}")
-    _log(
-        f"\n  [{mode_label}]   {len(feature_names)} features, threshold={metrics['threshold']:.2f}"
-    )
-    coef = model.coef_[0]
-    ranked = sorted(zip(feature_names, coef), key=lambda x: abs(x[1]), reverse=True)
-    for name, c in ranked:
-        sign = "+" if c >= 0 else "-"
-        _log(f"    {sign}{abs(c):.3f}  {name}")
-
-    acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
-    _log(
-        f"\n  ROC-AUC={metrics['roc_auc']:.3f}  PR-AUC={metrics['pr_auc']:.3f}  "
-        f"Prec={metrics['precision']:.3f}  Rec={metrics['recall']:.3f}  "
-        f"F0.5={metrics['f0.5']:.3f}  Acc={acc:.3f}  "
-        f"FNR={metrics['fnr']:.3f}  TP={int(metrics['tp'])}  FN={int(metrics['fn'])}"
-    )
-    for line in _format_topk(metrics):
-        _log(line)
-
-    metrics["accuracy"] = acc
-    _write_log(
-        log_lines,
+    metrics_mean, metrics_std = _train_and_log_cv(
+        feature_names,
+        full_all,
+        labels,
         args,
         input_csv,
-        feature_names,
-        len(train_idx),
-        len(test_idx),
-        int(y_train.sum()),
-        int(y_test.sum()),
-        metrics,
+        mode_label,
+        cv_folds=cv_folds,
         log_dir=_log_dir_for_mode(mode, llm_reasoning_dry_run, llm_reasoning_dry_run_fast),
+        cv_splits=cv_splits,
+    )
+    _log(f"\n  Features used: {', '.join(feature_names)}")
+    _log(f"\n  [{mode_label}]   {len(feature_names)} features, CV={cv_folds} folds")
+    _log(
+        "  ROC-AUC={roc}  PR-AUC={pr}  Prec={prec}  Rec={rec}  F0.5={f0}  Acc={acc}".format(
+            roc=_format_mean_std(metrics_mean["roc_auc"], metrics_std["roc_auc"]),
+            pr=_format_mean_std(metrics_mean["pr_auc"], metrics_std["pr_auc"]),
+            prec=_format_mean_std(metrics_mean["precision"], metrics_std["precision"]),
+            rec=_format_mean_std(metrics_mean["recall"], metrics_std["recall"]),
+            f0=_format_mean_std(metrics_mean["f0.5"], metrics_std["f0.5"]),
+            acc=_format_mean_std(metrics_mean["accuracy"], metrics_std["accuracy"]),
+        )
     )
 
 

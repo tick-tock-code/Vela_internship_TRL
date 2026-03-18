@@ -8,34 +8,29 @@ This document describes what each script/file in `5_llm_reasoning` does, step by
 3. Resolve dataset CSV (`sample` or `full`) and load records/labels.
 4. Resolve LLM-reasoning core prompt and experiments paths.
 5. Apply dataset size override for reasoning (if requested).
-6. Create train/test split and log split sizes.
-7. If `--llm_reasoning_dry_run_fast`:
-   1. Generate reasoning features on a small subset (no API calls).
-   2. Save parquet + metadata.
-   3. Write logs to `training_logs/dry_runs/...`.
-   4. Exit (no training).
+6. Load or create the **fixed CV fold cache** (by founder_uuid).
+7. Select a **seed_100** for LLM-engineered rule generation and exclude it from training.
 8. Load baseline 15 features (via example script) and custom registry features.
 9. If LLM-engineered features are enabled:
-   1. Generate rules from train set.
-   2. Evaluate features on train/test/all.
+   1. Generate rules from the seed_100.
+   2. Apply rules to the remaining pool.
 10. If LLM-reasoning features are enabled:
     1. Generate per-founder outputs from core prompt + experiments.
-    2. Save parquet + metadata.
+    2. Batch strictly within folds to avoid cross-fold mixing.
 11. Build the final feature matrix for the selected mode:
     - `human`, `llm`, `reasoning`, or `hybrid`.
-12. Standardize continuous custom features (train stats only).
+12. Standardize continuous custom features (within each CV fold).
 13. Save the feature dataset to `features_storage/`.
 14. If `--extract_only`, write logs and exit.
-15. Train scikit-learn logistic regression.
-16. Tune threshold on training set for F0.5.
-17. Compute metrics and write training logs + run report JSON.
+15. Train scikit-learn logistic regression with **stratified K-fold CV**.
+16. Report mean ± std metrics and write training logs + run report JSON.
 
 ## `llm_reasoning_features.py`
 1. Load core prompt template and experiments JSON.
 2. Validate experiment definitions.
 3. Select dataset size (full or subset).
 4. Build output schema (namespaced columns for each experiment key).
-5. For each founder:
+5. For each founder or batch:
    1. Create prompt: core prompt + selected experiment instructions + founder JSON.
    2. Call LLM (or mock response in dry-run).
    3. Parse JSON into numeric + text outputs.
@@ -47,8 +42,8 @@ This document describes what each script/file in `5_llm_reasoning` does, step by
 ## `llm_feature_generation.py`
 1. Load `.env` and refresh LLM settings.
 2. Instantiate `FeatureGenerator` (TRL) with schema/helpers.
-3. Generate `n_rules` rules using **train** records only.
-4. Compile and evaluate rules (train/test/all).
+3. Generate `n_rules` rules using the **seed_100** only.
+4. Compile and evaluate rules (apply to pool).
 5. Print rule names/descriptions and compilation warnings.
 6. Return LLM feature matrices and rule names.
 
@@ -88,6 +83,7 @@ This document describes what each script/file in `5_llm_reasoning` does, step by
 1. Feature list for custom registry features.
 2. LLM toggles and LLM reasoning experiment selections.
 3. Paths for prompt/experiments files.
+4. CV fold cache settings.
 
 ## `README.md`
 1. High-level overview of the folder.

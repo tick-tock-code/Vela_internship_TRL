@@ -2,46 +2,42 @@
 
 ## Plain-Text Flow
 1. **Load dataset** (`vcbench_final_public.csv` or sample).
-2. **Split train/test** once with a fixed random seed.
-3. **Extract features**:
+2. **Create or load fixed CV folds** (by founder_uuid).
+3. **Select seed_100** for LLM-engineered rule generation and exclude from training.
+4. **Extract features**:
    - Baseline human features from the example script.
    - Custom features from the registry.
-   - LLM-engineered rules (train-only generation, evaluated on all).
-   - LLM-reasoning features (per-founder prompt outputs).
-4. **Assemble feature matrix** for the selected mode.
-5. **Standardize continuous features** (train stats only).
-6. **Save feature datasets** to `features_storage/`.
-7. **Train logistic regression** and tune threshold on training set.
-8. **Evaluate metrics** on test set.
-9. **Write logs and run reports** to `training_logs/`.
+   - LLM-engineered rules (seed-only generation, applied to pool).
+   - LLM-reasoning features (per-founder prompt outputs, batched within folds).
+5. **Assemble feature matrix** for the selected mode.
+6. **Standardize continuous features** within each CV fold.
+7. **Save feature datasets** to `features_storage/`.
+8. **Train logistic regression** with stratified K-fold CV.
+9. **Evaluate metrics** as mean ± std across folds.
+10. **Write logs and run reports** to `training_logs/`.
 
 ## Data Flow Diagram (Mermaid)
 ```mermaid
 flowchart TD
   A["Raw CSV"] --> B["Load records + labels"]
-  B --> C["Train/Test Split"]
-  C --> D["Train Records"]
-  C --> E["Test Records"]
+  B --> C["Fixed CV folds (cached)"]
+  C --> D["Pool records (seed excluded)"]
+  B --> S["Seed_100 for rule generation"]
 
   D --> F["Baseline Feature Extractor"]
   D --> G["Custom Feature Registry"]
-  D --> H["LLM Rule Generation\n(train only)"]
-  D --> I["LLM Reasoning Prompting\n(per founder)"]
+  S --> H["LLM Rule Generation\n(seed only)"]
+  D --> I["LLM Reasoning Prompting\n(batched within folds)"]
 
-  F --> J["Train Feature Matrix"]
+  F --> J["Feature Matrix (pool)"]
   G --> J
   H --> J
   I --> J
 
-  E --> K["Test Feature Matrix\n(LLM rules evaluated)"]
-  E --> L["Reasoning Features\n(per founder)"]
-  L --> K
+  J --> K["Standardize (per fold)"]
+  K --> L["Logistic Regression (CV)"]
+  L --> M["Metrics (mean ± std)"]
 
-  J --> M["Standardize (train stats)"]
-  M --> N["Train Logistic Regression"]
-  K --> O["Test Evaluation"]
-
-  J --> P["features_storage/ (parquet)"]
-  K --> P
-  O --> Q["training_logs/ (txt + json)"]
+  J --> N["features_storage/ (parquet)"]
+  M --> O["training_logs/ (txt + json)"]
 ```

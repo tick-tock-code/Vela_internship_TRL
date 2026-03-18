@@ -14,12 +14,12 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from think_reason_learn.core.llms import OpenAIChoice
 from think_reason_learn.core.llms import llm as trl_llm
 
 from llm_reasoning_features import ReasoningConfig, generate_reasoning_features, _assert_no_label_fields
 from vcbench_pipeline import _report_metrics, _train_sklearn
+from cv_folds import build_splits_from_fold_ids, load_or_create_folds, resolve_folds_path
 
 
 DEFAULT_CONFIG_PATH = Path(__file__).parent / "prompt_evolution_config.json"
@@ -38,6 +38,7 @@ FORBIDDEN_MUTATION_MARKERS = [
 ]
 
 REQUIRED_COLUMNS = {
+    "founder_uuid",
     "industry",
     "educations_json",
     "jobs_json",
@@ -66,6 +67,9 @@ DEFAULTS: dict[str, Any] = {
     "dry_run": False,
     "initial_mutations": 9,
     "critic_sample_size": 20,
+    "cv_folds": 10,
+    "cv_use_fixed_folds": True,
+    "cv_folds_path": "",
 }
 
 
@@ -106,6 +110,7 @@ def _load_vcbench_local(
     has_prose = "anonymised_prose" in df.columns
     for _, row in df.iterrows():
         rec: dict[str, Any] = {
+            "founder_uuid": row.get("founder_uuid", "") or "",
             "industry": row.get("industry", "") or "",
             "educations": _safe_json_parse(row.get("educations_json", "")),
             "jobs": _safe_json_parse(row.get("jobs_json", "")),
@@ -354,10 +359,128 @@ def _mutate_with_critic(
     return last_text if last_text else instructions
 
 
+def _cv_metrics_from_fold_ids(
+    X: np.ndarray,
+    y: np.ndarray,
+    fold_ids: np.ndarray,
+    n_folds: int,
+    random_state: int,
+) -> dict[str, float]:
+    splits = build_splits_from_fold_ids(fold_ids, n_folds)
+    metrics_list: list[dict[str, float]] = []
+    for train_idx, test_idx in splits:
+        y_train = y[train_idx]
+        y_test = y[test_idx]
+        if len(np.unique(y_train)) < 2 or len(np.unique(y_test)) < 2:
+            continue
+        train_scores, test_scores, _ = _train_sklearn(
+            X[train_idx], y_train, X[test_idx], random_state
+        )
+        metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
+        acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
+        metrics["accuracy"] = acc
+        metrics_list.append(metrics)
+
+    if not metrics_list:
+        return {
+            "roc_auc": 0.5,
+            "pr_auc": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f0.5": 0.0,
+            "accuracy": 0.0,
+            "precision@1%": 0.0,
+            "precision@5%": 0.0,
+            "precision@10%": 0.0,
+            "cv_folds_used": 0.0,
+            "note": "single_class_folds",
+        }
+
+    keys = [
+        "roc_auc",
+        "pr_auc",
+        "precision",
+        "recall",
+        "f0.5",
+        "accuracy",
+        "precision@1%",
+        "precision@5%",
+        "precision@10%",
+    ]
+    means = {k: float(np.nanmean([m[k] for m in metrics_list])) for k in keys}
+    stds = {k: float(np.nanstd([m[k] for m in metrics_list])) for k in keys}
+    metrics: dict[str, float] = dict(means)
+    for key in keys:
+        metrics[f"{key}_std"] = stds[key]
+    metrics["cv_folds_used"] = float(len(metrics_list))
+    return metrics
+
+
+def _generate_reasoning_by_fold(
+    records: list[dict[str, Any]],
+    labels: np.ndarray,
+    fold_ids: np.ndarray,
+    config: ReasoningConfig,
+    output_dir: Path,
+    meta_path: Path,
+) -> tuple[pd.DataFrame, list[str]]:
+    frames: list[pd.DataFrame] = []
+    numeric_keys: list[str] | None = None
+    for fold_id in sorted(set(int(x) for x in fold_ids)):
+        idx = np.where(fold_ids == fold_id)[0]
+        if idx.size == 0:
+            continue
+        fold_records = [records[i] for i in idx]
+        fold_labels = labels[idx]
+        fold_dir = output_dir / f"fold_{fold_id}"
+        fold_meta = meta_path.with_name(meta_path.stem + f"_fold{fold_id}.json")
+        fold_config = ReasoningConfig(
+            model=config.model,
+            dataset_size=config.dataset_size,
+            random_state=config.random_state,
+            core_prompt_path=config.core_prompt_path,
+            experiments_path=config.experiments_path,
+            providers=config.providers,
+            google_model=config.google_model,
+            batch_size=config.batch_size,
+            concurrency=config.concurrency,
+            experiments=config.experiments,
+            dry_run=config.dry_run,
+            dry_run_fast=config.dry_run_fast,
+            log_dir=(config.log_dir / f"fold_{fold_id}") if config.log_dir else None,
+            log_every=config.log_every,
+            repair_nan=config.repair_nan,
+            repair_existing=config.repair_existing,
+            skip_select=config.skip_select,
+        )
+        fold_df, fold_numeric = generate_reasoning_features(
+            records=fold_records,
+            labels=fold_labels,
+            config=fold_config,
+            output_dir=fold_dir,
+            metadata_path=fold_meta,
+        )
+        if numeric_keys is None:
+            numeric_keys = list(fold_numeric)
+        elif set(fold_numeric) != set(numeric_keys):
+            raise RuntimeError("Fold numeric keys mismatch in prompt evolution.")
+        fold_df.insert(0, "__row_index__", idx)
+        frames.append(fold_df)
+
+    if not frames or numeric_keys is None:
+        raise RuntimeError("No reasoning outputs generated for prompt evolution.")
+
+    combined = pd.concat(frames, ignore_index=True)
+    combined = combined.sort_values("__row_index__").drop(columns=["__row_index__"])
+    return combined, numeric_keys
+
+
 def _evaluate_prompt(
     prompt: PromptVariant,
     records: list[dict[str, Any]],
     labels: np.ndarray,
+    fold_ids: np.ndarray,
+    cv_folds: int,
     output_root: Path,
     iter_idx: int,
     args: argparse.Namespace,
@@ -389,54 +512,23 @@ def _evaluate_prompt(
         repair_existing=False,
         skip_select=True,
     )
-    df, numeric_keys = generate_reasoning_features(
+    df, numeric_keys = _generate_reasoning_by_fold(
         records=records,
         labels=labels,
+        fold_ids=fold_ids,
         config=config,
         output_dir=output_dir,
-        metadata_path=meta_path,
+        meta_path=meta_path,
     )
 
     X = df[numeric_keys].values.astype(float)
-    idx = np.arange(len(df))
-    try:
-        train_idx, test_idx = train_test_split(
-            idx,
-            test_size=0.2,
-            stratify=labels,
-            random_state=args.random_state + iter_idx,
-        )
-    except Exception:
-        train_idx, test_idx = train_test_split(
-            idx,
-            test_size=0.2,
-            random_state=args.random_state + iter_idx,
-        )
-    y_train = labels[train_idx]
-    y_test = labels[test_idx]
-    if len(np.unique(y_train)) < 2 or len(np.unique(y_test)) < 2:
-        metrics = {
-            "roc_auc": 0.5,
-            "pr_auc": 0.0,
-            "precision": 0.0,
-            "recall": 0.0,
-            "f0.5": 0.0,
-            "precision@1%": 0.0,
-            "precision@5%": 0.0,
-            "precision@10%": 0.0,
-            "threshold": 0.5,
-            "tp": 0.0,
-            "fn": 0.0,
-            "tn": 0.0,
-            "fp": 0.0,
-            "fnr": 0.0,
-            "note": "single_class_split",
-        }
-    else:
-        train_scores, test_scores, _ = _train_sklearn(
-            X[train_idx], y_train, X[test_idx], args.random_state + iter_idx
-        )
-        metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
+    metrics = _cv_metrics_from_fold_ids(
+        X=X,
+        y=labels,
+        fold_ids=fold_ids,
+        n_folds=cv_folds,
+        random_state=args.random_state + iter_idx,
+    )
 
     outputs, summary = _build_critic_payload(
         df=df,
@@ -453,8 +545,8 @@ def _full_eval(
     prompt: PromptVariant,
     records: list[dict[str, Any]],
     labels: np.ndarray,
-    train_idx: np.ndarray,
-    test_idx: np.ndarray,
+    fold_ids: np.ndarray,
+    cv_folds: int,
     output_root: Path,
     iter_idx: int,
     args: argparse.Namespace,
@@ -485,18 +577,22 @@ def _full_eval(
         repair_existing=False,
         skip_select=True,
     )
-    df, numeric_keys = generate_reasoning_features(
+    df, numeric_keys = _generate_reasoning_by_fold(
         records=records,
         labels=labels,
+        fold_ids=fold_ids,
         config=config,
         output_dir=output_dir,
-        metadata_path=meta_path,
+        meta_path=meta_path,
     )
     X = df[numeric_keys].values.astype(float)
-    train_scores, test_scores, _ = _train_sklearn(
-        X[train_idx], labels[train_idx], X[test_idx], args.random_state
+    metrics = _cv_metrics_from_fold_ids(
+        X=X,
+        y=labels,
+        fold_ids=fold_ids,
+        n_folds=cv_folds,
+        random_state=args.random_state,
     )
-    metrics = _report_metrics(labels[train_idx], train_scores, labels[test_idx], test_scores)
     _write_json(output_dir / "metrics.json", metrics)
     _write_json(output_dir / "prompt.json", {"prompt_id": prompt.prompt_id})
     return metrics
@@ -541,6 +637,9 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--dry_run", action="store_true")
     p.add_argument("--initial_mutations", type=int, default=DEFAULTS["initial_mutations"])
     p.add_argument("--critic_sample_size", type=int, default=DEFAULTS["critic_sample_size"])
+    p.add_argument("--cv_folds", type=int, default=DEFAULTS["cv_folds"])
+    p.add_argument("--cv_use_fixed_folds", type=int, default=DEFAULTS["cv_use_fixed_folds"])
+    p.add_argument("--cv_folds_path", type=str, default=DEFAULTS["cv_folds_path"])
     return p.parse_args()
 
 
@@ -568,31 +667,64 @@ def main() -> None:
 
     input_csv = _resolve_input_csv(args.dataset, args.input_csv or None)
     records, labels = _load_vcbench_local(input_csv)
-
-    idx = np.arange(len(records))
-    train_idx, test_idx = train_test_split(
-        idx,
-        test_size=args.test_size,
-        stratify=labels,
-        random_state=args.random_state,
-    )
-    train_records = [records[i] for i in train_idx]
-    train_labels = labels[train_idx]
+    founder_ids = [r.get("founder_uuid") for r in records]
 
     features_cfg = Path(__file__).parent / "features.json"
     llm_providers = {"openai": True, "google": False}
     llm_google_model = None
+    cv_folds = int(args.cv_folds)
+    cv_use_fixed_folds = bool(args.cv_use_fixed_folds)
+    cv_folds_path = args.cv_folds_path
+    seed_size = 100
     if features_cfg.exists():
         data = _read_json(features_cfg)
         if isinstance(data.get("llm_providers"), dict):
             llm_providers = dict(data.get("llm_providers"))
         if data.get("llm_google_model"):
             llm_google_model = str(data.get("llm_google_model"))
+        if data.get("cv_folds") is not None:
+            try:
+                cv_folds = int(data.get("cv_folds"))
+            except Exception:
+                pass
+        if "cv_use_fixed_folds" in data:
+            cv_use_fixed_folds = bool(data.get("cv_use_fixed_folds"))
+        if "cv_folds_path" in data:
+            cv_folds_path = str(data.get("cv_folds_path") or "")
+        if data.get("llm_engineered_seed_size") is not None:
+            try:
+                seed_size = int(data.get("llm_engineered_seed_size"))
+            except Exception:
+                seed_size = 100
+
+    seed_path = Path(__file__).parent / "features_storage" / "llm_engineered" / f"seed_{seed_size}.json"
+    if seed_path.exists():
+        try:
+            seed_payload = _read_json(seed_path)
+            seed_uuids = set(seed_payload.get("uuids", []))
+        except Exception:
+            seed_uuids = set()
+        if seed_uuids:
+            keep_mask = [fid not in seed_uuids for fid in founder_ids]
+            records = [r for r, keep in zip(records, keep_mask) if keep]
+            labels = labels[np.array(keep_mask)]
+            founder_ids = [fid for fid, keep in zip(founder_ids, keep_mask) if keep]
 
     base_experiment = _load_base_experiment(Path(args.experiments_path), args.experiment)
     base_instructions = str(base_experiment.get("instructions", "")).strip()
     if not base_instructions:
         raise RuntimeError("Base instructions are empty.")
+
+    folds_path = resolve_folds_path(Path(__file__).parent, cv_folds, args.random_state, cv_folds_path)
+    _, fold_ids, folds_path = load_or_create_folds(
+        founder_ids=founder_ids,
+        labels=labels,
+        cv_folds=cv_folds,
+        random_state=args.random_state,
+        folds_path=folds_path,
+        dataset_label=input_csv,
+        use_fixed=cv_use_fixed_folds,
+    )
 
     prompt_pool: list[PromptVariant] = []
     base_prompt = _persist_prompt_variant(
@@ -639,10 +771,11 @@ def main() -> None:
         iter_root.mkdir(parents=True, exist_ok=True)
 
         rng = np.random.RandomState(args.random_state + iter_idx)
-        sample_n = min(args.sample_size, len(train_records))
-        sample_indices = rng.choice(len(train_records), size=sample_n, replace=False)
-        sample_records = [train_records[i] for i in sample_indices]
-        sample_labels = train_labels[sample_indices]
+        sample_n = min(args.sample_size, len(records))
+        sample_indices = rng.choice(len(records), size=sample_n, replace=False)
+        sample_records = [records[i] for i in sample_indices]
+        sample_labels = labels[sample_indices]
+        sample_fold_ids = fold_ids[sample_indices]
         _write_json(iter_root / "sample_indices.json", [int(i) for i in sample_indices])
 
         metrics_by_prompt: dict[str, dict[str, float]] = {}
@@ -654,6 +787,8 @@ def main() -> None:
                 prompt=prompt,
                 records=sample_records,
                 labels=sample_labels,
+                fold_ids=sample_fold_ids,
+                cv_folds=cv_folds,
                 output_root=root,
                 iter_idx=iter_idx,
                 args=args,
@@ -719,8 +854,8 @@ def main() -> None:
                 prompt=best,
                 records=records,
                 labels=labels,
-                train_idx=train_idx,
-                test_idx=test_idx,
+                fold_ids=fold_ids,
+                cv_folds=cv_folds,
                 output_root=root,
                 iter_idx=iter_idx,
                 args=args,

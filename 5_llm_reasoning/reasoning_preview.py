@@ -13,9 +13,9 @@ from typing import Any
 import numpy as np
 
 from think_reason_learn.datasets import load_vcbench
-from sklearn.model_selection import train_test_split
 
 from llm_reasoning_features import ReasoningConfig, generate_reasoning_features
+from cv_folds import load_or_create_folds, resolve_folds_path
 
 
 def _resolve_input_csv(dataset: str, override: str) -> str:
@@ -41,7 +41,7 @@ def _parse_args() -> argparse.Namespace:
         "--per_class",
         type=int,
         default=0,
-        help="If >0, select this many founders per class (0/1) from the train split.",
+        help="If >0, select this many founders per class (0/1) from the pool.",
     )
     p.add_argument(
         "--feature_config",
@@ -101,6 +101,59 @@ def _load_env_if_present() -> None:
         return
 
 
+def _generate_by_fold(
+    records: list[dict[str, Any]],
+    labels: np.ndarray,
+    fold_ids: np.ndarray,
+    config: ReasoningConfig,
+    output_dir: Path,
+    meta_path: Path,
+) -> pd.DataFrame:
+    frames: list[pd.DataFrame] = []
+    numeric_keys: list[str] | None = None
+    for fold_id in sorted(set(int(x) for x in fold_ids)):
+        idx = np.where(fold_ids == fold_id)[0]
+        if idx.size == 0:
+            continue
+        fold_records = [records[i] for i in idx]
+        fold_labels = labels[idx]
+        fold_dir = output_dir / f"fold_{fold_id}"
+        fold_meta = meta_path.with_name(meta_path.stem + f"_fold{fold_id}.json")
+        fold_config = ReasoningConfig(
+            model=config.model,
+            dataset_size=config.dataset_size,
+            random_state=config.random_state,
+            core_prompt_path=config.core_prompt_path,
+            experiments_path=config.experiments_path,
+            providers=config.providers,
+            google_model=config.google_model,
+            batch_size=config.batch_size,
+            concurrency=config.concurrency,
+            experiments=config.experiments,
+            dry_run=config.dry_run,
+            dry_run_fast=config.dry_run_fast,
+        )
+        fold_df, fold_numeric = generate_reasoning_features(
+            records=fold_records,
+            labels=fold_labels,
+            config=fold_config,
+            output_dir=fold_dir,
+            metadata_path=fold_meta,
+        )
+        if numeric_keys is None:
+            numeric_keys = list(fold_numeric)
+        elif set(fold_numeric) != set(numeric_keys):
+            raise RuntimeError("Fold numeric keys mismatch in preview.")
+        fold_df.insert(0, "__row_index__", idx)
+        frames.append(fold_df)
+
+    if not frames:
+        raise RuntimeError("No preview outputs generated.")
+    combined = pd.concat(frames, ignore_index=True)
+    combined = combined.sort_values("__row_index__").drop(columns=["__row_index__"])
+    return combined
+
+
 def main() -> None:
     _load_env_if_present()
     args = _parse_args()
@@ -117,6 +170,10 @@ def main() -> None:
     llm_google_model = cfg.get("llm_google_model", None)
     llm_reasoning_batch_size = cfg.get("llm_reasoning_batch_size", 20)
     llm_reasoning_concurrency = cfg.get("llm_reasoning_concurrency", 1)
+    cv_folds = int(cfg.get("cv_folds", 10))
+    cv_use_fixed_folds = bool(cfg.get("cv_use_fixed_folds", True))
+    cv_folds_path = str(cfg.get("cv_folds_path", "") or "")
+    seed_size = int(cfg.get("llm_engineered_seed_size", 100))
 
     if not Path(core_prompt_path).is_absolute():
         core_prompt_path = str(Path(__file__).parent / core_prompt_path)
@@ -129,35 +186,56 @@ def main() -> None:
         0,
         args.random_state,
     )
-
-    idx = np.arange(len(records))
-    train_idx, _ = train_test_split(
-        idx,
-        test_size=args.test_size,
-        stratify=labels,
-        random_state=args.random_state,
+    founder_ids = [r.get("founder_uuid") for r in records]
+    seed_path = (
+        Path(__file__).parent
+        / "features_storage"
+        / "llm_engineered"
+        / f"seed_{seed_size}.json"
     )
-    train_recs = [records[i] for i in train_idx]
-    train_labels = labels[train_idx]
+    if seed_path.exists():
+        try:
+            seed_payload = _load_config(seed_path)
+            seed_uuids = set(seed_payload.get("uuids", []))
+        except Exception:
+            seed_uuids = set()
+        if seed_uuids:
+            keep_mask = [fid not in seed_uuids for fid in founder_ids]
+            records = [r for r, keep in zip(records, keep_mask) if keep]
+            labels = labels[np.array(keep_mask)]
+            founder_ids = [fid for fid, keep in zip(founder_ids, keep_mask) if keep]
+
+    folds_path = resolve_folds_path(Path(__file__).parent, cv_folds, args.random_state, cv_folds_path)
+    _, fold_ids, _ = load_or_create_folds(
+        founder_ids=founder_ids,
+        labels=labels,
+        cv_folds=cv_folds,
+        random_state=args.random_state,
+        folds_path=folds_path,
+        dataset_label=input_csv,
+        use_fixed=cv_use_fixed_folds,
+    )
 
     if args.per_class and args.per_class > 0:
         rng = np.random.RandomState(args.random_state)
-        idx = np.arange(len(train_labels))
+        idx = np.arange(len(labels))
         rng.shuffle(idx)
-        pos_idx = [i for i in idx if train_labels[i] == 1][: args.per_class]
-        neg_idx = [i for i in idx if train_labels[i] == 0][: args.per_class]
+        pos_idx = [i for i in idx if labels[i] == 1][: args.per_class]
+        neg_idx = [i for i in idx if labels[i] == 0][: args.per_class]
         if len(pos_idx) < args.per_class or len(neg_idx) < args.per_class:
             raise RuntimeError(
-                f"Not enough samples per class in train split: "
+                f"Not enough samples per class in pool: "
                 f"pos={len(pos_idx)}, neg={len(neg_idx)}"
             )
         selected = neg_idx + pos_idx
-        subset_recs = [train_recs[i] for i in selected]
-        subset_labels = train_labels[selected]
+        subset_recs = [records[i] for i in selected]
+        subset_labels = labels[selected]
+        subset_fold_ids = fold_ids[selected]
     else:
-        n = max(1, min(args.n_founders, len(train_recs)))
-        subset_recs = train_recs[:n]
-        subset_labels = train_labels[:n]
+        n = max(1, min(args.n_founders, len(records)))
+        subset_recs = records[:n]
+        subset_labels = labels[:n]
+        subset_fold_ids = fold_ids[:n]
 
     config = ReasoningConfig(
         model=args.llm_model,
@@ -178,12 +256,13 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     meta_path = output_dir / f"preview_meta_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     start_time = time.time()
-    df, _ = generate_reasoning_features(
+    df = _generate_by_fold(
         records=subset_recs,
         labels=subset_labels,
+        fold_ids=subset_fold_ids,
         config=config,
         output_dir=output_dir,
-        metadata_path=meta_path,
+        meta_path=meta_path,
     )
     elapsed = time.time() - start_time
 

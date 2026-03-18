@@ -150,11 +150,22 @@ class FeatureSelectorApp(tk.Tk):
         )
         if not path:
             return
-        payload = {
-            "features": selected,
-            "use_llm": bool(self.use_llm_var.get()),
-            "llm_n_features": int(self.llm_count_var.get()),
-        }
+        payload = {}
+        try:
+            if Path(path).exists():
+                with open(path, "r", encoding="utf-8") as f:
+                    payload = json.load(f)
+                    if not isinstance(payload, dict):
+                        payload = {}
+        except Exception:
+            payload = {}
+        payload.update(
+            {
+                "features": selected,
+                "use_llm": bool(self.use_llm_var.get()),
+                "llm_n_features": int(self.llm_count_var.get()),
+            }
+        )
         with open(path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
         messagebox.showinfo("Saved", f"Saved {len(selected)} features to:\n{path}")
