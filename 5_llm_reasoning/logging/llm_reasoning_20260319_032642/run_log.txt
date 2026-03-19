@@ -1,0 +1,32 @@
+run_log started
+[2026-03-19T03:26:42.421869] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T03:26:42.835694] Loaded records: 4500 labels: 4500
+[2026-03-19T03:26:42.836317] Use LLM reasoning: True
+[2026-03-19T03:26:42.836680] Config flags: llm_engineered_run_family=True llm_engineered_freeze=False llm_engineered_force_recompute=False llm_engineered_run_family_id=
+[2026-03-19T03:26:42.839875] Seed size=100 pool size=4400
+[2026-03-19T03:26:42.840342] OPENAI_API_KEY set: True
+[2026-03-19T03:26:42.844751] CV fold sizes: 440, 440, 440, 440, 440, 440, 440, 440, 440, 440
+[2026-03-19T03:26:42.845222] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k10_seed42.json
+[2026-03-19T03:26:43.132559] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-19T03:26:43.251099] Repair check: A nan_rows=0
+[2026-03-19T03:27:13.277244] Run-family start: id=20260319_032713 n_sets=10 n_features=18
+[2026-03-19T03:27:13.278124] Run-family processing set_01
+[2026-03-19T03:27:39.632993] Run-family completed set_01
+[2026-03-19T03:27:39.634549] Run-family processing set_02
+[2026-03-19T03:28:08.978766] Run-family completed set_02
+[2026-03-19T03:28:08.981239] Run-family processing set_03
+[2026-03-19T03:28:38.938366] Run-family completed set_03
+[2026-03-19T03:28:38.939585] Run-family processing set_04
+[2026-03-19T03:29:04.772811] Run-family completed set_04
+[2026-03-19T03:29:04.773910] Run-family processing set_05
+[2026-03-19T03:29:29.997083] Run-family completed set_05
+[2026-03-19T03:29:29.997919] Run-family processing set_06
+[2026-03-19T03:29:59.843151] Run-family completed set_06
+[2026-03-19T03:29:59.844442] Run-family processing set_07
+[2026-03-19T03:30:28.216980] Run-family completed set_07
+[2026-03-19T03:30:28.217773] Run-family processing set_08
+[2026-03-19T03:30:53.217211] Run-family completed set_08
+[2026-03-19T03:30:53.218127] Run-family processing set_09
+[2026-03-19T03:31:20.861196] Run-family completed set_09
+[2026-03-19T03:31:20.862399] Run-family processing set_10
+[2026-03-19T03:31:47.302941] Run-family completed set_10

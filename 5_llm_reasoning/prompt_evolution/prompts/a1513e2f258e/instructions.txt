@@ -1,0 +1,19 @@
+Score each of the following dimensions from 1 to 5 based strictly on the founder profile:
+- trajectory strength
+- ownership signal
+- career coherence
+- scrappiness
+
+Use the following rubric for an overall rubric score:
+
+Top founder:
+- rapid progression or early leadership
+- ownership in ambiguous environments
+- operates in high-growth or technical contexts
+
+Weak founder:
+- limited ownership
+- slow progression
+- inconsistent direction
+
+Score relative to this rubric (1-5).

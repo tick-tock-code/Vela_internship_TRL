@@ -1,0 +1,6 @@
+{"index": -1, "stage": "start_run", "experiment": "A", "processed": 0, "total": 4400, "batch_size": 20, "n_batches": 220, "timestamp": 1773890228.936076}
+{"index": 70, "stage": "repair_start", "experiment": "A", "processed": 0, "total": 4400, "batch_index": 70, "batch_start": 1400, "batch_end": 1419, "batch_size": 20, "strict_retry": true, "timestamp": 1773890228.938742}
+{"index": 150, "stage": "repair_start", "experiment": "A", "processed": 0, "total": 4400, "batch_index": 150, "batch_start": 3000, "batch_end": 3019, "batch_size": 20, "strict_retry": true, "timestamp": 1773890228.9393563}
+{"index": 200, "stage": "repair_start", "experiment": "A", "processed": 0, "total": 4400, "batch_index": 200, "batch_start": 4000, "batch_end": 4019, "batch_size": 20, "strict_retry": true, "timestamp": 1773890228.9397056}
+{"index": 210, "stage": "repair_start", "experiment": "A", "processed": 0, "total": 4400, "batch_index": 210, "batch_start": 4200, "batch_end": 4219, "batch_size": 20, "strict_retry": true, "timestamp": 1773890228.940222}
+{"index": 0, "stage": "window_start", "experiment": "A", "window": 0, "concurrency": 10, "batch_ids": [2, 4, 5, 7, 49, 69, 70, 71, 72, 73], "timestamp": 1773890228.940693}

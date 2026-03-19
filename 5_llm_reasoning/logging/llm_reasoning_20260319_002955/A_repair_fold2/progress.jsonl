@@ -1,0 +1,2 @@
+{"index": -1, "stage": "start_run", "experiment": "A", "processed": 0, "total": 440, "batch_size": 20, "n_batches": 22, "timestamp": 1773880259.301974}
+{"index": 0, "stage": "window_start", "experiment": "A", "window": 0, "concurrency": 10, "batch_ids": [8, 16], "timestamp": 1773880259.3028836}

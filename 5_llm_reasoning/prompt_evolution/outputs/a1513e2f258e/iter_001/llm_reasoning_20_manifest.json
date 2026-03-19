@@ -1,0 +1,21 @@
+{
+  "dataset_size": "20",
+  "random_state": 42,
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "experiments": [
+    "AB"
+  ],
+  "core_prompt_hash": "9fb506096393f090c016df99924f3f3eba57ed62485d2d4ced3ee7b342331895",
+  "experiments_hash": "18f89a1ff274c93e902fc79e82c1a1d764aec9826b0414f71e473c8e6b5b0315",
+  "global_numeric_keys": [
+    "evidence_support_rating"
+  ],
+  "global_text_keys": [],
+  "output_parquet": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\prompt_evolution\\outputs\\a1513e2f258e\\iter_001\\llm_reasoning_20.parquet",
+  "experiment_parquets_root": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\prompt_evolution\\outputs\\a1513e2f258e\\iter_001\\experiments"
+}

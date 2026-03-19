@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_phd",
+    "high_qs_rank_education",
+    "industry_experience",
+    "ipo_experience",
+    "has_exited",
+    "leadership_experience",
+    "education_in_top_qs",
+    "industry_experience_duration",
+    "company_size_experience",
+    "multiple_education_degrees",
+    "multiple_exits",
+    "industry_certification_or_experience",
+    "education_in_field",
+    "duration_in_roles",
+    "industry_versatility",
+    "has_investment_or_board_experience",
+    "founder_role"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

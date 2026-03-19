@@ -1,0 +1,10 @@
+{
+  "status": "started",
+  "experiment": "A",
+  "total_records": 440,
+  "processed": 0,
+  "dataset_size": "full",
+  "batch_size": 20,
+  "n_batches": 22,
+  "timestamp": 1773879377.5918915
+}

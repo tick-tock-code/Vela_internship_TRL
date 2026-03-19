@@ -1,0 +1,2747 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive experience in high-responsibility roles within a large industry, demonstrating ownership and leadership, though limited direct startup evidence."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's short tenure as Executive Chairman and lack of startup-specific roles suggest limited ownership and progression."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "Multiple leadership roles across various companies and industries, with ownership in biotech and pharma startups, indicate strong signals of high growth and technical context."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited educational background and short tenure in leadership roles suggest limited progression and ownership."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a strong technical background with leadership in a large software company, indicating ownership and operating in a high-growth context."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership role in a large company suggests ownership, but limited startup-specific evidence and short tenure reduce the score."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in R&D and engineering roles in large aerospace and defense companies indicate ownership and technical expertise."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles in a large company show responsibility, but limited startup experience and short durations limit the score."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in software and research industries suggest ownership, but lack of startup experience and short durations reduce the score."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in a large company and entrepreneurial roles in multiple industries indicate ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior roles in biotech and pharma with ownership signals, operating in high-growth, technical environments."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in a manufacturing startup and experience in venture capital suggest ownership, but limited direct startup leadership."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Senior leadership in healthcare and research, with ownership signals, operating in high-growth, technical sectors."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership as an orthopedic surgeon indicates ownership and operating in a high-growth healthcare environment."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in marketing and consulting suggest ownership, but limited startup evidence and short durations."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term founder with leadership in software and corporate roles, indicating ownership and operating in high-growth sectors."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in creative industries over many years suggests ownership and operating in a high-growth, creative sector."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in education and media industries indicates ownership and operating in high-growth, technical sectors."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple research leadership roles in high-growth academic and biotech sectors suggest ownership and technical expertise."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in a large company and investor roles suggest ownership, but limited startup leadership and short durations reduce the score."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has diverse roles and long ownership in a high-growth industry, but limited evidence of rapid progression or early leadership in startups."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a significant leadership role as Co-Founder and CTO for 6-9 years in a tech startup, indicating ownership and high-growth context."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held a tech lead and engineering manager role over several years, showing progression and ownership in a high-growth industry."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles over several years in a high-growth healthcare industry, demonstrating ownership and technical leadership."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has long-term leadership as COO and Director in financial services, but limited evidence of rapid progression or startup ownership."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role as Co-Founder and COO for less than 2 years suggests limited ownership and early-stage involvement."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has a long tenure as President in transportation, but limited evidence of startup ownership or rapid progression."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has multiple leadership roles, including CEO and CTO, over several years in various tech industries, indicating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role as Chief Creative Director for over 9 years shows leadership but limited startup ownership or rapid progression."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held senior roles in financial services for several years, with high-level experience in a high-growth industry."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has long-term leadership as Chairman and CFO in a sizable startup, indicating ownership and operating in a high-growth industry."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles, including CEO, over several years in a high-growth biotech and tech industry, demonstrating ownership."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has led a startup as Principal for 2-3 years and held various product roles, indicating ownership and operating in a high-growth tech industry."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited information and only one role as Managing Consultant for 4-5 years; insufficient evidence of startup ownership or rapid progression."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Multiple software engineering roles over a few years, but no clear evidence of ownership or rapid progression in a high-growth startup context."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Only one role as Managing Partner for 2-3 years with no additional evidence; minimal signals of ownership or high-growth operation."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership as President (>9 years) in financial services indicates ownership and operating in a high-growth, technical industry."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior roles over several years in a large IT services company, demonstrating progression and ownership in a high-growth industry."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles as Principal and Partner for less than 2 years suggest limited ownership and early-stage involvement."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Multiple roles for less than 2 years, with no clear evidence of startup ownership or rapid progression."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held multiple leadership roles in a relatively short period, demonstrating ownership and progression in high-tech biotech, but the durations are mostly under 3 years, indicating some early-stage activity."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across diverse industries and a strong educational background suggest rapid progression and ownership in high-growth tech environments."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited leadership roles and primarily academic and early-stage involvement, with no clear evidence of ownership or high-growth activity."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term leadership in healthcare with multiple roles, but durations suggest moderate experience; some ownership, but not rapid progression."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles in digital and internet industries with some leadership, but durations are mostly under 2 years, indicating early-stage activity."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited to a 4-5 year experience in a specific industry, with no evidence of rapid progression or ownership."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in healthcare with multiple roles over 6-9 years, indicating ownership and high responsibility."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Moderate leadership experience in digital content, with durations mostly under 2 years, indicating early-stage involvement."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Long-term legal career but no evidence of startup ownership or rapid progression in entrepreneurial roles."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles over 2-3 years in digital media, but limited evidence of rapid progression or ownership in startups."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Strong academic background with leadership roles over 6-9 years, indicating ownership and high responsibility."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership roles over 4-9 years in media, but no clear evidence of startup ownership or high-growth context."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in financial services with over 6 years of experience, indicating ownership and responsibility."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles over 2-9 years in media and content, demonstrating ownership and progression in high-responsibility roles."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles over 2-3 years in marketing and strategy, but durations are short for strong ownership signals."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles over 2-9 years, including co-founder, indicating some ownership, but durations are relatively short."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in marketing and multiple senior roles over 2-9 years, indicating ownership and responsibility."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles over 2-6 years in digital and media, but durations are mostly under 3 years, indicating early-stage activity."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple high-responsibility roles over 2-9 years in sales, marketing, and management, indicating ownership and high-growth context."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Diverse leadership roles over 2-9 years in tech and management, with ownership signals in multiple industries."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles in large organizations over a span of years, demonstrating ownership and progression, though limited direct startup experience is noted."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in relevant industries over several years, indicating ownership and leadership in high-growth contexts, with a strong trajectory."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has experience as a founder and CTO in small startups, but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is primarily academic with minimal entrepreneurial or ownership signals, and limited evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles in high-responsibility positions within large organizations, demonstrating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term ownership as an owner and director, but limited evidence of rapid progression or operating in ambiguous, high-growth environments."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in health and wellness startups, but the durations and scope suggest moderate ownership with limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is primarily academic with no clear entrepreneurial ownership signals or operating in high-growth contexts."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in high-responsibility positions across diverse industries, demonstrating ownership and operating in high-growth or technical contexts."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to a short duration as a co-founder and board member, with minimal evidence of rapid progression or operating in ambiguous environments."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has academic experience and a brief role as an assistant, but limited evidence of ownership or operating in high-growth contexts."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held multiple roles in government and COO in a startup, indicating some ownership and leadership, but limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "The founder's experience is solely as an advisor with no evidence of ownership, progression, or operating in high-growth contexts."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple roles in relevant industries over several years, demonstrating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in large organizations, demonstrating ownership and operating in high-growth or technical contexts."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles in large organizations over several years, demonstrating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to a co-founder role with short duration, minimal evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in research and management, but limited evidence of ownership or operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in healthcare and research, demonstrating ownership and operating in high-growth or technical contexts."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held leadership roles in financial services, but limited evidence of rapid progression or operating in ambiguous, high-growth environments."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a strong technical background, leadership roles, and ownership in multiple industries, indicating high potential for success."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited leadership experience and small team size suggest early-stage involvement with less evidence of ownership or rapid progression."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Some leadership roles and industry experience, but relatively short duration and no clear high-growth indicators."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles across different industries, but no evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in multiple startups and industries, but team sizes and durations suggest early-stage activity."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple leadership roles and diverse experience, but limited evidence of operating in high-growth or technical contexts."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in multiple industries, high-level roles, and technical background suggest strong ownership and high-growth potential."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Extensive industry experience, leadership roles, and technical expertise indicate a high potential for success."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles and technical background, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in a large industry and technical roles suggest strong ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Diverse industry experience and leadership roles, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across industries, high-level positions, and diverse education support strong ownership potential."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Extensive technical leadership and industry experience indicate high potential for success."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in a single industry with some ownership, but limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles, diverse industry experience, and technical background suggest strong ownership and high-growth potential."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited leadership experience and small team size, with less evidence of rapid progression or operating in high-growth contexts."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Some leadership roles and industry experience, but limited evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles, diverse industries, and technical expertise indicate strong ownership and potential for success."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in a single industry with some ownership, but limited evidence of rapid progression or operating in ambiguous environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term industry experience and leadership roles, but no evidence of operating in high-growth or ambiguous environments."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive leadership roles across multiple industries, including CEO and board positions, indicating strong ownership and progression, though limited direct startup founding evidence."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has only been a founder for less than 2 years with no additional evidence of ownership or leadership in high-growth environments."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a strong technical background with leadership roles in academia and a co-founder role in a startup, showing ownership and technical expertise."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held long-term leadership roles, but no direct startup founding or ownership evidence; leadership in academia is less indicative of startup success."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "The founder has a PhD, multiple leadership roles, and a long tenure in academia, demonstrating ownership and technical expertise in a high-growth industry."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has a CEO role for 4-5 years in a startup, indicating ownership, but limited context on growth or technical trajectory."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Only a CEO role is mentioned with no additional evidence of ownership, progression, or high-growth context."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles, including co-founder and CEO, with a focus on growth and technical management, indicating strong signals."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Extensive academic leadership and long-term academic roles suggest ownership and technical expertise, though less startup-specific evidence."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term co-founder role with a senior VP position, but limited evidence of rapid progression or high-growth startup ownership."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited information; COO role for less than 2 years and a long co-founder tenure, but no clear evidence of high-growth or ownership."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "No industry or role details provided, insufficient evidence for evaluation."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple advanced degrees and leadership roles in academia and industry, indicating ownership and technical expertise."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in wellness industry startups, with multiple co-founder roles, demonstrating ownership and growth trajectory."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Diverse leadership roles in food and beverage, with multiple degrees and long-term industry involvement, indicating ownership."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited information; only a couple of roles with short durations, no clear startup ownership or high-growth signals."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Founder role for 2-3 years in a tech startup, indicating some ownership, but limited evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles, including co-founder and CPO, with a focus on growth and technical management, indicating strong signals."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term leadership in academia and research, but limited startup or ownership evidence."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited information; only management roles with no clear startup ownership or high-growth signals."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has demonstrated long-term leadership roles and ownership in a high-growth industry, with a recent startup experience indicating potential for success."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited recent ownership and short duration in roles suggest slower progression and less evidence of high-growth environment involvement."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Over 9 years as founder and managing director in a high-growth industry indicates strong ownership and leadership in an ambiguous environment."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across different companies and industries, with recent startup experience, suggest high trajectory and ownership."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are mostly in education and research with limited entrepreneurial ownership or high-growth context evidence."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in heritage and arts with some ownership, but limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles in financial services with some leadership, but limited recent ownership in a high-growth startup context."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term leadership in media with some entrepreneurial roles, but limited recent startup ownership or high-growth environment."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple advanced degrees and leadership roles in defense industry suggest operating in high-technical, high-growth environments with ownership."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in multiple senior product roles and entrepreneurial experience in software development indicate strong ownership and high-growth context."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior management roles in software and product management, with recent leadership, suggest high trajectory and ownership."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited leadership roles and recent ownership, with only a short entrepreneurial stint, suggest weaker evidence for success."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple engineering leadership roles in software and entertainment industries, with recent startup leadership, indicate strong technical ownership."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in research and development in higher education shows technical expertise but less evidence of high-growth startup ownership."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "No specific industry or leadership roles provided; minimal observable evidence of ownership or trajectory."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Advanced degrees and leadership in education research suggest high trajectory and ownership in a high-growth sector."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership roles in healthcare and clinical industries with long-term experience indicate strong ownership and operating in high-growth environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles in marketing and creative industries with some leadership, but limited recent ownership or high-growth startup experience."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior leadership roles in technology and semiconductor industries, with recent startup CEO experience, indicate high trajectory and ownership."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are in non-profit and athletic industries with limited evidence of entrepreneurial ownership or high-growth context."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has diverse roles in large companies with relatively short durations, indicating some leadership but limited ownership in high-growth environments."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles over a long period, demonstrating significant ownership and progression in startup and industry contexts."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Long-term partnership roles with limited evidence of startup ownership or rapid progression in high-growth environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Experience as an executive editor with a long tenure, but limited evidence of ownership or operating in high-growth or technical contexts."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in technical fields with a PhD and recent startup leadership, indicating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles in technical and startup environments, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term senior leadership roles in entertainment and strategy, with recent startup leadership, indicating ownership and high-growth operation."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership roles in unrelated industries with no clear evidence of ownership or rapid progression in high-growth or technical contexts."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in software and analytics with recent startup leadership, indicating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in legal and energy sectors with some ownership, but limited evidence of operating in high-growth or technical environments."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple co-founder roles in tech and telecommunications with recent leadership, indicating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in aerospace with recent startup roles, demonstrating ownership and operating in high-growth, technical environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior roles in biotech and finance with long tenure, indicating ownership and operating in high-growth environments."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited leadership roles, mostly consulting, with no clear evidence of ownership or high-growth operation."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are mostly in media and entertainment with limited ownership or rapid progression in high-growth contexts."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Experience as a software developer with limited leadership or ownership in high-growth environments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in biotech with a PhD and recent startup roles, demonstrating ownership and operating in high-growth, technical environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are mostly in sales and marketing with limited evidence of ownership or operating in high-growth or technical contexts."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are in business analysis with limited evidence of ownership or operating in high-growth environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are in marketing and consulting with limited ownership or rapid progression in high-growth contexts."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles in a high-growth industry with diverse technical experience, demonstrating ownership and progression."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has led a small startup for several years but shows limited evidence of rapid progression or operating in high-growth or technical environments."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in biotech research, indicating ownership and experience in high-growth scientific environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership in a medical field but limited evidence of operating in ambiguous or high-growth startup contexts."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "The founder's experience is limited to team roles with no clear ownership or progression, and minimal evidence of operating in high-growth environments."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "The founder has held multiple CTO roles across various industries, demonstrating rapid progression, ownership, and operating in high-growth tech environments."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a PhD and long-term leadership in aerospace, indicating ownership and technical expertise, though less evidence of rapid progression."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has led a large team in marketing and advertising for several years, but limited evidence of operating in ambiguous or high-growth startup environments."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held CTO and owner roles in small startups, showing ownership but limited evidence of operating in high-growth or technical contexts."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in large telecom companies, demonstrating leadership, ownership, and operating in high-growth environments."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership in marketing and advertising, but limited evidence of operating in ambiguous or high-growth startup contexts."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles across various industries, demonstrating ownership, progression, and operating in high-growth environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held CEO and chairman roles for many years, with leadership in armed forces and startups, indicating ownership and high-growth experience."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has led a startup for a few years with multiple management roles, but limited evidence of operating in high-growth or technical environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has led a startup and held senior sales roles, showing ownership but limited evidence of operating in high-growth or technical contexts."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple tutoring and leadership roles in education and research, demonstrating ownership and progression in high-impact environments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held various design roles in creative industries, but limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple CEO and co-founder roles in tech startups, demonstrating ownership, rapid progression, and operating in high-growth environments."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has long-term academic leadership roles in high-ranking institutions, demonstrating ownership and operating in high-growth research environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior academic and leadership roles in high-impact research institutions, demonstrating ownership and high-growth scientific environments."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has high-level academic credentials and extensive leadership roles in aerospace, indicating strong ownership and technical expertise, but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has multiple roles over several years, but most are in healthcare and research, with limited evidence of ownership or operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's brief military role shows limited ownership and progression, with no evidence of high-growth or technical context."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has diverse roles in management and development, but most are in established industries with limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive leadership in biotech and healthcare, with multiple advanced degrees and IPO experience, indicating strong ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in non-profit and advisory positions, but limited evidence of rapid progression or operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to a senior engineering role, with no evidence of ownership or operating in high-growth environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's roles are in early-stage startups, but most are co-founder roles with limited evidence of rapid progression or high-growth operation."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has multiple senior leadership roles, advanced degrees, and IPO experience, indicating strong ownership and operating in high-growth biotech environments."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to short-term roles in real estate, with no evidence of ownership or high-growth context."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder holds multiple leadership roles in manufacturing and finance, but most are in established industries with limited evidence of rapid progression or operating in ambiguous environments."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive leadership roles, board experience, and an acquisition, indicating strong ownership and operating in high-growth, technical contexts."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has senior roles in private equity and finance, but most are in established industries with limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has advanced degrees and senior technical roles in semiconductor industry, indicating ownership and operating in high-growth, technical environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role as editor-in-chief shows leadership but limited ownership or high-growth context."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has legal and policy experience in government and academia, but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has long-term ownership roles and leadership in IT services, indicating strong ownership and operating in high-growth environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's roles are in early-stage startups with limited evidence of rapid progression or high-growth operation."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive ownership and leadership roles in aerospace, with multiple degrees and long-term roles, indicating strong ownership and high-growth context."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in entertainment and arts, but most are short-term or in established industries, with limited evidence of rapid progression or high-growth operation."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has relevant research experience and leadership in a high-growth research industry, indicating some ownership and progression."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has extensive leadership roles and long tenure, but mostly in legal and corporate environments, with limited evidence of operating in high-growth or ambiguous contexts."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has a mix of research and industry experience in biotech, with some leadership, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has long industry experience but in established roles within a single industry, with no clear evidence of rapid progression or operating in high-growth contexts."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has leadership experience but in a stable industry with no clear evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has military leadership and some digital experience, but limited evidence of ownership or operating in high-growth contexts."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has technical expertise and leadership in software, with some progression, but limited evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long leadership experience in management and strategy, but mostly in established industries, with some evidence of progression."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in multiple startups and industries, indicating ownership and some progression, but limited evidence of high-growth or technical environments."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a PhD and leadership in a high-tech industry, with clear ownership and operating in a high-growth, technical environment."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has technical and leadership experience in software, but mostly in established roles with limited evidence of operating in ambiguous or high-growth contexts."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to a design engineering role in a large company, with no evidence of ownership or operating in high-growth environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership in aerospace and research, but limited evidence of rapid progression or operating in ambiguous, high-growth contexts."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has technical expertise and leadership in medical equipment, but limited evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has long-term leadership roles but in stable industries, with no evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has long-term leadership in a tech startup, with evidence of operating in a high-growth, ambiguous environment."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to leadership in higher education and venture advising, with no clear evidence of operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership in renewable energy and consulting, with some evidence of progression, but limited in high-growth or ambiguous contexts."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has high-level leadership in financial services and tech, operating in a high-growth, technical environment, indicating strong signals."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has limited experience as a developer in a large company, with no evidence of ownership or high-growth operation."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has diverse roles with ownership in multiple companies and leadership in high-growth environments, demonstrating rapid progression and technical context."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term roles but limited evidence of ownership or rapid progression, with leadership in support roles over many years."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is primarily in engineering roles with limited ownership or leadership in ambiguous or high-growth contexts."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "The founder has held senior leadership roles, ownership, and operates in a high-growth biotech environment, indicating strong signals of success potential."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is solely in a clinical role with no evidence of ownership or rapid progression in a startup context."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has leadership roles across multiple industries and long-term involvement, with some evidence of ownership and operating in high-growth sectors."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is mainly in athletic and defense roles with no clear ownership or leadership in startup or high-growth environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has multiple leadership roles, ownership, and operates in a high-growth legal tech environment, supporting success signals."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has long-term leadership and ownership roles in real estate and hospitality, with evidence of operating in high-growth sectors."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple executive roles, leadership, and ownership in marketing and climate tech, indicating strong signals."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "The founder has extensive academic leadership, ownership, and operates in a high-growth research and tech environment, demonstrating strong signals."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles and ownership but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held senior leadership roles with ownership in healthcare, operating in high-growth sectors with evidence of ownership."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership roles and ownership but limited evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has multiple research leadership roles, ownership, and operates in high-growth biotech sectors, indicating strong signals."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is mainly in early startup roles with limited evidence of ownership or rapid progression."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles with ownership in financial tech, operating in high-growth sectors with leadership signals."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has high academic achievement, leadership, and some ownership, operating in research and tech sectors with success signals."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive leadership and ownership roles in aerospace and defense, operating in high-growth, technical environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership and ownership in a niche industry but limited evidence of rapid progression or high-growth ambiguity."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has over 9 years of leadership and ownership roles in a high-growth industry, demonstrating rapid progression and responsibility."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has multiple roles over a few years, but most are short-term and in different companies, indicating some ownership but limited evidence of rapid progression."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's roles are spread over several years with no clear leadership in high-growth environments, indicating limited ownership and slow progression."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership roles, but in industries outside high-growth or technical environments, with some ownership evidence."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has over 9 years of leadership in a high-growth industry, with clear ownership and operational responsibility."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Most roles are short-term and in different industries, with limited evidence of ownership or rapid progression."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles are varied and mostly short-term, with some leadership, but limited evidence of operating in high-growth or technical contexts."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are short-term and in industries outside high-growth or technical sectors, with limited ownership evidence."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles over several years in high-growth industries, demonstrating ownership and technical experience."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are short-term and in industries outside high-growth or technical sectors, with limited ownership evidence."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles are varied but mostly short-term, with some leadership in high-growth industries, though not consistently rapid progression."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are short-term and in industries outside high-growth or technical sectors, with limited ownership evidence."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles span several years with some leadership, but mostly in industries with moderate growth, limited evidence of operating in high-growth environments."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership roles in a high-growth industry, demonstrating ownership and technical expertise."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are short-term and in industries outside high-growth or technical sectors, with limited ownership evidence."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles are varied with some leadership, but mostly short-term and in industries with moderate growth, limited evidence of operating in high-growth environments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Roles are short-term and in industries outside high-growth or technical sectors, with limited ownership evidence."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles include some leadership in industries with moderate growth, but most are short-term with limited evidence of rapid progression."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership roles in high-growth industries, demonstrating ownership and operational responsibility."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles over several years in high-growth and technical industries, demonstrating ownership and technical expertise."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held multiple leadership roles in a relatively short period, indicating ownership and progression, but the durations are brief, limiting evidence of sustained high-growth or technical leadership."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has extensive management experience over a long period, but the roles are mostly in non-startup environments, with limited evidence of early ownership or rapid progression in a startup context."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has been CEO for 2-3 years, showing leadership, but the duration is moderate, and there is limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has owned a startup for less than 2 years and has a long management history elsewhere, but the startup experience is recent and limited in duration."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has extensive experience in gaming, but no evidence of ownership or leadership in a startup or high-growth environment."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a PhD and leadership roles in a relevant industry, with a clear trajectory in engineering and management, indicating ownership and technical expertise."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder co-founded a startup less than 2 years ago, but the experience is recent and limited, with no evidence of rapid progression or operating in high-growth contexts."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles over a long period, with leadership in engineering and management, indicating ownership and operating in a technical context."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior management roles over several years in a high-growth industry, demonstrating ownership and technical leadership."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has a long career with various roles, including ownership, but most are in consulting and industry roles, with limited evidence of early startup leadership."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in a high-growth industry for many years, indicating ownership and technical leadership."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has been a CEO for 2-3 years and held other senior roles, but the duration is moderate, with limited evidence of rapid progression."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has recent startup leadership experience and a long management career, but the startup experience is brief."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in a large industry, with leadership in marketing and product management, indicating ownership and technical expertise."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held a director role for less than 2 years and a long management career, but limited startup ownership evidence."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has been a partner and senior engineer for several years, indicating ownership and technical leadership, but no recent startup leadership."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple high-level roles in a large industry for many years, demonstrating ownership and technical leadership."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has been president and held senior roles for many years, but the startup experience is recent and limited."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles in a large, high-growth industry, demonstrating ownership and technical expertise."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has a long research career with leadership roles, but limited evidence of startup ownership or rapid progression."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder shows early leadership and ownership in a high-growth healthcare industry, but the short duration (<2 years) limits confidence in rapid progression."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has extensive experience across multiple roles and industries, including leadership in defense and aerospace, indicating ownership and trajectory in ambiguous environments."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Long tenure (>9 years) in sales and marketing suggests some ownership, but limited evidence of rapid progression or operating in high-growth or technical contexts."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term experience (>9 years) in research and co-founding, but lacks evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple advanced degrees and diverse roles in biotech and nanotech research, with leadership in startups, indicate strong ownership and operating in high-tech environments."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a high-level engineering degree from a top-ranked institution and diverse roles in biotech, indicating ownership and operating in high-growth, technical contexts."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Extensive leadership roles over several years in digital solutions and retail, with progression into executive roles, suggest ownership and operating in high-growth environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in global operations and management roles in the automotive industry demonstrate ownership and operating in high-growth, technical contexts."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across industries and years of experience indicate ownership and operating in high-growth, technical environments."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Minimal information provided; only a role listed without evidence of ownership or progression."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior roles in strategy, management, and leadership over several years in diverse industries suggest ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership as CEO and founder in software development indicates ownership and operating in high-growth, technical environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership roles spanning over 6 years in renewable energy and climate tech demonstrate ownership and operating in high-growth sectors."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Short-term CEO role suggests some ownership, but limited evidence of rapid progression or operating in high-growth or technical contexts."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership as CEO and co-founder in technology and internet platforms over several years indicates ownership and operating in high-growth environments."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Short tenure as algorithmic trader suggests some technical expertise, but limited evidence of ownership or rapid progression."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in pharmaceutical manufacturing over several years demonstrate ownership and operating in high-growth, technical sectors."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles in research and technology in cybersecurity industry suggest some ownership, but limited evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership in renewable energy and climate tech with advanced degrees from top institutions indicates ownership and operating in high-growth, technical environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Roles in financial services over a short period suggest some ownership, but limited evidence of rapid progression or operating in high-growth contexts."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a long CEO tenure, experience in high-growth IPO environment, and responsibility in a technical industry, indicating strong signals of ownership and leadership."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has extensive research experience and leadership roles, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has held multiple roles over a long period, but there is limited evidence of ownership or operating in high-growth or ambiguous contexts."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has diverse roles and leadership experience, but the short duration in each role and lack of high-growth signals limit the score."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to a short CEO tenure in a small startup, with no evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple director roles in large companies and leads a biotech startup, indicating ownership and experience in high-growth environments."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has a significant technical background, a leadership role as CTO, and overseen a large acquisition, indicating ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's roles are mostly in financial services and small startups, with limited evidence of rapid progression or operating in ambiguous high-growth environments."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held multiple senior roles in a large company, but the startup leadership role is recent and limited in scope."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held senior leadership roles in large organizations and leads a startup, demonstrating ownership and experience in high-growth sectors."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "The profile provides minimal information, with only a co-founder role and no evidence of progression or ownership."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has a long writing career but no evidence of ownership or operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has multiple roles in education and marketing, but limited evidence of rapid progression or high-growth startup leadership."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior research and leadership roles in biotech and pharma, indicating ownership and operating in high-growth environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has leadership roles in healthcare and a recent startup, demonstrating ownership and operating in high-growth sectors."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in media and entertainment, but limited evidence of ownership or operating in high-growth ambiguous environments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has advanced healthcare roles and leadership in a startup, indicating ownership and high-growth context."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has multiple degrees and roles in management and education, but limited evidence of rapid progression or high-growth startup ownership."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in healthcare and retail, but the scope and duration of roles limit the strength of signals."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles in financial services and leads a tech startup, demonstrating ownership and operating in high-growth contexts."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across different durations and industries suggest strong ownership and progression, indicating potential for success."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Experience in product marketing and analytics shows relevant skills, but limited startup ownership evidence reduces score."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term roles in R&D and management in relevant industries demonstrate ownership and technical expertise."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership in a small startup for less than 2 years and limited industry context suggest weaker signals."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple legal roles and advanced education indicate ownership and high technical competence."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Military and analyst roles show responsibility but limited startup ownership and industry relevance."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Diverse technical roles and leadership in a startup suggest strong technical ownership and progression."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple senior roles in relevant industries and a PhD indicate high technical ownership and leadership."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term ownership as founder and owner in a relevant industry demonstrates strong signals."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "High-level education and leadership roles in relevant industries suggest strong potential for success."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Experience in media and leadership roles show ownership, but less technical or high-growth context."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Academic leadership and diverse research roles in relevant fields indicate ownership and high potential."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in sales and consulting shows ownership, but limited startup or high-growth signals."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term ownership in a relevant industry and leadership roles suggest strong potential."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Advanced education and long-term research leadership in relevant industries indicate ownership and high growth potential."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Diverse technical roles and leadership in a startup suggest strong signals of ownership and progression."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Minimal information and lack of leadership or ownership evidence suggest weak signals."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles and relevant industry experience indicate strong signals of ownership and success potential."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in relevant industries and technical roles suggest strong ownership and high-growth potential."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "High-level education and leadership in relevant healthcare and tech industries indicate strong signals of ownership and success."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has diverse leadership roles across multiple industries and a trajectory indicating ownership and responsibility, with experience in high-growth sectors."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited evidence of ownership or rapid progression; primarily co-founder roles in early-stage startups with short durations."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Professional experience is in healthcare roles with no clear indication of startup ownership or high-growth context."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term ownership as owner/CEO and leadership in software industry suggest ownership, but limited evidence of rapid progression."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles across various industries with some leadership experience; evidence of ownership in startup context is moderate."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple co-founder and advisory roles over several years in relevant industries, indicating ownership and high-growth potential."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "Advanced academic credentials from top-ranked institutions and leadership roles in research startups demonstrate high ownership and technical expertise."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Experience is in technical roles with no evidence of ownership or leadership in startup environments."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership role as president for over 9 years indicates ownership, but in a non-startup context."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Founder role in a small startup with limited evidence of rapid progression or ownership in high-growth environments."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Multiple roles in various industries with no clear indication of startup ownership or leadership in high-growth contexts."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in finance and management, with long-term ownership and high-level experience in relevant sectors."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 5,
+    "rubric_score": 5,
+    "rubric_score_justification": "Over 9 years as president of a startup, with diverse academic background and leadership in technology and research sectors."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership roles in digital solutions and extensive experience in industry, indicating ownership and progression."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term CTO roles suggest ownership, but in a non-startup industry; limited evidence of rapid progression."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple founding and advisory roles over several years, with leadership in media and publishing sectors."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Leadership as co-founder and president in relevant industries, with evidence of ownership and high-growth experience."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in early-stage startups and academia, but limited evidence of rapid progression or ownership in high-growth startups."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Academic credentials from top-ranked institutions and leadership roles in research startups suggest ownership and technical expertise."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in industry with long tenure, but no clear evidence of startup ownership or rapid progression."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has a strong academic background and early leadership experience as a research scientist, but limited entrepreneurial ownership or high-growth context evidence."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role as Vice Chair in research shows leadership, but lacks entrepreneurial ownership or high-growth indicators."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Multiple co-founder roles and diverse experience suggest ownership, but no evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership as CEO and high-level management in multiple companies indicate ownership and operational responsibility in a high-growth industry."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in software development with long durations suggest ownership and technical leadership, though not necessarily rapid progression."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Long-term co-founder in a startup, but limited evidence of rapid progression or operating in high-growth or technical contexts."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership as MD in a large company shows responsibility, but no entrepreneurial ownership or high-growth context evidence."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in finance and entertainment industry over several years suggest ownership, but limited evidence of rapid progression or high-growth environment."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term CEO and founder roles in financial services indicate ownership and operating responsibility in a high-growth industry."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in software and tech industries over several years suggest ownership and technical leadership, with some evidence of high-growth context."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple executive and founding roles in software and tech, with long durations, indicate ownership and technical leadership in high-growth environments."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Leadership roles are in hospitality and construction, with no evidence of ownership or high-growth or technical context relevant to startup success."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple technical roles and leadership in a startup with short durations suggest ownership, technical expertise, and operating in a high-growth industry."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term leadership in financial services indicates ownership, but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple leadership roles in tech startups and technical expertise suggest ownership, but no clear evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership roles in academia and non-profit, with no entrepreneurial ownership or high-growth startup experience."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple academic leadership roles and a founder role suggest ownership, but limited evidence of rapid progression or high-growth environment."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Long-term roles in marketing and industry, but no evidence of ownership or operating in high-growth or technical contexts."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in software and tech startups, with long durations, indicating ownership and technical leadership in high-growth environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership as senior consultant in healthcare industry shows responsibility, but limited evidence of ownership or high-growth startup experience."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has diverse roles across multiple industries with limited evidence of rapid progression or ownership in a high-growth or technical environment."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership roles and extensive experience, but lacks clear evidence of operating in ambiguous or high-growth contexts."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's leadership duration is short, with limited evidence of ownership or operating in high-growth environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has a strong academic background and leadership roles, but experience in ambiguous or high-growth contexts is limited."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is primarily academic and research-based with no clear evidence of ownership or operating in high-growth environments."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has diverse roles and leadership experience, but the short duration and lack of high-growth context limit the score."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has extensive technical experience and leadership roles, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership roles and diverse experience, but lacks evidence of operating in high-growth or technical contexts."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership experience in a technical startup, but the duration is moderate and evidence of rapid progression is limited."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is limited to leadership roles in software development with no evidence of ownership or high-growth operation."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has high-level roles in a healthcare startup, but the experience duration and context do not strongly indicate high-growth or technical leadership."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role as co-founder with limited duration and no further evidence suggests limited ownership or high-growth experience."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Insufficient information and no evidence of leadership, ownership, or high-growth context."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Limited professional experience and no evidence of ownership or high-growth operation."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Limited information and no evidence of leadership or ownership in a high-growth or technical environment."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has diverse roles and leadership experience in multiple industries, but the short duration limits the strength of the signal."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has extensive technical roles and leadership in a startup, but the experience duration is moderate."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has long-term leadership roles and diverse experience, but lacks evidence of high-growth or technical operation."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has held multiple leadership roles in a technical startup, but the experience duration and context are moderate."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is primarily in leadership roles with limited evidence of ownership or operating in high-growth environments."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Limited professional experience and no evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles over several years in relevant industries suggest ownership and some progression, but limited early leadership evidence."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 5,
+    "rubric_score": 4,
+    "rubric_score_justification": "Extensive leadership roles in high-growth tech companies and technical background indicate strong signals of ownership and operating in high-growth contexts."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Limited professional experience and no evidence of rapid progression or ownership; experience mostly in small roles."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Experience limited to art direction roles with no evidence of ownership or high-growth environment."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in healthcare and financial services suggest ownership, but experience duration and progression details are limited."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Multiple roles in management and real estate, but limited evidence of rapid progression or operating in high-growth or ambiguous environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Long-term founder in creative design with no evidence of rapid progression or ownership in high-growth contexts."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Research roles in academia with no evidence of ownership or operating in high-growth environments."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in healthcare and financial trading suggests ownership, but experience duration and context are moderate."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple executive roles in biotech and manufacturing indicate ownership and responsibility, but limited early progression evidence."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Single role in government services with no evidence of ownership or high-growth operation."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Roles in IT and fitness are moderate, with no evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in legal and digital industries with high-level roles suggests ownership, but limited early progression evidence."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple senior roles in financial services indicate ownership and responsibility, but no rapid progression or ambiguity evidence."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Long-term leadership in financial services suggests ownership, but limited evidence of operating in ambiguous or high-growth environments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Roles in NGO and government are moderate, with no evidence of ownership or high-growth operation."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in large software companies suggest ownership, but limited early progression or ambiguity evidence."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple executive roles in finance and management indicate ownership, but limited evidence of rapid progression or operating in ambiguous environments."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in software and tech roles with high responsibility suggests ownership, but limited early progression evidence."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder demonstrates ownership as an owner in a manufacturing startup with relevant industry experience, but lacks evidence of rapid progression or operating in high-growth or technical environments."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has extensive leadership roles in public safety but no clear startup ownership or rapid progression in a high-growth or technical context."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder has leadership roles in software but limited ownership and short durations, with no evidence of rapid progression or high-growth environment."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder leads a venture in a high-growth industry with strong educational background and leadership roles, indicating early leadership and ownership in a technical context."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has ownership in a software startup with a CTO role, but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple leadership roles over a long period, indicating ownership and operating in a high-growth or technical context."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership in biotech with relevant education, but limited evidence of rapid progression or operating in ambiguous/high-growth environments."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is mostly in diverse roles with limited ownership or rapid progression, and no high-growth startup context."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has leadership roles in a high-growth industry with relevant education and technical experience, indicating early leadership and ownership."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has overseen a significant acquisition and leadership roles, but limited evidence of rapid progression or operating in ambiguous/high-growth environments."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles over a long period in a high-growth industry, indicating ownership and early leadership."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "The founder's experience is limited to a single engineering role with no evidence of ownership, progression, or high-growth context."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in manufacturing with relevant education, but limited evidence of rapid progression or operating in high-growth environments."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role is in pharmaceutical manufacturing with no evidence of startup ownership or rapid progression."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder leads a small startup in e-learning with limited evidence of rapid progression or high-growth environment."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has long-term leadership roles in healthcare with relevant education, indicating early leadership and ownership in a high-growth context."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has leadership roles in financial services with relevant education, but limited evidence of rapid progression or operating in ambiguous/high-growth environments."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder has held multiple senior roles over a long period in a high-growth software industry, indicating ownership and early leadership."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is in consulting with limited evidence of ownership or rapid progression in a startup or high-growth environment."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "The founder's experience is limited to a short-term CEO role in a non-startup industry, with no evidence of ownership or rapid progression."
+  }
+]

@@ -19,6 +19,11 @@ def test_validate_mutation_accepts_plain_rubric() -> None:
     assert ok
 
 
+def test_validate_mutation_rejects_key_names() -> None:
+    ok, _ = _validate_mutation("Include trajectory_strength in the output.")
+    assert not ok
+
+
 def test_build_critic_payload_strips_labels() -> None:
     df = pd.DataFrame(
         {

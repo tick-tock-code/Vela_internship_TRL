@@ -1,4 +1,4 @@
-"""Train-only GEPA-style prompt evolution for Experiment B."""
+"""Train-only GEPA-style prompt evolution for merged Experiment A+B."""
 
 from __future__ import annotations
 
@@ -14,7 +14,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from think_reason_learn.core.llms import OpenAIChoice
+from sklearn.model_selection import StratifiedKFold
+from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 from think_reason_learn.core.llms import llm as trl_llm
 
 from llm_reasoning_features import ReasoningConfig, generate_reasoning_features, _assert_no_label_fields
@@ -35,6 +36,13 @@ FORBIDDEN_MUTATION_MARKERS = [
     "schema",
     "{{",
     "}}",
+    "evidence_support_rating",
+    "trajectory_strength",
+    "ownership_signal",
+    "career_coherence",
+    "scrappiness",
+    "rubric_score",
+    "justification",
 ]
 
 REQUIRED_COLUMNS = {
@@ -46,7 +54,7 @@ REQUIRED_COLUMNS = {
 }
 
 DEFAULTS: dict[str, Any] = {
-    "experiment": "B",
+    "experiment": "AB",
     "pool_size": 10,
     "sample_size": 200,
     "batch_size": 20,
@@ -59,7 +67,9 @@ DEFAULTS: dict[str, Any] = {
     "input_csv": "",
     "test_size": 0.20,
     "llm_model": "gpt-4.1-nano",
+    "llm_google_model": "gemini-2.0-flash",
     "critic_model": "gpt-4.1-nano",
+    "critic_provider": "openai",
     "critic_temperature": 0.2,
     "core_prompt_path": str(DEFAULT_CORE_PROMPT),
     "experiments_path": str(DEFAULT_EXPERIMENTS),
@@ -67,7 +77,7 @@ DEFAULTS: dict[str, Any] = {
     "dry_run": False,
     "initial_mutations": 9,
     "critic_sample_size": 20,
-    "cv_folds": 10,
+    "cv_folds": 4,
     "cv_use_fixed_folds": True,
     "cv_folds_path": "",
 }
@@ -309,7 +319,7 @@ def _critic_prompt(
     summary: dict[str, Any],
 ) -> str:
     return (
-        "You are a prompt critic improving Experiment B instructions.\n"
+        "You are a prompt critic improving Experiment AB instructions.\n"
         "You MUST NOT change output keys, schema, or formatting rules. "
         "Do NOT mention JSON, output keys, or formatting in your response.\n"
         "Return ONLY the new instruction text, no quotes, no markdown.\n\n"
@@ -326,6 +336,7 @@ def _critic_prompt(
 def _mutate_with_critic(
     instructions: str,
     model: str,
+    provider: str,
     temperature: float,
     sample_outputs: list[dict[str, Any]],
     summary: dict[str, Any],
@@ -336,7 +347,10 @@ def _mutate_with_critic(
         return instructions + "\n\nMake the rubric more concise and evidence-based."
 
     prompt = _critic_prompt(instructions, sample_outputs, summary)
-    choice = OpenAIChoice(model=model)
+    if provider == "google":
+        choice = GoogleChoice(model=model)
+    else:
+        choice = OpenAIChoice(model=model)
     last_text = ""
     for attempt in range(max_attempts):
         resp = trl_llm.respond_sync(
@@ -416,70 +430,97 @@ def _cv_metrics_from_fold_ids(
     return metrics
 
 
-def _generate_reasoning_by_fold(
-    records: list[dict[str, Any]],
-    labels: np.ndarray,
-    fold_ids: np.ndarray,
-    config: ReasoningConfig,
-    output_dir: Path,
-    meta_path: Path,
-) -> tuple[pd.DataFrame, list[str]]:
-    frames: list[pd.DataFrame] = []
-    numeric_keys: list[str] | None = None
-    for fold_id in sorted(set(int(x) for x in fold_ids)):
-        idx = np.where(fold_ids == fold_id)[0]
-        if idx.size == 0:
+def _cv_metrics_from_sample(
+    X: np.ndarray,
+    y: np.ndarray,
+    n_folds: int,
+    random_state: int,
+) -> dict[str, float]:
+    if len(np.unique(y)) < 2:
+        return {
+            "roc_auc": 0.5,
+            "pr_auc": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f0.5": 0.0,
+            "accuracy": 0.0,
+            "precision@1%": 0.0,
+            "precision@5%": 0.0,
+            "precision@10%": 0.0,
+            "cv_folds_used": 0.0,
+            "note": "single_class_sample",
+        }
+    counts = np.bincount(y.astype(int))
+    min_count = int(counts.min()) if counts.size else 0
+    use_folds = min(n_folds, min_count) if min_count >= 2 else 1
+    if use_folds < 2:
+        return {
+            "roc_auc": 0.5,
+            "pr_auc": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f0.5": 0.0,
+            "accuracy": 0.0,
+            "precision@1%": 0.0,
+            "precision@5%": 0.0,
+            "precision@10%": 0.0,
+            "cv_folds_used": 0.0,
+            "note": "insufficient_class_counts",
+        }
+    skf = StratifiedKFold(n_splits=use_folds, shuffle=True, random_state=random_state)
+    metrics_list: list[dict[str, float]] = []
+    for train_idx, test_idx in skf.split(X, y):
+        y_train = y[train_idx]
+        y_test = y[test_idx]
+        if len(np.unique(y_train)) < 2 or len(np.unique(y_test)) < 2:
             continue
-        fold_records = [records[i] for i in idx]
-        fold_labels = labels[idx]
-        fold_dir = output_dir / f"fold_{fold_id}"
-        fold_meta = meta_path.with_name(meta_path.stem + f"_fold{fold_id}.json")
-        fold_config = ReasoningConfig(
-            model=config.model,
-            dataset_size=config.dataset_size,
-            random_state=config.random_state,
-            core_prompt_path=config.core_prompt_path,
-            experiments_path=config.experiments_path,
-            providers=config.providers,
-            google_model=config.google_model,
-            batch_size=config.batch_size,
-            concurrency=config.concurrency,
-            experiments=config.experiments,
-            dry_run=config.dry_run,
-            dry_run_fast=config.dry_run_fast,
-            log_dir=(config.log_dir / f"fold_{fold_id}") if config.log_dir else None,
-            log_every=config.log_every,
-            repair_nan=config.repair_nan,
-            repair_existing=config.repair_existing,
-            skip_select=config.skip_select,
+        train_scores, test_scores, _ = _train_sklearn(
+            X[train_idx], y_train, X[test_idx], random_state
         )
-        fold_df, fold_numeric = generate_reasoning_features(
-            records=fold_records,
-            labels=fold_labels,
-            config=fold_config,
-            output_dir=fold_dir,
-            metadata_path=fold_meta,
-        )
-        if numeric_keys is None:
-            numeric_keys = list(fold_numeric)
-        elif set(fold_numeric) != set(numeric_keys):
-            raise RuntimeError("Fold numeric keys mismatch in prompt evolution.")
-        fold_df.insert(0, "__row_index__", idx)
-        frames.append(fold_df)
-
-    if not frames or numeric_keys is None:
-        raise RuntimeError("No reasoning outputs generated for prompt evolution.")
-
-    combined = pd.concat(frames, ignore_index=True)
-    combined = combined.sort_values("__row_index__").drop(columns=["__row_index__"])
-    return combined, numeric_keys
+        metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
+        acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
+        metrics["accuracy"] = acc
+        metrics_list.append(metrics)
+    if not metrics_list:
+        return {
+            "roc_auc": 0.5,
+            "pr_auc": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f0.5": 0.0,
+            "accuracy": 0.0,
+            "precision@1%": 0.0,
+            "precision@5%": 0.0,
+            "precision@10%": 0.0,
+            "cv_folds_used": 0.0,
+            "note": "single_class_folds",
+        }
+    keys = [
+        "roc_auc",
+        "pr_auc",
+        "precision",
+        "recall",
+        "f0.5",
+        "accuracy",
+        "precision@1%",
+        "precision@5%",
+        "precision@10%",
+    ]
+    means = {k: float(np.nanmean([m[k] for m in metrics_list])) for k in keys}
+    stds = {k: float(np.nanstd([m[k] for m in metrics_list])) for k in keys}
+    metrics: dict[str, float] = dict(means)
+    for key in keys:
+        metrics[f"{key}_std"] = stds[key]
+    metrics["cv_folds_used"] = float(len(metrics_list))
+    if use_folds != n_folds:
+        metrics["note"] = f"cv_folds_reduced_to_{use_folds}"
+    return metrics
 
 
 def _evaluate_prompt(
     prompt: PromptVariant,
     records: list[dict[str, Any]],
     labels: np.ndarray,
-    fold_ids: np.ndarray,
     cv_folds: int,
     output_root: Path,
     iter_idx: int,
@@ -512,20 +553,18 @@ def _evaluate_prompt(
         repair_existing=False,
         skip_select=True,
     )
-    df, numeric_keys = _generate_reasoning_by_fold(
+    df, numeric_keys = generate_reasoning_features(
         records=records,
         labels=labels,
-        fold_ids=fold_ids,
         config=config,
         output_dir=output_dir,
-        meta_path=meta_path,
+        metadata_path=meta_path,
     )
 
     X = df[numeric_keys].values.astype(float)
-    metrics = _cv_metrics_from_fold_ids(
+    metrics = _cv_metrics_from_sample(
         X=X,
         y=labels,
-        fold_ids=fold_ids,
         n_folds=cv_folds,
         random_state=args.random_state + iter_idx,
     )
@@ -577,13 +616,12 @@ def _full_eval(
         repair_existing=False,
         skip_select=True,
     )
-    df, numeric_keys = _generate_reasoning_by_fold(
+    df, numeric_keys = generate_reasoning_features(
         records=records,
         labels=labels,
-        fold_ids=fold_ids,
         config=config,
         output_dir=output_dir,
-        meta_path=meta_path,
+        metadata_path=meta_path,
     )
     X = df[numeric_keys].values.astype(float)
     metrics = _cv_metrics_from_fold_ids(
@@ -614,7 +652,7 @@ def _apply_config(args: argparse.Namespace, cfg: dict[str, Any]) -> argparse.Nam
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Train-only prompt evolution for Experiment B.")
+    p = argparse.ArgumentParser(description="Train-only prompt evolution for Experiment AB.")
     p.add_argument("--config", type=str, default="")
     p.add_argument("--experiment", type=str, default=DEFAULTS["experiment"])
     p.add_argument("--pool_size", type=int, default=DEFAULTS["pool_size"])
@@ -629,7 +667,9 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--input_csv", type=str, default=DEFAULTS["input_csv"])
     p.add_argument("--test_size", type=float, default=DEFAULTS["test_size"])
     p.add_argument("--llm_model", type=str, default=DEFAULTS["llm_model"])
+    p.add_argument("--llm_google_model", type=str, default=DEFAULTS["llm_google_model"])
     p.add_argument("--critic_model", type=str, default=DEFAULTS["critic_model"])
+    p.add_argument("--critic_provider", type=str, default=DEFAULTS["critic_provider"], choices=["openai", "google"])
     p.add_argument("--critic_temperature", type=float, default=DEFAULTS["critic_temperature"])
     p.add_argument("--core_prompt_path", type=str, default=DEFAULTS["core_prompt_path"])
     p.add_argument("--experiments_path", type=str, default=DEFAULTS["experiments_path"])
@@ -671,7 +711,7 @@ def main() -> None:
 
     features_cfg = Path(__file__).parent / "features.json"
     llm_providers = {"openai": True, "google": False}
-    llm_google_model = None
+    llm_google_model = args.llm_google_model
     cv_folds = int(args.cv_folds)
     cv_use_fixed_folds = bool(args.cv_use_fixed_folds)
     cv_folds_path = args.cv_folds_path
@@ -682,11 +722,6 @@ def main() -> None:
             llm_providers = dict(data.get("llm_providers"))
         if data.get("llm_google_model"):
             llm_google_model = str(data.get("llm_google_model"))
-        if data.get("cv_folds") is not None:
-            try:
-                cv_folds = int(data.get("cv_folds"))
-            except Exception:
-                pass
         if "cv_use_fixed_folds" in data:
             cv_use_fixed_folds = bool(data.get("cv_use_fixed_folds"))
         if "cv_folds_path" in data:
@@ -696,6 +731,11 @@ def main() -> None:
                 seed_size = int(data.get("llm_engineered_seed_size"))
             except Exception:
                 seed_size = 100
+
+    if isinstance(cfg.get("llm_providers"), dict):
+        llm_providers = dict(cfg.get("llm_providers"))
+    if cfg.get("llm_google_model"):
+        llm_google_model = str(cfg.get("llm_google_model"))
 
     seed_path = Path(__file__).parent / "features_storage" / "llm_engineered" / f"seed_{seed_size}.json"
     if seed_path.exists():
@@ -741,6 +781,7 @@ def main() -> None:
         mutated = _mutate_with_critic(
             instructions=base_instructions,
             model=args.critic_model,
+            provider=args.critic_provider,
             temperature=args.critic_temperature,
             sample_outputs=[],
             summary={"note": "initial mutation"},
@@ -775,7 +816,6 @@ def main() -> None:
         sample_indices = rng.choice(len(records), size=sample_n, replace=False)
         sample_records = [records[i] for i in sample_indices]
         sample_labels = labels[sample_indices]
-        sample_fold_ids = fold_ids[sample_indices]
         _write_json(iter_root / "sample_indices.json", [int(i) for i in sample_indices])
 
         metrics_by_prompt: dict[str, dict[str, float]] = {}
@@ -787,7 +827,6 @@ def main() -> None:
                 prompt=prompt,
                 records=sample_records,
                 labels=sample_labels,
-                fold_ids=sample_fold_ids,
                 cv_folds=cv_folds,
                 output_root=root,
                 iter_idx=iter_idx,
@@ -807,13 +846,13 @@ def main() -> None:
             key=lambda p: metrics_by_prompt[p.prompt_id].get(args.selection_metric, 0.0),
             reverse=True,
         )
-        top_keep = ranked[: max(1, args.pool_size // 2)]
+        top_keep = ranked[: min(2, len(ranked))]
         selected_ids = [p.prompt_id for p in top_keep]
         _write_json(iter_root / "selected_ids.json", selected_ids)
         _write_json(iter_root / "pool.json", [p.prompt_id for p in prompt_pool])
 
         next_pool = list(top_keep)
-        parent_cycle = ranked[: min(3, len(ranked))]
+        parent_cycle = ranked[: min(2, len(ranked))]
         if not parent_cycle:
             parent_cycle = [base_prompt]
 
@@ -825,6 +864,7 @@ def main() -> None:
             mutated = _mutate_with_critic(
                 instructions=parent.instructions,
                 model=args.critic_model,
+                provider=args.critic_provider,
                 temperature=args.critic_temperature,
                 sample_outputs=outputs,
                 summary=summary,

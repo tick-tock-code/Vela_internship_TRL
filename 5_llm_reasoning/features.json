@@ -18,7 +18,7 @@
                      "has_phd"
                  ],
     "use_llm":  false,
-    "llm_n_features":  8,
+    "llm_n_features":  18,
     "use_llm_reasoning":  true,
     "llm_reasoning_features":  [
                                    "domain_expertise",
@@ -36,25 +36,29 @@
     "llm_reasoning_batch_size":  20,
     "llm_reasoning_log_every":  10,
     "llm_reasoning_concurrency":  10,
+    "llm_reasoning_inline_repair":  true,
+    "llm_reasoning_inline_repair_max_attempts":  1,
     "llm_reasoning_repair_nan":  true,
     "llm_reasoning_repair_existing":  true,
     "llm_reasoning_split_batches":  true,
     "llm_reasoning_batch_within_folds":  true,
     "llm_engineered_for_reasoning":  true,
     "llm_engineered_cache":  true,
-    "llm_engineered_freeze":  true,
+    "llm_engineered_freeze":  false,
     "llm_engineered_force_recompute":  false,
     "llm_engineered_run_family":  true,
     "llm_engineered_run_family_size":  10,
-    "llm_engineered_run_family_n_features":  8,
-    "llm_engineered_run_family_id":  "20260318_182731",
+    "llm_engineered_run_family_n_features":  18,
+    "llm_engineered_run_family_id":  "",
     "llm_engineered_family_allow_seed_mismatch":  false,
     "llm_engineered_seed_size":  100,
     "cv_folds":  10,
     "cv_use_fixed_folds":  true,
     "cv_folds_path":  "",
     "llm_reasoning_experiments":  [
-                                      "A"
+                                      "A",
+                                      "B",
+                                      "E"
                                   ],
     "llm_reasoning_core_prompt_path":  "core_prompt.txt",
     "llm_reasoning_experiments_path":  "experiments.json",
@@ -64,7 +68,11 @@
     "llm_sweep_repeats":  10,
     "llm_sweep_seed_holdout_pct":  0.2,
     "llm_temperature":  0,
-    "llm_reasoning_mode":  "single",
-    "llm_reasoning_sequential":  [],
+    "llm_reasoning_mode":  "sequential_and_combined",
+    "llm_reasoning_sequential":  [
+                                      "A",
+                                      "B",
+                                      "E"
+                                  ],
     "llm_reasoning_combined":  []
 }

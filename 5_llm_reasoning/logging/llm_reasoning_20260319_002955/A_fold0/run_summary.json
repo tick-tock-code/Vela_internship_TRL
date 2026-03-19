@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "experiment": "A",
+  "total_records": 440,
+  "processed": 440,
+  "validation_failures": 27,
+  "dataset_size": "full",
+  "nan_rows_before": 0,
+  "nan_rows_after": 0,
+  "rate_limit_fallbacks": 0,
+  "inline_repair_retries": 2,
+  "repair_only": false,
+  "timestamp": 1773880504.3117356
+}

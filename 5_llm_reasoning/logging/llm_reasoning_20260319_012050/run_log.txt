@@ -1,0 +1,12 @@
+run_log started
+[2026-03-19T01:20:50.391881] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T01:20:50.801497] Loaded records: 4500 labels: 4500
+[2026-03-19T01:20:50.802017] Use LLM reasoning: True
+[2026-03-19T01:20:50.802424] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260318_182731
+[2026-03-19T01:20:50.805341] Seed size=100 pool size=4400
+[2026-03-19T01:20:50.805738] OPENAI_API_KEY set: True
+[2026-03-19T01:20:50.809746] CV fold sizes: 440, 440, 440, 440, 440, 440, 440, 440, 440, 440
+[2026-03-19T01:20:50.810113] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k10_seed42.json
+[2026-03-19T01:20:51.057595] Repair check skipped: current manifest does not list A.
+[2026-03-19T01:20:51.058152] Reasoning mode: sequential_and_combined
+[2026-03-19T01:20:51.058491] Starting sequential experiment A

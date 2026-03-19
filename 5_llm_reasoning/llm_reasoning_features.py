@@ -12,6 +12,7 @@ import hashlib
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,11 @@ class ReasoningConfig:
     repair_nan: bool = True
     repair_existing: bool = False
     skip_select: bool = False
+    rate_limit_fallback_concurrency: int = 5
+    rate_limit_fallback_windows: int = 1
+    inline_repair: bool = True
+    inline_repair_max_attempts: int = 1
+    target_batch_indices: list[int] | None = None
 
 
 def _load_core_prompt(path: Path) -> str:
@@ -166,14 +172,21 @@ def _parse_batch_response(
 def _refresh_llm_from_env() -> None:
     try:
         from think_reason_learn.core import _config as trl_config
-        if os.getenv("OPENAI_API_KEY"):
-            trl_config.settings.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-        if os.getenv("GOOGLE_AI_API_KEY"):
-            trl_config.settings.GOOGLE_AI_API_KEY = os.getenv("GOOGLE_AI_API_KEY", "")
-        if os.getenv("ANTHROPIC_API_KEY"):
-            trl_config.settings.ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-        if os.getenv("XAI_API_KEY"):
-            trl_config.settings.XAI_API_KEY = os.getenv("XAI_API_KEY", "")
+        def _env(key: str) -> str:
+            val = os.getenv(key, "")
+            if val:
+                return val
+            bom_key = "\ufeff" + key
+            return os.getenv(bom_key, "")
+
+        if _env("OPENAI_API_KEY"):
+            trl_config.settings.OPENAI_API_KEY = _env("OPENAI_API_KEY")
+        if _env("GOOGLE_AI_API_KEY"):
+            trl_config.settings.GOOGLE_AI_API_KEY = _env("GOOGLE_AI_API_KEY")
+        if _env("ANTHROPIC_API_KEY"):
+            trl_config.settings.ANTHROPIC_API_KEY = _env("ANTHROPIC_API_KEY")
+        if _env("XAI_API_KEY"):
+            trl_config.settings.XAI_API_KEY = _env("XAI_API_KEY")
         # Reset LLM singleton so it re-reads updated settings
         from think_reason_learn.core.llms._ask import LLM
         from think_reason_learn.core._singleton import SingletonMeta
@@ -190,6 +203,8 @@ def _get_openai_client() -> OpenAI:
     client = getattr(_THREAD_LOCAL, "openai_client", None)
     if client is None:
         api_key = os.getenv("OPENAI_API_KEY", "")
+        if not api_key:
+            api_key = os.getenv("\ufeffOPENAI_API_KEY", "")
         client = OpenAI(api_key=api_key)
         _THREAD_LOCAL.openai_client = client
     return client
@@ -216,6 +231,21 @@ def _hash_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _is_rate_limit_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    if "rate limit" in msg or "too many requests" in msg or "429" in msg:
+        return True
+    if exc.__class__.__name__.lower().find("ratelimit") >= 0:
+        return True
+    status = getattr(exc, "status_code", None)
+    if status == 429:
+        return True
+    resp = getattr(exc, "response", None)
+    if resp is not None and getattr(resp, "status_code", None) == 429:
+        return True
+    return False
+
+
 def write_per_experiment_parquets(
     df: pd.DataFrame,
     exp_to_keys: dict[str, list[str]],
@@ -225,6 +255,9 @@ def write_per_experiment_parquets(
 ) -> None:
     exp_root = output_dir / "experiments"
     for exp_id, exp_keys in exp_to_keys.items():
+        evidence_col = f"{exp_id}_evidence_support_rating"
+        if evidence_col in df.columns and evidence_col not in exp_keys:
+            exp_keys = exp_keys + [evidence_col]
         exp_cols = ["founder_uuid", "success"] + GLOBAL_NUMERIC_KEYS + GLOBAL_TEXT_KEYS + exp_keys
         exp_df = df[exp_cols].copy()
         exp_dir = exp_root / exp_id
@@ -263,6 +296,7 @@ def build_experiment_key_map(
             key = f"{exp_id}_{k}"
             feature_keys.append(key)
             exp_keys.append(key)
+        exp_keys.append(f"{exp_id}_evidence_support_rating")
         exp_to_keys[exp_id] = exp_keys
     return feature_keys, exp_to_keys
 
@@ -273,6 +307,7 @@ def generate_reasoning_features(
     config: ReasoningConfig,
     output_dir: Path,
     metadata_path: Path,
+    existing_df: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, list[str]]:
     core_prompt = _load_core_prompt(config.core_prompt_path)
     experiments = _load_experiments(config.experiments_path)
@@ -369,8 +404,11 @@ def generate_reasoning_features(
     combined_path = output_dir / f"llm_reasoning_{dataset_size}.parquet"
     manifest_path = output_dir / f"llm_reasoning_{dataset_size}_manifest.json"
     in_preview_dir = "previews" in output_dir.parts
-    existing_df: pd.DataFrame | None = None
-    if not config.dry_run and not config.dry_run_fast and not in_preview_dir and combined_path.exists():
+    existing_df_local: pd.DataFrame | None = None
+    if existing_df is not None:
+        if len(existing_df) == total_records:
+            existing_df_local = existing_df.copy()
+    if existing_df_local is None and not config.dry_run and not config.dry_run_fast and not in_preview_dir and combined_path.exists():
         expected_manifest = {
             "dataset_size": dataset_size,
             "random_state": config.random_state,
@@ -413,13 +451,13 @@ def generate_reasoning_features(
                         }
                         summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
                     return df, numeric_feature_keys
-                existing_df = df.copy()
+                existing_df_local = df.copy()
 
     features: dict[str, list[Any]] = {}
-    if existing_df is not None and len(existing_df) == total_records:
+    if existing_df_local is not None and len(existing_df_local) == total_records:
         for key in feature_keys:
-            if key in existing_df.columns:
-                features[key] = existing_df[key].tolist()
+            if key in existing_df_local.columns:
+                features[key] = existing_df_local[key].tolist()
             else:
                 if key in text_keys:
                     features[key] = [""] * total_records
@@ -437,6 +475,8 @@ def generate_reasoning_features(
     processed = 0
     completed_batches = 0
     log_lock = threading.Lock()
+    inline_repair_retries = 0
+    inline_attempts: dict[int, int] = {}
 
     use_openai = bool(config.providers.get("openai", False))
     use_google = bool(config.providers.get("google", False))
@@ -451,11 +491,27 @@ def generate_reasoning_features(
     else:
         model_choice = None
 
-    required_short_keys = [_short_key(k) for k in feature_keys]
-    text_short_keys = {_short_key(k) for k in text_keys}
+    short_keys = [_short_key(k) for k in feature_keys]
+    short_counts = Counter(short_keys)
+    key_alias: dict[str, str] = {}
+    for key in feature_keys:
+        short = _short_key(key)
+        if short_counts.get(short, 0) > 1:
+            key_alias[key] = key
+        else:
+            key_alias[key] = short
+    required_short_keys: list[str] = []
+    for key in feature_keys:
+        alias = key_alias[key]
+        if alias not in required_short_keys:
+            required_short_keys.append(alias)
+    text_short_keys = {key_alias[k] for k in text_keys}
     experiment_instructions = "\n\n".join([str(exp.get("instructions", "")) for exp in experiments])
     use_batch = batch_size > 1
     concurrency = max(1, int(config.concurrency))
+    fallback_concurrency = max(1, int(config.rate_limit_fallback_concurrency))
+    fallback_windows = max(0, int(config.rate_limit_fallback_windows))
+    rate_limit_fallbacks = 0
     if use_google and concurrency > 1:
         # Google client is managed by TRL and not thread-safe in this pipeline.
         concurrency = 1
@@ -470,6 +526,7 @@ def generate_reasoning_features(
         batch_idx: int,
         batch_start: int,
         batch_recs: list[dict[str, Any]],
+        strict_retry: bool = False,
     ) -> tuple[int, int, list[dict[str, Any]], dict[int, dict[str, Any]], dict[str, Any] | None, str, int]:
         batch_len = len(batch_recs)
         for rec in batch_recs:
@@ -511,15 +568,40 @@ def generate_reasoning_features(
             founder_text = _format_record(batch_recs[0])
             batch_prefix = ""
 
-        prompt = core_prompt.replace("{{EXPERIMENT_INSTRUCTIONS}}", experiment_instructions)
-        prompt = prompt.replace("{{FOUNDER}}", founder_text)
+        base_prompt = core_prompt.replace("{{EXPERIMENT_INSTRUCTIONS}}", experiment_instructions)
+        base_prompt = base_prompt.replace("{{FOUNDER}}", founder_text)
         if batch_prefix:
-            prompt = batch_prefix + prompt
+            base_prompt = batch_prefix + base_prompt
+        prompt = base_prompt
 
         parsed_items: dict[int, dict[str, Any]] = {}
         parsed_single: dict[str, Any] | None = None
         raw_text = ""
         batch_failures = 0
+        if use_batch:
+            skeleton = (
+                "[\n"
+                "  {\"index\": 0, "
+                + ", ".join([f"\"{k}\": 1" for k in required_short_keys])
+                + "}\n"
+                "]"
+            )
+            strict_prefix = (
+                "You MUST return ONLY valid JSON. "
+                "Return a JSON list of length "
+                + str(batch_len)
+                + " with ALL required keys. "
+                "Use this exact structure (fill values for each index):\n"
+                + skeleton
+                + "\n\n"
+            )
+        else:
+            strict_prefix = (
+                "You MUST return ONLY valid JSON with ALL required keys. "
+                "Return only the JSON object.\n\n"
+            )
+        if strict_retry:
+            prompt = strict_prefix + base_prompt
 
         if config.dry_run:
             if use_batch:
@@ -527,7 +609,7 @@ def generate_reasoning_features(
                 for i in range(batch_len):
                     mock = {"index": i}
                     for key in feature_keys:
-                        short_key = _short_key(key)
+                        short_key = key_alias[key]
                         if key in text_keys:
                             mock[short_key] = f"dry_run: {short_key}"
                         else:
@@ -538,7 +620,7 @@ def generate_reasoning_features(
             else:
                 mock = {}
                 for key in feature_keys:
-                    short_key = _short_key(key)
+                    short_key = key_alias[key]
                     if key in text_keys:
                         mock[short_key] = f"dry_run: {short_key}"
                     else:
@@ -648,10 +730,7 @@ def generate_reasoning_features(
                         + "}\n"
                         "]"
                     )
-                    retry_prompt_2 = (
-                        "You MUST return ONLY valid JSON. Use this exact structure (fill values for each index):\n"
-                        + skeleton
-                    )
+                    retry_prompt_2 = strict_prefix + base_prompt
                     if use_openai and concurrency > 1:
                         client = _get_openai_client()
                         resp = client.responses.create(
@@ -750,16 +829,35 @@ def generate_reasoning_features(
                     break
         return nan_rows
 
-    repair_only = existing_df is not None and config.repair_existing
-    initial_nan_rows: list[int] = _rows_with_nan() if repair_only else []
-    batches: list[tuple[int, int, list[dict[str, Any]]]] = []
-    if repair_only and config.repair_nan and initial_nan_rows:
-        repair_batch_ids = sorted({i // batch_size for i in initial_nan_rows})
-        for batch_idx in repair_batch_ids:
+    numeric_keys = [k for k in feature_keys if k not in text_keys]
+
+    def _batch_has_nan(batch_start: int, batch_len: int) -> bool:
+        if not numeric_keys:
+            return False
+        end = batch_start + batch_len
+        for i in range(batch_start, end):
+            for key in numeric_keys:
+                val = features[key][i]
+                if isinstance(val, float) and np.isnan(val):
+                    return True
+        return False
+
+    repair_only = existing_df_local is not None and (config.repair_existing or config.target_batch_indices)
+    initial_nan_rows: list[int] = []
+    batches: list[tuple[int, int, list[dict[str, Any]], bool]] = []
+    target_batches = (
+        sorted({int(b) for b in (config.target_batch_indices or []) if int(b) >= 0})
+        if config.target_batch_indices
+        else None
+    )
+    if target_batches:
+        for batch_idx in target_batches:
             batch_start = batch_idx * batch_size
+            if batch_start >= total_records:
+                continue
             batch_end = min(total_records, batch_start + batch_size)
             batch_recs = selected_records[batch_start:batch_end]
-            batches.append((batch_idx, batch_start, batch_recs))
+            batches.append((batch_idx, batch_start, batch_recs, True))
             if progress_log is not None and (batch_idx % config.log_every == 0):
                 _append_jsonl(
                     progress_log,
@@ -773,31 +871,58 @@ def generate_reasoning_features(
                         "batch_start": batch_start,
                         "batch_end": batch_end - 1,
                         "batch_size": len(batch_recs),
+                        "strict_retry": True,
                         "timestamp": time.time(),
                     },
                 )
     else:
-        for batch_idx in range(n_batches):
-            batch_start = batch_idx * batch_size
-            batch_end = min(total_records, batch_start + batch_size)
-            batch_recs = selected_records[batch_start:batch_end]
-            batches.append((batch_idx, batch_start, batch_recs))
-            if progress_log is not None and (batch_idx % config.log_every == 0):
-                _append_jsonl(
-                    progress_log,
-                    {
-                        "index": batch_idx,
-                        "stage": "start_call",
-                        "experiment": exp_label,
-                        "processed": processed,
-                        "total": total_records,
-                        "batch_index": batch_idx,
-                        "batch_start": batch_start,
-                        "batch_end": batch_end - 1,
-                        "batch_size": len(batch_recs),
-                        "timestamp": time.time(),
-                    },
-                )
+        if repair_only and config.repair_nan:
+            initial_nan_rows = _rows_with_nan()
+        if repair_only and config.repair_nan and initial_nan_rows:
+            repair_batch_ids = sorted({i // batch_size for i in initial_nan_rows})
+            for batch_idx in repair_batch_ids:
+                batch_start = batch_idx * batch_size
+                batch_end = min(total_records, batch_start + batch_size)
+                batch_recs = selected_records[batch_start:batch_end]
+                batches.append((batch_idx, batch_start, batch_recs, False))
+                if progress_log is not None and (batch_idx % config.log_every == 0):
+                    _append_jsonl(
+                        progress_log,
+                        {
+                            "index": batch_idx,
+                            "stage": "repair_start",
+                            "experiment": exp_label,
+                            "processed": processed,
+                            "total": total_records,
+                            "batch_index": batch_idx,
+                            "batch_start": batch_start,
+                            "batch_end": batch_end - 1,
+                            "batch_size": len(batch_recs),
+                            "timestamp": time.time(),
+                        },
+                    )
+        else:
+            for batch_idx in range(n_batches):
+                batch_start = batch_idx * batch_size
+                batch_end = min(total_records, batch_start + batch_size)
+                batch_recs = selected_records[batch_start:batch_end]
+                batches.append((batch_idx, batch_start, batch_recs, False))
+                if progress_log is not None and (batch_idx % config.log_every == 0):
+                    _append_jsonl(
+                        progress_log,
+                        {
+                            "index": batch_idx,
+                            "stage": "start_call",
+                            "experiment": exp_label,
+                            "processed": processed,
+                            "total": total_records,
+                            "batch_index": batch_idx,
+                            "batch_start": batch_start,
+                            "batch_end": batch_end - 1,
+                            "batch_size": len(batch_recs),
+                            "timestamp": time.time(),
+                        },
+                    )
 
     def _apply_result(
         batch_idx: int,
@@ -813,7 +938,7 @@ def generate_reasoning_features(
             if isinstance(item, dict):
                 _assert_no_label_fields(item, "LLM output")
                 for key in feature_keys:
-                    short_key = _short_key(key)
+                    short_key = key_alias[key]
                     if key in text_keys:
                         if short_key in item:
                             features[key][record_idx] = _sanitize(str(item.get(short_key, "")))
@@ -831,50 +956,144 @@ def generate_reasoning_features(
                             features[key][record_idx] = val
 
     if concurrency > 1 and not config.dry_run:
-        with ThreadPoolExecutor(max_workers=concurrency) as executor:
-            future_map = {
-                executor.submit(_call_batch, batch_idx, batch_start, batch_recs): (batch_idx, batch_start, batch_recs)
-                for batch_idx, batch_start, batch_recs in batches
-            }
-            for future in as_completed(future_map):
-                batch_idx, batch_start, batch_recs = future_map[future]
-                (
-                    _batch_idx,
-                    _batch_start,
-                    _batch_recs,
-                    parsed_items,
-                    parsed_single,
-                    raw_text,
-                    batch_failures,
-                ) = future.result()
-                failures += batch_failures
-                _apply_result(batch_idx, batch_start, batch_recs, parsed_items, parsed_single)
-                if raw_text:
-                    raw_responses.append((batch_idx, raw_text))
-                completed_batches += 1
-                processed += len(batch_recs)
-                if progress_log is not None and (
-                    (completed_batches % config.log_every == 0) or (processed == total_records)
-                ):
+        queue = list(batches)
+        window_index = 0
+        fallback_windows_remaining = 0
+        while queue:
+            if fallback_windows_remaining > 0:
+                current_concurrency = min(concurrency, fallback_concurrency)
+            else:
+                current_concurrency = concurrency
+            current_concurrency = max(1, int(current_concurrency))
+            window = [queue.pop(0) for _ in range(min(current_concurrency, len(queue)))]
+            batch_ids = [b[0] for b in window]
+            if progress_log is not None:
+                _append_jsonl(
+                    progress_log,
+                    {
+                        "index": window_index,
+                        "stage": "window_start",
+                        "experiment": exp_label,
+                        "window": window_index,
+                        "concurrency": current_concurrency,
+                        "batch_ids": batch_ids,
+                        "timestamp": time.time(),
+                    },
+                )
+            window_index += 1
+            failed_batches: list[tuple[int, int, list[dict[str, Any]], bool]] = []
+            rate_limited = False
+            with ThreadPoolExecutor(max_workers=current_concurrency) as executor:
+                future_map = {
+                    executor.submit(_call_batch, batch_idx, batch_start, batch_recs, strict_retry): (batch_idx, batch_start, batch_recs, strict_retry)
+                    for batch_idx, batch_start, batch_recs, strict_retry in window
+                }
+                for future in as_completed(future_map):
+                    batch_idx, batch_start, batch_recs, strict_retry = future_map[future]
+                    try:
+                        (
+                            _batch_idx,
+                            _batch_start,
+                            _batch_recs,
+                            parsed_items,
+                            parsed_single,
+                            raw_text,
+                            batch_failures,
+                        ) = future.result()
+                    except Exception as exc:
+                        if _is_rate_limit_error(exc):
+                            rate_limited = True
+                            failed_batches.append((batch_idx, batch_start, batch_recs, strict_retry))
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": str(exc),
+                                    "stage": "rate_limit",
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            continue
+                        raise
+                    failures += batch_failures
+                    _apply_result(batch_idx, batch_start, batch_recs, parsed_items, parsed_single)
+                    if raw_text:
+                        raw_responses.append((batch_idx, raw_text))
+                    if config.inline_repair and _batch_has_nan(batch_start, len(batch_recs)):
+                        attempts = inline_attempts.get(batch_idx, 0)
+                        if attempts < max(1, int(config.inline_repair_max_attempts)):
+                            inline_attempts[batch_idx] = attempts + 1
+                            inline_repair_retries += 1
+                            queue.insert(0, (batch_idx, batch_start, batch_recs, True))
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": "Inline repair requeue (NaNs detected)",
+                                    "stage": "inline_repair",
+                                    "attempt": attempts + 1,
+                                    "strict_retry": True,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            continue
+                        else:
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": "Inline repair max attempts reached",
+                                    "stage": "inline_repair_failed",
+                                    "attempt": attempts,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                    completed_batches += 1
+                    processed += len(batch_recs)
+                    if progress_log is not None and (
+                        (completed_batches % config.log_every == 0) or (processed == total_records)
+                    ):
+                        _append_jsonl(
+                            progress_log,
+                            {
+                                "index": batch_idx,
+                                "stage": "repair_done" if repair_only else "done",
+                                "experiment": exp_label,
+                                "processed": processed,
+                                "total": total_records,
+                                "batch_index": batch_idx,
+                                "batch_start": batch_start,
+                                "batch_end": batch_start + len(batch_recs) - 1,
+                                "batch_size": len(batch_recs),
+                                "timestamp": time.time(),
+                            },
+                        )
+                    if not config.dry_run_fast:
+                        time.sleep(0.05)
+            if rate_limited:
+                rate_limit_fallbacks += 1
+                if fallback_windows > 0:
+                    fallback_windows_remaining = fallback_windows
+                queue = failed_batches + queue
+                if progress_log is not None:
                     _append_jsonl(
                         progress_log,
                         {
-                            "index": batch_idx,
-                            "stage": "repair_done" if repair_only else "done",
+                            "index": window_index - 1,
+                            "stage": "rate_limit_fallback",
                             "experiment": exp_label,
-                            "processed": processed,
-                            "total": total_records,
-                            "batch_index": batch_idx,
-                            "batch_start": batch_start,
-                            "batch_end": batch_start + len(batch_recs) - 1,
-                            "batch_size": len(batch_recs),
+                            "concurrency_next": min(concurrency, fallback_concurrency),
+                            "failed_batch_ids": [b[0] for b in failed_batches],
                             "timestamp": time.time(),
                         },
                     )
-                if not config.dry_run_fast:
-                    time.sleep(0.05)
+            else:
+                if fallback_windows_remaining > 0:
+                    fallback_windows_remaining -= 1
     else:
-        for batch_idx, batch_start, batch_recs in batches:
+        queue = list(batches)
+        while queue:
+            batch_idx, batch_start, batch_recs, strict_retry = queue.pop(0)
             (
                 _batch_idx,
                 _batch_start,
@@ -883,11 +1102,41 @@ def generate_reasoning_features(
                 parsed_single,
                 raw_text,
                 batch_failures,
-            ) = _call_batch(batch_idx, batch_start, batch_recs)
+            ) = _call_batch(batch_idx, batch_start, batch_recs, strict_retry)
             failures += batch_failures
             _apply_result(batch_idx, batch_start, batch_recs, parsed_items, parsed_single)
             if raw_text:
                 raw_responses.append((batch_idx, raw_text))
+            if config.inline_repair and _batch_has_nan(batch_start, len(batch_recs)):
+                attempts = inline_attempts.get(batch_idx, 0)
+                if attempts < max(1, int(config.inline_repair_max_attempts)):
+                    inline_attempts[batch_idx] = attempts + 1
+                    inline_repair_retries += 1
+                    _append_jsonl(
+                        error_log,
+                        {
+                            "index": batch_idx,
+                            "error": "Inline repair requeue (NaNs detected)",
+                            "stage": "inline_repair",
+                            "attempt": attempts + 1,
+                            "strict_retry": True,
+                            "timestamp": time.time(),
+                        },
+                    )
+                    # Re-run this batch immediately in sequential mode.
+                    queue.insert(0, (batch_idx, batch_start, batch_recs, True))
+                    continue
+                else:
+                    _append_jsonl(
+                        error_log,
+                        {
+                            "index": batch_idx,
+                            "error": "Inline repair max attempts reached",
+                            "stage": "inline_repair_failed",
+                            "attempt": attempts,
+                            "timestamp": time.time(),
+                        },
+                    )
             completed_batches += 1
             processed += len(batch_recs)
             if progress_log is not None and (
@@ -914,6 +1163,13 @@ def generate_reasoning_features(
     df = pd.DataFrame(features)
     df.insert(0, "founder_uuid", [r.get("founder_uuid") for r in selected_records])
     df.insert(1, "success", selected_labels)
+    # Replicate global evidence_support_rating per experiment for clarity.
+    if "evidence_support_rating" in df.columns:
+        for exp_id in exp_to_keys.keys():
+            col_name = f"{exp_id}_evidence_support_rating"
+            df[col_name] = df["evidence_support_rating"]
+            if col_name not in exp_to_keys[exp_id]:
+                exp_to_keys[exp_id].append(col_name)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"llm_reasoning_{dataset_size}.parquet"
@@ -944,6 +1200,14 @@ def generate_reasoning_features(
         "batch_size": batch_size,
         "n_batches": int(np.ceil(len(selected_records) / batch_size)),
         "concurrency": concurrency,
+        "rate_limit_fallback_concurrency": fallback_concurrency,
+        "rate_limit_fallback_windows": fallback_windows,
+        "rate_limit_fallbacks": rate_limit_fallbacks,
+        "inline_repair": config.inline_repair,
+        "inline_repair_max_attempts": config.inline_repair_max_attempts,
+        "inline_repair_retries": inline_repair_retries,
+        "repair_only": bool(config.target_batch_indices),
+        "target_batch_count": len(config.target_batch_indices or []),
         "validation_failures": failures,
         "repair_existing": config.repair_existing,
         "repair_nan": config.repair_nan,
@@ -987,6 +1251,9 @@ def generate_reasoning_features(
             "dataset_size": dataset_size,
             "nan_rows_before": len(initial_nan_rows),
             "nan_rows_after": len(nan_rows_after),
+            "rate_limit_fallbacks": rate_limit_fallbacks,
+            "inline_repair_retries": inline_repair_retries,
+            "repair_only": bool(config.target_batch_indices),
             "timestamp": time.time(),
         }
         summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")

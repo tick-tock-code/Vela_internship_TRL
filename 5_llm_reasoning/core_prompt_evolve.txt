@@ -7,11 +7,20 @@ IMPORTANT OUTPUT RULES (do not change):
 - If you receive a single founder, return one JSON object.
 - Every output object MUST include ALL required keys.
 - Use integer scores from 1 to 5 for numeric keys.
+- For each score, provide a two-sentence justification.
 
 Required keys for each founder:
 - evidence_support_rating (int 1-5)
+- trajectory_strength (int 1-5)
+- trajectory_strength_justification (string, 2 sentences)
+- ownership_signal (int 1-5)
+- ownership_signal_justification (string, 2 sentences)
+- career_coherence (int 1-5)
+- career_coherence_justification (string, 2 sentences)
+- scrappiness (int 1-5)
+- scrappiness_justification (string, 2 sentences)
 - rubric_score (int 1-5)
-- rubric_score_justification (string)
+- rubric_score_justification (string, 2 sentences)
 
 Global output (always include in the final JSON):
 - evidence_support_rating (int 1-5)

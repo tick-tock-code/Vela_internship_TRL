@@ -1,0 +1,3 @@
+{"index": 6, "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4.1-nano in organization org-ICV8RMNSlduu99qbZXIvDVut on tokens per min (TPM): Limit 200000, Used 200000, Requested 6975. Please try again in 2.092s. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}", "stage": "llm_call", "attempt": 1, "timestamp": 1773879311.0479052}
+{"index": 9, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773879326.1992006}
+{"index": 6, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773879338.7930982}

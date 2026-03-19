@@ -1,0 +1,11 @@
+run_log started
+[2026-03-19T01:16:39.871548] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T01:16:40.266032] Loaded records: 4500 labels: 4500
+[2026-03-19T01:16:40.266727] Use LLM reasoning: True
+[2026-03-19T01:16:40.267103] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260318_182731
+[2026-03-19T01:16:40.270193] Seed size=100 pool size=4400
+[2026-03-19T01:16:40.270517] OPENAI_API_KEY set: True
+[2026-03-19T01:16:40.274085] CV fold sizes: 440, 440, 440, 440, 440, 440, 440, 440, 440, 440
+[2026-03-19T01:16:40.274564] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k10_seed42.json
+[2026-03-19T01:16:40.519401] Reasoning mode: sequential_and_combined
+[2026-03-19T01:16:40.519880] Starting sequential experiment A

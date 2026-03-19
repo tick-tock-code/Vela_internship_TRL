@@ -1,5 +1,5 @@
 {
-  "experiment": "B",
+  "experiment": "AB",
   "pool_size": 10,
   "sample_size": 200,
   "batch_size": 20,
@@ -10,7 +10,13 @@
   "random_state": 42,
   "dataset": "full",
   "llm_model": "gpt-4.1-nano",
-  "critic_model": "gpt-4.1-nano",
+  "llm_google_model": "gemini-2.0-flash",
+  "llm_providers": {
+    "openai": false,
+    "google": true
+  },
+  "critic_model": "gemini-2.0-flash",
+  "critic_provider": "google",
   "critic_temperature": 0.2,
   "core_prompt_path": "core_prompt_evolve.txt",
   "experiments_path": "experiments_evolve.json",
@@ -18,7 +24,7 @@
   "dry_run": false,
   "initial_mutations": 9,
   "critic_sample_size": 20,
-  "cv_folds": 10,
+  "cv_folds": 4,
   "cv_use_fixed_folds": true,
   "cv_folds_path": ""
 }

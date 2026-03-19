@@ -1,0 +1,3 @@
+{"index": -1, "stage": "start_run", "experiment": "A", "processed": 0, "total": 440, "batch_size": 20, "n_batches": 22, "timestamp": 1773880378.1592093}
+{"index": 20, "stage": "repair_start", "experiment": "A", "processed": 0, "total": 440, "batch_index": 20, "batch_start": 400, "batch_end": 419, "batch_size": 20, "strict_retry": true, "timestamp": 1773880378.1599958}
+{"index": 0, "stage": "window_start", "experiment": "A", "window": 0, "concurrency": 10, "batch_ids": [20], "timestamp": 1773880378.1603394}

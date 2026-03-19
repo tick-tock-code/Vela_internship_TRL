@@ -1,0 +1,31 @@
+{
+  "model": "gpt-4.1-nano",
+  "dataset_size": "full",
+  "random_state": 42,
+  "core_prompt_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\core_prompt.txt",
+  "experiments_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\experiments.json",
+  "experiments": [
+    "B"
+  ],
+  "output_parquet": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\runs\\run_B_20260319_004536\\folds\\fold_7\\llm_reasoning_full.parquet",
+  "experiment_parquets_root": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\runs\\run_B_20260319_004536\\folds\\fold_7\\experiments",
+  "n_records": 440,
+  "batch_size": 20,
+  "n_batches": 22,
+  "concurrency": 10,
+  "rate_limit_fallback_concurrency": 5,
+  "rate_limit_fallback_windows": 1,
+  "rate_limit_fallbacks": 0,
+  "inline_repair": true,
+  "inline_repair_max_attempts": 1,
+  "inline_repair_retries": 0,
+  "repair_only": false,
+  "target_batch_count": 0,
+  "validation_failures": 2,
+  "repair_existing": true,
+  "repair_nan": true,
+  "nan_rows_before": 0,
+  "nan_rows_after": 0,
+  "dry_run": false,
+  "dry_run_fast": false
+}

@@ -26,6 +26,7 @@ from datetime import datetime
 import traceback
 import time
 from typing import Any, Iterable, Sequence
+from itertools import combinations
 
 import numpy as np
 import pandas as pd
@@ -691,6 +692,181 @@ def _write_family_leaderboard(
         )
 
 
+def _build_reasoning_combos(
+    reasoning_df: pd.DataFrame,
+    experiment_ids: list[str],
+) -> dict[str, list[str]]:
+    if reasoning_df is None or reasoning_df.empty:
+        return {}
+    numeric_cols = {
+        c
+        for c in reasoning_df.columns
+        if c not in ("founder_uuid", "success")
+        and pd.api.types.is_numeric_dtype(reasoning_df[c])
+    }
+    exp_to_cols: dict[str, list[str]] = {}
+    for exp_id in experiment_ids:
+        if not exp_id:
+            continue
+        cols = [c for c in reasoning_df.columns if c.startswith(f"{exp_id}_") and c in numeric_cols]
+        if cols:
+            exp_to_cols[exp_id] = cols
+    combos: dict[str, list[str]] = {}
+    exp_keys = list(exp_to_cols.keys())
+    for r in range(1, len(exp_keys) + 1):
+        for subset in combinations(exp_keys, r):
+            combo = "+".join(subset)
+            cols: list[str] = []
+            for exp_id in subset:
+                cols.extend(exp_to_cols.get(exp_id, []))
+            if cols:
+                combos[combo] = sorted(cols)
+    return combos
+
+
+def _write_full_results_report(
+    table1_rows: list[dict[str, Any]],
+    table2_rows: list[dict[str, Any]],
+    report_path: Path,
+    csv_path: Path,
+    cv_folds: int,
+    pool_size: int,
+) -> None:
+    all_rows = table1_rows + table2_rows
+    if not all_rows:
+        return
+
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    csv_rows: list[dict[str, Any]] = []
+    for row in all_rows:
+        csv_rows.append(
+            {
+                "table": row.get("table", ""),
+                "regression": row.get("regression", ""),
+                "set_id": row.get("set_id", ""),
+                "reasoning_combo": row.get("reasoning_combo", ""),
+                "F0.5_mean": row.get("F0.5", float("nan")),
+                "F0.5_std": row.get("F0.5_std", float("nan")),
+                "ROC-AUC_mean": row.get("ROC-AUC", float("nan")),
+                "ROC-AUC_std": row.get("ROC-AUC_std", float("nan")),
+                "PR-AUC_mean": row.get("PR-AUC", float("nan")),
+                "PR-AUC_std": row.get("PR-AUC_std", float("nan")),
+                "Prec_mean": row.get("Prec", float("nan")),
+                "Prec_std": row.get("Prec_std", float("nan")),
+                "Rec_mean": row.get("Rec", float("nan")),
+                "Rec_std": row.get("Rec_std", float("nan")),
+                "Acc_mean": row.get("Acc", float("nan")),
+                "Acc_std": row.get("Acc_std", float("nan")),
+            }
+        )
+    pd.DataFrame(csv_rows).to_csv(csv_path, index=False)
+
+    def _fmt(row: dict[str, Any], key: str) -> str:
+        return _format_mean_std(float(row.get(key, float("nan"))), float(row.get(f"{key}_std", float("nan"))))
+
+    def _render_table(rows: list[dict[str, Any]], include_set: bool) -> str:
+        if include_set:
+            header = "| Set ID | Regression | Reasoning Combo | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |"
+            sep = "|---|---|---|---:|---:|---:|---:|---:|---:|"
+        else:
+            header = "| Regression | Reasoning Combo | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |"
+            sep = "|---|---|---:|---:|---:|---:|---:|---:|"
+        lines = [header, sep]
+        for row in rows:
+            combo = row.get("reasoning_combo", "") or "—"
+            if include_set:
+                lines.append(
+                    "| {set_id} | {name} | {combo} | {f0} | {roc} | {pr} | {prec} | {rec} | {acc} |".format(
+                        set_id=row.get("set_id", ""),
+                        name=row.get("regression", ""),
+                        combo=combo,
+                        f0=_fmt(row, "F0.5"),
+                        roc=_fmt(row, "ROC-AUC"),
+                        pr=_fmt(row, "PR-AUC"),
+                        prec=_fmt(row, "Prec"),
+                        rec=_fmt(row, "Rec"),
+                        acc=_fmt(row, "Acc"),
+                    )
+                )
+            else:
+                lines.append(
+                    "| {name} | {combo} | {f0} | {roc} | {pr} | {prec} | {rec} | {acc} |".format(
+                        name=row.get("regression", ""),
+                        combo=combo,
+                        f0=_fmt(row, "F0.5"),
+                        roc=_fmt(row, "ROC-AUC"),
+                        pr=_fmt(row, "PR-AUC"),
+                        prec=_fmt(row, "Prec"),
+                        rec=_fmt(row, "Rec"),
+                        acc=_fmt(row, "Acc"),
+                    )
+                )
+        return "\n".join(lines)
+
+    def _top_rows(rows: list[dict[str, Any]], n: int) -> list[dict[str, Any]]:
+        return sorted(
+            rows,
+            key=lambda r: float(r.get("F0.5", float("-inf"))),
+            reverse=True,
+        )[:n]
+
+    table1_md = _render_table(table1_rows, include_set=False) if table1_rows else ""
+    table2_md = _render_table(table2_rows, include_set=True) if table2_rows else ""
+
+    top3 = _top_rows(table1_rows, 3)
+    top10 = _top_rows(table2_rows, 10)
+
+    def _format_top(rows: list[dict[str, Any]], include_set: bool) -> str:
+        if not rows:
+            return "- (none)\n"
+        lines: list[str] = []
+        for row in rows:
+            combo = row.get("reasoning_combo", "") or "—"
+            prefix = f"{row.get('regression', '')} [{combo}]"
+            if include_set:
+                prefix = f"{row.get('set_id', '')} | {prefix}"
+            f0 = _fmt(row, "F0.5")
+            lines.append(f"- {prefix}: F0.5={f0}")
+        return "\n".join(lines) + "\n"
+
+    section_lines: list[str] = [
+        f"## Full Pipeline Results ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
+        "",
+        "### Table 1 — Human & Reasoning Combos",
+    ]
+    if table1_md:
+        section_lines.append(table1_md)
+    else:
+        section_lines.append("_No Table 1 rows._")
+    section_lines.extend(
+        [
+            "",
+            "### Top 3 (Table 1) by F0.5",
+            _format_top(top3, include_set=False),
+            "### Table 2 — Engineered Family (18 rules × 10 sets)",
+        ]
+    )
+    if table2_md:
+        section_lines.append(table2_md)
+    else:
+        section_lines.append("_No Table 2 rows._")
+    section_lines.extend(
+        [
+            "",
+            "### Top 10 (Table 2) by F0.5",
+            _format_top(top10, include_set=True),
+            f"*Metrics are {cv_folds}-fold stratified CV on {pool_size} founders (seed excluded).*",
+        ]
+    )
+    section = "\n".join(section_lines)
+
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    if report_path.exists():
+        base = report_path.read_text(encoding="utf-8").rstrip()
+        report_path.write_text(base + "\n\n" + section + "\n", encoding="utf-8")
+    else:
+        report_path.write_text("# LLM Regression Summary (F0.5)\n\n" + section + "\n", encoding="utf-8")
+
 def _write_snapshot_combined_report() -> None:
     snapshot_dir = Path(__file__).parent / "docs" / "post_CV_implementation_before_recalculating_features"
     report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
@@ -971,6 +1147,10 @@ def main() -> None:
     cfg_llm_reasoning_batch_size: int | None = None
     cfg_llm_reasoning_log_every: int | None = None
     cfg_llm_reasoning_concurrency: int | None = None
+    cfg_llm_reasoning_rate_limit_fallback_concurrency: int | None = None
+    cfg_llm_reasoning_rate_limit_fallback_windows: int | None = None
+    cfg_llm_reasoning_inline_repair: bool | None = None
+    cfg_llm_reasoning_inline_repair_max_attempts: int | None = None
     cfg_llm_reasoning_repair_nan: bool | None = None
     cfg_llm_reasoning_repair_existing: bool | None = None
     cfg_llm_engineered_for_reasoning: bool | None = None
@@ -1059,6 +1239,23 @@ def main() -> None:
             cfg_llm_reasoning_log_every = data.get("llm_reasoning_log_every")
         if isinstance(data.get("llm_reasoning_concurrency"), int):
             cfg_llm_reasoning_concurrency = data.get("llm_reasoning_concurrency")
+        if isinstance(data.get("llm_reasoning_rate_limit_fallback_concurrency"), int):
+            cfg_llm_reasoning_rate_limit_fallback_concurrency = data.get(
+                "llm_reasoning_rate_limit_fallback_concurrency"
+            )
+        if isinstance(data.get("llm_reasoning_rate_limit_fallback_windows"), int):
+            cfg_llm_reasoning_rate_limit_fallback_windows = data.get(
+                "llm_reasoning_rate_limit_fallback_windows"
+            )
+        if "llm_reasoning_inline_repair" in data:
+            cfg_llm_reasoning_inline_repair = bool(data.get("llm_reasoning_inline_repair"))
+        if "llm_reasoning_inline_repair_max_attempts" in data:
+            try:
+                cfg_llm_reasoning_inline_repair_max_attempts = int(
+                    data.get("llm_reasoning_inline_repair_max_attempts")
+                )
+            except Exception:
+                cfg_llm_reasoning_inline_repair_max_attempts = None
         if "llm_reasoning_repair_nan" in data:
             cfg_llm_reasoning_repair_nan = bool(data.get("llm_reasoning_repair_nan"))
         if "llm_reasoning_repair_existing" in data:
@@ -1185,6 +1382,26 @@ def main() -> None:
     )
     llm_reasoning_log_every = cfg_llm_reasoning_log_every if cfg_llm_reasoning_log_every is not None else 10
     llm_reasoning_concurrency = cfg_llm_reasoning_concurrency if cfg_llm_reasoning_concurrency is not None else 1
+    llm_reasoning_rate_limit_fallback_concurrency = (
+        cfg_llm_reasoning_rate_limit_fallback_concurrency
+        if cfg_llm_reasoning_rate_limit_fallback_concurrency is not None
+        else 5
+    )
+    llm_reasoning_rate_limit_fallback_windows = (
+        cfg_llm_reasoning_rate_limit_fallback_windows
+        if cfg_llm_reasoning_rate_limit_fallback_windows is not None
+        else 1
+    )
+    llm_reasoning_inline_repair = (
+        cfg_llm_reasoning_inline_repair
+        if cfg_llm_reasoning_inline_repair is not None
+        else True
+    )
+    llm_reasoning_inline_repair_max_attempts = (
+        cfg_llm_reasoning_inline_repair_max_attempts
+        if cfg_llm_reasoning_inline_repair_max_attempts is not None
+        else 1
+    )
     llm_reasoning_repair_nan = cfg_llm_reasoning_repair_nan if cfg_llm_reasoning_repair_nan is not None else True
     llm_reasoning_repair_existing = cfg_llm_reasoning_repair_existing if cfg_llm_reasoning_repair_existing is not None else False
     llm_engineered_for_reasoning = cfg_llm_engineered_for_reasoning if cfg_llm_engineered_for_reasoning is not None else False
@@ -1313,6 +1530,10 @@ def main() -> None:
             dry_run_fast=True,
             repair_nan=llm_reasoning_repair_nan,
             repair_existing=llm_reasoning_repair_existing,
+            rate_limit_fallback_concurrency=llm_reasoning_rate_limit_fallback_concurrency,
+            rate_limit_fallback_windows=llm_reasoning_rate_limit_fallback_windows,
+            inline_repair=llm_reasoning_inline_repair,
+            inline_repair_max_attempts=llm_reasoning_inline_repair_max_attempts,
         )
         reasoning_df, all_reasoning_names = generate_reasoning_features(
             records=records,
@@ -1787,6 +2008,7 @@ def main() -> None:
             return None, []
 
         def _sync_reasoning_current(run_dir: Path, exp_list: list[str] | None) -> None:
+            import time as _time
             current_root.mkdir(parents=True, exist_ok=True)
             src_full = run_dir / "llm_reasoning_full.parquet"
             if src_full.exists():
@@ -1796,8 +2018,33 @@ def main() -> None:
             exp_dst = current_root / "experiments"
             if exp_src.exists():
                 if exp_dst.exists():
-                    shutil.rmtree(exp_dst)
-                shutil.copytree(exp_src, exp_dst)
+                    # Best-effort safe remove; avoid crashing on transient locks (e.g. OneDrive).
+                    removed = False
+                    for attempt in range(3):
+                        try:
+                            shutil.rmtree(exp_dst)
+                            removed = True
+                            break
+                        except PermissionError:
+                            _time.sleep(0.5 * (attempt + 1))
+                        except FileNotFoundError:
+                            removed = True
+                            break
+                    if not removed:
+                        try:
+                            backup = exp_dst.with_name(
+                                exp_dst.name + f"_stale_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                            )
+                            shutil.move(str(exp_dst), str(backup))
+                            removed = True
+                        except Exception:
+                            # Leave the old folder and continue to avoid crashing the run.
+                            removed = False
+                    if not removed:
+                        # Skip experiment sync but still keep full parquet + manifest.
+                        exp_src = None
+                if exp_src is not None:
+                    shutil.copytree(exp_src, exp_dst)
             # Write a minimal manifest
             manifest = {
                 "source_run": run_dir.name,
@@ -1805,6 +2052,89 @@ def main() -> None:
                 "timestamp": datetime.now().isoformat(),
             }
             (current_root / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+        def _update_currently_in_use(
+            exp_list: list[str],
+            selected_runs: dict[str, Path] | None = None,
+        ) -> None:
+            runs_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "runs"
+            use_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "currently_in_use"
+            use_root.mkdir(parents=True, exist_ok=True)
+            exp_root = use_root / "experiments"
+            exp_root.mkdir(parents=True, exist_ok=True)
+            join_key = "founder_uuid"
+            if selected_runs is None:
+                selected_runs = {}
+                for exp_id in exp_list:
+                    candidates = sorted(
+                        [p for p in runs_root.glob(f"run_{exp_id}_*") if p.is_dir()],
+                        key=lambda p: p.stat().st_mtime,
+                        reverse=True,
+                    )
+                    for candidate in candidates:
+                        run_path = candidate / "llm_reasoning_full.parquet"
+                        if run_path.exists():
+                            selected_runs[exp_id] = candidate
+                            break
+            if not selected_runs:
+                return
+            # Determine join key (founder_uuid vs row_index)
+            try:
+                sample_run = next(iter(selected_runs.values()))
+                sample_df = pd.read_parquet(sample_run / "llm_reasoning_full.parquet")
+                if "founder_uuid" not in sample_df.columns or not sample_df["founder_uuid"].notna().any():
+                    join_key = "row_index"
+            except Exception:
+                join_key = "row_index"
+            # Copy per-experiment parquets into currently_in_use/experiments
+            for exp_id, run_dir in selected_runs.items():
+                src = run_dir / "llm_reasoning_full.parquet"
+                dst_dir = exp_root / exp_id
+                dst_dir.mkdir(parents=True, exist_ok=True)
+                dst = dst_dir / "llm_reasoning_full.parquet"
+                shutil.copy2(src, dst)
+            # Build merged full parquet with disambiguated global keys
+            merged = None
+            run_map: dict[str, str] = {}
+            for exp_id, run_dir in selected_runs.items():
+                run_map[exp_id] = run_dir.name
+                df = pd.read_parquet(run_dir / "llm_reasoning_full.parquet")
+                if len(df) == len(all_records) and len(records) != len(all_records):
+                    df = df.iloc[pool_idx].reset_index(drop=True)
+                if join_key == "row_index":
+                    df = df.reset_index(drop=True)
+                    df["row_index"] = df.index
+                    if "founder_uuid" in df.columns:
+                        df = df.drop(columns=["founder_uuid"])
+                if "evidence_support_rating" in df.columns and f"{exp_id}_evidence_support_rating" in df.columns:
+                    df = df.drop(columns=["evidence_support_rating"])
+                df = df.drop_duplicates(join_key)
+                cols = []
+                for c in df.columns:
+                    if c in ("founder_uuid", "success", join_key):
+                        cols.append(c)
+                        continue
+                    if c.startswith(f"{exp_id}_"):
+                        cols.append(c)
+                    else:
+                        cols.append(f"{exp_id}_{c}")
+                df.columns = cols
+                df = df.set_index(join_key)
+                if merged is None:
+                    merged = df
+                else:
+                    merged = merged.join(df.drop(columns=["success"], errors="ignore"), how="inner")
+            if merged is not None:
+                if "success" not in merged.columns:
+                    raise RuntimeError("Merged reasoning frame missing success column.")
+                merged = merged.reset_index()
+                merged.to_parquet(use_root / "llm_reasoning_full.parquet", index=False)
+            manifest = {
+                "timestamp": datetime.now().isoformat(),
+                "experiments": exp_list,
+                "runs": run_map,
+            }
+            (use_root / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
         def _reasoning_has_nans(path: Path) -> bool:
             if not path.exists():
@@ -1815,22 +2145,79 @@ def main() -> None:
                 return False
             return bool(num.isna().any(axis=1).any())
 
+        def _reasoning_run_valid(run_dir: Path, exp_id: str) -> bool:
+            run_path = run_dir / "llm_reasoning_full.parquet"
+            if not run_path.exists():
+                return False
+            df = pd.read_parquet(run_path)
+            if len(df) == len(all_records) and len(records) != len(all_records):
+                df = df.iloc[pool_idx].reset_index(drop=True)
+            if not any(c.startswith(f"{exp_id}_") for c in df.columns):
+                return False
+            num = df.select_dtypes(include=[np.number]).drop(columns=["success"], errors="ignore")
+            if num.empty:
+                return True
+            return not num.isna().any(axis=1).any()
+
+        def _select_latest_valid_runs(exp_list: list[str]) -> dict[str, Path]:
+            selected: dict[str, Path] = {}
+            if not runs_root.exists():
+                return selected
+            for exp_id in exp_list:
+                candidates = sorted(
+                    [p for p in runs_root.glob(f"run_{exp_id}_*") if p.is_dir()],
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                for candidate in candidates:
+                    if _reasoning_run_valid(candidate, exp_id):
+                        selected[exp_id] = candidate
+                        break
+            return selected
+
+        def _load_currently_in_use_df() -> pd.DataFrame | None:
+            use_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "currently_in_use"
+            use_path = use_root / "llm_reasoning_full.parquet"
+            if not use_path.exists():
+                return None
+            df = pd.read_parquet(use_path)
+            if len(df) == len(all_records) and len(records) != len(all_records):
+                df = df.iloc[pool_idx].reset_index(drop=True)
+            return df
+
         def _generate_reasoning_fold_batches(
             experiments_list: list[str] | None,
             output_dir: Path,
             meta_path: Path,
             log_label: str,
+            repair_batches_by_fold: dict[int, list[int]] | None = None,
+            existing_full_df: pd.DataFrame | None = None,
         ) -> tuple[pd.DataFrame, list[str]]:
             folds_root = output_dir / "folds"
             fold_meta_paths: list[str] = []
+            fallback_total = 0
             feature_cols: list[str] | None = None
             full_features: pd.DataFrame | None = None
+            if repair_batches_by_fold is not None and existing_full_df is not None:
+                feature_cols = [
+                    c for c in existing_full_df.columns if c not in ("founder_uuid", "success")
+                ]
+                full_features = existing_full_df[feature_cols].copy()
             for fold_id in range(cv_folds):
                 fold_idx = np.where(fold_ids == fold_id)[0]
                 if fold_idx.size == 0:
                     continue
+                if repair_batches_by_fold is not None:
+                    target_batches = repair_batches_by_fold.get(fold_id, [])
+                    if not target_batches:
+                        continue
+                else:
+                    target_batches = None
                 fold_records = [records[i] for i in fold_idx]
                 fold_labels = labels[fold_idx]
+                fold_existing = None
+                if existing_full_df is not None:
+                    fold_existing = existing_full_df.iloc[fold_idx].reset_index(drop=True)
                 fold_dir = folds_root / f"fold_{fold_id}"
                 fold_meta = meta_path.with_name(meta_path.stem + f"_fold{fold_id}.json")
                 fold_meta_paths.append(str(fold_meta))
@@ -1847,11 +2234,16 @@ def main() -> None:
                     experiments=experiments_list,
                     dry_run=llm_reasoning_dry_run,
                     dry_run_fast=llm_reasoning_dry_run_fast,
-                    log_dir=log_root / f"{log_label}_fold{fold_id}",
+            log_dir=log_root / f"{log_label}_fold{fold_id}",
                     log_every=llm_reasoning_log_every,
                     repair_nan=llm_reasoning_repair_nan,
-                    repair_existing=llm_reasoning_repair_existing,
+                    repair_existing=True if repair_batches_by_fold is not None else llm_reasoning_repair_existing,
                     skip_select=True,
+                    rate_limit_fallback_concurrency=llm_reasoning_rate_limit_fallback_concurrency,
+                    rate_limit_fallback_windows=llm_reasoning_rate_limit_fallback_windows,
+                    inline_repair=llm_reasoning_inline_repair,
+                    inline_repair_max_attempts=llm_reasoning_inline_repair_max_attempts,
+                    target_batch_indices=target_batches,
                 )
                 fold_df, _ = generate_reasoning_features(
                     records=fold_records,
@@ -1859,7 +2251,13 @@ def main() -> None:
                     config=fold_config,
                     output_dir=fold_dir,
                     metadata_path=fold_meta,
+                    existing_df=fold_existing,
                 )
+                try:
+                    fold_meta_data = json.loads(fold_meta.read_text(encoding="utf-8"))
+                    fallback_total += int(fold_meta_data.get("rate_limit_fallbacks", 0))
+                except Exception:
+                    pass
                 fold_cols = [c for c in fold_df.columns if c not in ("founder_uuid", "success")]
                 if feature_cols is None:
                     feature_cols = sorted(fold_cols)
@@ -1911,6 +2309,7 @@ def main() -> None:
                 "concurrency": llm_reasoning_concurrency,
                 "dry_run": llm_reasoning_dry_run,
                 "dry_run_fast": llm_reasoning_dry_run_fast,
+                "rate_limit_fallbacks": fallback_total,
             }
             meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
             return combined_df, feature_cols
@@ -1918,12 +2317,186 @@ def main() -> None:
         reasoning_mode = cfg_llm_reasoning_mode or "single"
         sequential = cfg_llm_reasoning_sequential or []
         combined = cfg_llm_reasoning_combined or []
-        if reasoning_mode == "sequential_and_combined" and (sequential or combined):
+        reasoning_df: pd.DataFrame | None = None
+        skip_sequential = False
+        if reasoning_mode == "sequential_and_combined" and sequential and not combined:
+            selected_runs = _select_latest_valid_runs(sequential)
+            if len(selected_runs) == len(sequential):
+                _log_run("A/B/E nan-free found; skipping reasoning generation.")
+                _update_currently_in_use(sequential, selected_runs)
+                reasoning_df = _load_currently_in_use_df()
+                if reasoning_df is not None:
+                    skip_sequential = True
+        def _repair_current_experiment_a_if_needed() -> bool:
+            current_path = current_root / "llm_reasoning_full.parquet"
+            runs_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "runs"
+            if not current_path.exists():
+                # Try to sync the most recent run_A into current/ for repair
+                if runs_root.exists():
+                    candidates = sorted(
+                        [p for p in runs_root.glob("run_A_*") if p.is_dir()],
+                        key=lambda p: p.stat().st_mtime,
+                        reverse=True,
+                    )
+                    for candidate in candidates:
+                        run_path = candidate / "llm_reasoning_full.parquet"
+                        if run_path.exists():
+                            _sync_reasoning_current(candidate, ["A"])
+                            current_path = current_root / "llm_reasoning_full.parquet"
+                            break
+                if not current_path.exists():
+                    return False
+            manifest_path = current_root / "manifest.json"
+            experiments = []
+            if manifest_path.exists():
+                try:
+                    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                    experiments = manifest.get("experiments", [])
+                except Exception:
+                    experiments = []
+            df = pd.read_parquet(current_path)
+            if len(df) == len(all_records) and len(records) != len(all_records):
+                df = df.iloc[pool_idx].reset_index(drop=True)
+            if not experiments:
+                # fallback: infer from column names
+                if any(c.startswith("A_") for c in df.columns):
+                    experiments = ["A"]
+            if "A" not in experiments:
+                _log_run("Repair check: manifest missing A, attempting fallback.")
+                experiments = ["A"]
+            # If current parquet doesn't actually contain A columns, re-sync from latest run_A
+            if not any(c.startswith("A_") for c in df.columns):
+                if runs_root.exists():
+                    candidates = sorted(
+                        [p for p in runs_root.glob("run_A_*") if p.is_dir()],
+                        key=lambda p: p.stat().st_mtime,
+                        reverse=True,
+                    )
+                    for candidate in candidates:
+                        run_path = candidate / "llm_reasoning_full.parquet"
+                        if run_path.exists():
+                            df_run = pd.read_parquet(run_path)
+                            if len(df_run) == len(all_records) and len(records) != len(all_records):
+                                df_run = df_run.iloc[pool_idx].reset_index(drop=True)
+                            num_run = df_run.select_dtypes(include=[np.number]).drop(
+                                columns=["success"], errors="ignore"
+                            )
+                            nan_free_run = True if num_run.empty else not num_run.isna().any(axis=1).any()
+                            if nan_free_run and any(c.startswith("A_") for c in df_run.columns):
+                                _sync_reasoning_current(candidate, ["A"])
+                                _log_run(f"Repair check: synced run_A {candidate.name} into current.")
+                                return True
+                            # If not nan-free, use this as repair source
+                            df = df_run
+                            break
+            num = df.select_dtypes(include=[np.number]).drop(columns=["success"], errors="ignore")
+            if num.empty:
+                _log_run("Repair check: no numeric columns found for A.")
+                return False
+            nan_rows = int(num.isna().any(axis=1).sum())
+            _log_run(f"Repair check: A nan_rows={nan_rows}")
+            nan_mask = num.isna().any(axis=1).to_numpy()
+            if not nan_mask.any():
+                return True
+            if not llm_reasoning_repair_existing:
+                _log_run("Repair check: NaNs found but repair_existing=false.")
+                return False
+            nan_rows = np.where(nan_mask)[0].tolist()
+            repair_batches_by_fold: dict[int, list[int]] = {}
+            for fold_id in range(cv_folds):
+                fold_idx = np.where(fold_ids == fold_id)[0]
+                if fold_idx.size == 0:
+                    continue
+                pos_map = {int(idx): pos for pos, idx in enumerate(fold_idx)}
+                batch_ids: set[int] = set()
+                for row_idx in nan_rows:
+                    if row_idx in pos_map:
+                        pos = pos_map[row_idx]
+                        batch_ids.add(int(pos // llm_reasoning_batch_size))
+                if batch_ids:
+                    repair_batches_by_fold[fold_id] = sorted(batch_ids)
+            if not repair_batches_by_fold:
+                return
+            _log_run("Repairing current Experiment A NaNs with targeted batches.")
+            repair_meta = current_root / f"llm_reasoning_{reasoning_dataset_size}_A_repair.json"
+            _generate_reasoning_fold_batches(
+                experiments_list=["A"],
+                output_dir=current_root,
+                meta_path=repair_meta,
+                log_label="A_repair",
+                repair_batches_by_fold=repair_batches_by_fold,
+                existing_full_df=df,
+            )
+            # Refresh df after repair
+            df_repaired = pd.read_parquet(current_path)
+            if len(df_repaired) == len(all_records) and len(records) != len(all_records):
+                df_repaired = df_repaired.iloc[pool_idx].reset_index(drop=True)
+            num_repaired = df_repaired.select_dtypes(include=[np.number]).drop(
+                columns=["success"], errors="ignore"
+            )
+            nan_after = int(num_repaired.isna().any(axis=1).sum()) if not num_repaired.empty else 0
+            _log_run(f"Experiment A nan_rows_after_repair={nan_after}")
+            _log_run("Completed targeted repair for Experiment A.")
+            return nan_after == 0
+
+        a_ready = False
+        if "A" in sequential:
+            a_ready = _repair_current_experiment_a_if_needed()
+        if reasoning_mode == "sequential_and_combined" and (sequential or combined) and not skip_sequential:
             _log_run(f"Reasoning mode: sequential_and_combined")
             # Sequential runs
             for exp_id in sequential:
                 _log_run(f"Starting sequential experiment {exp_id}")
                 runs_root.mkdir(parents=True, exist_ok=True)
+                if exp_id == "A":
+                    if a_ready:
+                        _log_run("Skipping Experiment A (ready after repair check).")
+                        continue
+                    current_path = current_root / "llm_reasoning_full.parquet"
+                    manifest_path = current_root / "manifest.json"
+                    current_experiments: list[str] = []
+                    if manifest_path.exists():
+                        try:
+                            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                            current_experiments = manifest.get("experiments", []) or []
+                        except Exception:
+                            current_experiments = []
+                    if current_path.exists():
+                        try:
+                            df_current = pd.read_parquet(current_path)
+                            if len(df_current) == len(all_records) and len(records) != len(all_records):
+                                df_current = df_current.iloc[pool_idx].reset_index(drop=True)
+                            has_a = any(c.startswith("A_") for c in df_current.columns)
+                            num = df_current.select_dtypes(include=[np.number]).drop(
+                                columns=["success"], errors="ignore"
+                            )
+                            nan_free = True if num.empty else not num.isna().any(axis=1).any()
+                            if nan_free and ("A" in current_experiments or has_a):
+                                _log_run("Reusing current Experiment A (nan-free).")
+                                continue
+                        except Exception:
+                            pass
+                # Reuse latest completed run for this experiment if available
+                cached_dir = None
+                if runs_root.exists():
+                    candidates = sorted(
+                        [p for p in runs_root.glob(f"run_{exp_id}_*") if p.is_dir()],
+                        key=lambda p: p.stat().st_mtime,
+                        reverse=True,
+                    )
+                    for candidate in candidates:
+                        run_path = candidate / "llm_reasoning_full.parquet"
+                        if run_path.exists():
+                            cached_dir = candidate
+                            break
+                if cached_dir is not None:
+                    run_parquet = cached_dir / f"llm_reasoning_{reasoning_dataset_size}.parquet"
+                    if not (llm_reasoning_repair_existing and _reasoning_has_nans(run_parquet)):
+                        _log_run(f"Reusing cached experiment {exp_id} from {cached_dir.name}")
+                        _sync_reasoning_current(cached_dir, [exp_id])
+                        _log_run(f"Completed sequential experiment {exp_id} (cached)")
+                        continue
+
                 exp_dir = runs_root / f"run_{exp_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 exp_dir.mkdir(parents=True, exist_ok=True)
                 meta_path = exp_dir / f"llm_reasoning_{reasoning_dataset_size}_{exp_id}.json"
@@ -1947,6 +2520,10 @@ def main() -> None:
                         log_every=llm_reasoning_log_every,
                         repair_nan=llm_reasoning_repair_nan,
                         repair_existing=llm_reasoning_repair_existing,
+                        rate_limit_fallback_concurrency=llm_reasoning_rate_limit_fallback_concurrency,
+                        rate_limit_fallback_windows=llm_reasoning_rate_limit_fallback_windows,
+                        inline_repair=llm_reasoning_inline_repair,
+                        inline_repair_max_attempts=llm_reasoning_inline_repair_max_attempts,
                     )
                     generate_reasoning_features(
                         records=records,
@@ -1955,6 +2532,14 @@ def main() -> None:
                         output_dir=exp_dir,
                         metadata_path=meta_path,
                     )
+                try:
+                    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                    _log_run(
+                        f"Experiment {exp_id} rate_limit_fallbacks="
+                        f"{int(meta.get('rate_limit_fallbacks', 0))}"
+                    )
+                except Exception:
+                    pass
                 _sync_reasoning_current(exp_dir, [exp_id])
                 _log_run(f"Completed sequential experiment {exp_id}")
 
@@ -1986,6 +2571,10 @@ def main() -> None:
                         log_every=llm_reasoning_log_every,
                         repair_nan=llm_reasoning_repair_nan,
                         repair_existing=llm_reasoning_repair_existing,
+                        rate_limit_fallback_concurrency=llm_reasoning_rate_limit_fallback_concurrency,
+                        rate_limit_fallback_windows=llm_reasoning_rate_limit_fallback_windows,
+                        inline_repair=llm_reasoning_inline_repair,
+                        inline_repair_max_attempts=llm_reasoning_inline_repair_max_attempts,
                     )
                     generate_reasoning_features(
                         records=records,
@@ -1994,11 +2583,23 @@ def main() -> None:
                         output_dir=exp_dir,
                         metadata_path=meta_path,
                     )
+                try:
+                    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                    _log_run(
+                        f"Experiment {combo_id} rate_limit_fallbacks="
+                        f"{int(meta.get('rate_limit_fallbacks', 0))}"
+                    )
+                except Exception:
+                    pass
                 _sync_reasoning_current(exp_dir, combined)
                 _log_run(f"Completed combined experiment {combo_id}")
-            # Skip training path for sequential/combined batch generation
-            return
-        else:
+            if sequential:
+                selected_runs = _select_latest_valid_runs(sequential)
+                _update_currently_in_use(sequential, selected_runs if selected_runs else None)
+            reasoning_df = _load_currently_in_use_df()
+            if reasoning_df is None:
+                raise RuntimeError("No reasoning features found after sequential run.")
+        elif not skip_sequential:
             runs_root.mkdir(parents=True, exist_ok=True)
             run_dir = runs_root / f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             run_dir.mkdir(parents=True, exist_ok=True)
@@ -2046,6 +2647,10 @@ def main() -> None:
                         log_every=llm_reasoning_log_every,
                         repair_nan=llm_reasoning_repair_nan,
                         repair_existing=llm_reasoning_repair_existing,
+                        rate_limit_fallback_concurrency=llm_reasoning_rate_limit_fallback_concurrency,
+                        rate_limit_fallback_windows=llm_reasoning_rate_limit_fallback_windows,
+                        inline_repair=llm_reasoning_inline_repair,
+                        inline_repair_max_attempts=llm_reasoning_inline_repair_max_attempts,
                     )
                     reasoning_df, all_reasoning_names = generate_reasoning_features(
                         records=records,
@@ -2056,6 +2661,8 @@ def main() -> None:
                     )
             if "reasoning_df" in locals():
                 _sync_reasoning_current(run_dir, exp_list or [])
+
+        if reasoning_df is not None and not reasoning_feature_names:
             # Use numeric reasoning features for training; keep text in parquet only.
             for col in reasoning_df.columns:
                 if col not in ("founder_uuid", "success"):
@@ -2215,313 +2822,225 @@ def main() -> None:
         )
         return
 
-    # Optional reasoning-only and reasoning+human runs for consistent comparison.
+    # Expanded reasoning + engineered evaluations (CV).
+    table1_rows: list[dict[str, Any]] = []
+    table2_rows: list[dict[str, Any]] = []
+    reasoning_combo_cols: dict[str, list[str]] = {}
+    reasoning_combo_frames: dict[str, pd.DataFrame] = {}
+
+    def _append_row(
+        target: list[dict[str, Any]],
+        table: str,
+        regression: str,
+        set_id: str,
+        combo: str,
+        means: dict[str, float],
+        stds: dict[str, float],
+    ) -> None:
+        target.append(
+            {
+                "table": table,
+                "regression": regression,
+                "set_id": set_id,
+                "reasoning_combo": combo,
+                "F0.5": means.get("f0.5", float("nan")),
+                "F0.5_std": stds.get("f0.5", float("nan")),
+                "ROC-AUC": means.get("roc_auc", float("nan")),
+                "ROC-AUC_std": stds.get("roc_auc", float("nan")),
+                "PR-AUC": means.get("pr_auc", float("nan")),
+                "PR-AUC_std": stds.get("pr_auc", float("nan")),
+                "Prec": means.get("precision", float("nan")),
+                "Prec_std": stds.get("precision", float("nan")),
+                "Rec": means.get("recall", float("nan")),
+                "Rec_std": stds.get("recall", float("nan")),
+                "Acc": means.get("accuracy", float("nan")),
+                "Acc_std": stds.get("accuracy", float("nan")),
+            }
+        )
+
     if use_llm_reasoning and reasoning_feature_names:
-        if not llm_engineered_run_family:
-            summary_rows: list[dict[str, float]] = []
+        exp_list_for_combo = [
+            e
+            for e in (cfg_llm_reasoning_sequential or cfg_llm_reasoning_experiments or [])
+            if isinstance(e, str)
+        ]
+        if reasoning_df is not None:
+            reasoning_combo_cols = _build_reasoning_combos(reasoning_df, exp_list_for_combo)
+            reasoning_combo_frames = {
+                combo: reasoning_df[cols].copy() for combo, cols in reasoning_combo_cols.items()
+            }
+        if not reasoning_combo_cols:
+            _log("  WARNING: No reasoning combos found; check reasoning columns.")
 
-            human_only_log_dir = Path(__file__).parent / "training_logs" / "human" / "only"
-            human_full = pd.concat([base_all, custom_all], axis=1)
+        human_full = pd.concat([base_all, custom_all], axis=1)
+        means, stds = _train_and_log_cv(
+            base_feature_names + custom_features,
+            human_full,
+            labels,
+            args,
+            input_csv,
+            "Human Only",
+            cv_folds=cv_folds,
+            log_dir=Path(__file__).parent / "training_logs" / "human" / "only",
+            cv_splits=cv_splits,
+        )
+        _append_row(table1_rows, "Table 1", "Human Only", "", "", means, stds)
+
+        for combo, cols in reasoning_combo_cols.items():
+            combo_tag = combo.replace("+", "_")
+            combo_df = reasoning_combo_frames[combo]
             means, stds = _train_and_log_cv(
-                base_feature_names + custom_features,
-                human_full,
+                cols,
+                combo_df,
                 labels,
                 args,
                 input_csv,
-                "Human Only",
+                f"Reasoning {combo}",
                 cv_folds=cv_folds,
-                log_dir=human_only_log_dir,
+                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / combo_tag,
                 cv_splits=cv_splits,
             )
-            summary_rows.append(
-                {
-                    "name": "Human Only",
-                    "F0.5": means["f0.5"],
-                    "F0.5_std": stds["f0.5"],
-                    "ROC-AUC": means["roc_auc"],
-                    "ROC-AUC_std": stds["roc_auc"],
-                    "PR-AUC": means["pr_auc"],
-                    "PR-AUC_std": stds["pr_auc"],
-                    "Prec": means["precision"],
-                    "Prec_std": stds["precision"],
-                    "Rec": means["recall"],
-                    "Rec_std": stds["recall"],
-                    "Acc": means["accuracy"],
-                    "Acc_std": stds["accuracy"],
-                }
-            )
+            _append_row(table1_rows, "Table 1", "Reasoning Only", "", combo, means, stds)
 
+            combo_plus = pd.concat([human_full, combo_df], axis=1)
             means, stds = _train_and_log_cv(
-                reasoning_feature_names,
-                reasoning_all,
+                base_feature_names + custom_features + cols,
+                combo_plus,
                 labels,
                 args,
                 input_csv,
-                "LLM Reasoning Only",
+                f"Human + Reasoning {combo}",
                 cv_folds=cv_folds,
-                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only",
+                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "human_plus" / combo_tag,
                 cv_splits=cv_splits,
             )
-            summary_rows.append(
-                {
-                    "name": "LLM Reasoning Only",
-                    "F0.5": means["f0.5"],
-                    "F0.5_std": stds["f0.5"],
-                    "ROC-AUC": means["roc_auc"],
-                    "ROC-AUC_std": stds["roc_auc"],
-                    "PR-AUC": means["pr_auc"],
-                    "PR-AUC_std": stds["pr_auc"],
-                    "Prec": means["precision"],
-                    "Prec_std": stds["precision"],
-                    "Rec": means["recall"],
-                    "Rec_std": stds["recall"],
-                    "Acc": means["accuracy"],
-                    "Acc_std": stds["accuracy"],
-                }
-            )
+            _append_row(table1_rows, "Table 1", "Human + Reasoning", "", combo, means, stds)
 
-            reasoning_plus_human = pd.concat([human_full, reasoning_all], axis=1)
-            means, stds = _train_and_log_cv(
-                base_feature_names + custom_features + reasoning_feature_names,
-                reasoning_plus_human,
+    # Run-family mode (multiple engineered feature sets + leaderboard)
+    if llm_engineered_run_family:
+        if not reasoning_combo_cols:
+            raise RuntimeError("Run-family mode requires reasoning combos to be available.")
+        families_dir = cache_dir / "families"
+        archives_dir = cache_dir / "archives"
+        family_dir: Path | None = None
+        family_id = llm_engineered_run_family_id or ""
+        if llm_engineered_freeze and not family_id:
+            if families_dir.exists():
+                consolidated = sorted(
+                    families_dir.glob("family_*_features.parquet"),
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                if consolidated:
+                    latest = consolidated[0]
+                    family_id = latest.stem.replace("family_", "").replace("_features", "")
+                    _log(f"  [Run-family] Reusing consolidated family: family_{family_id}")
+            if not family_id:
+                existing = sorted(
+                    [p for p in cache_dir.glob("family_*") if p.is_dir()],
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                for candidate in existing:
+                    set_dirs = list(candidate.glob("set_*"))
+                    if not set_dirs:
+                        continue
+                    has_cache = any(
+                        (sd / "llm_features.parquet").exists()
+                        and (sd / "llm_features_meta.json").exists()
+                        for sd in set_dirs
+                    )
+                    if has_cache:
+                        family_dir = candidate
+                        family_id = candidate.name.replace("family_", "")
+                        _log(f"  [Run-family] Reusing existing family cache: {candidate.name}")
+                        break
+        if family_dir is None:
+            if not family_id:
+                family_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            family_dir = cache_dir / f"family_{family_id}"
+            family_dir.mkdir(parents=True, exist_ok=True)
+        family_features_path = families_dir / f"family_{family_id}_features.parquet"
+        family_meta_path = families_dir / f"family_{family_id}_meta.json"
+        run_n = llm_engineered_run_family_n or llm_n
+        skipped_sets: list[str] = []
+        founder_ids = [r.get("founder_uuid") for r in records]
+        family_frames: list[pd.DataFrame] = []
+        family_set_features: dict[str, list[str]] = {}
+        _log_run(
+            f"Run-family start: id={family_id} n_sets={llm_engineered_run_family_size} n_features={run_n}"
+        )
+
+        def _evaluate_family_set(set_id: str, features: list[str], set_all: pd.DataFrame) -> None:
+            metrics_only, stds_only = _train_and_log_cv(
+                features,
+                set_all,
                 labels,
                 args,
                 input_csv,
-                "LLM Reasoning + Human",
+                "LLM Engineered Only",
                 cv_folds=cv_folds,
-                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "plus_human",
+                log_dir=Path(__file__).parent
+                / "training_logs"
+                / "llm_engineered"
+                / f"family_{family_id}"
+                / set_id
+                / "only",
                 cv_splits=cv_splits,
             )
-            summary_rows.append(
-                {
-                    "name": "LLM Reasoning + Human",
-                    "F0.5": means["f0.5"],
-                    "F0.5_std": stds["f0.5"],
-                    "ROC-AUC": means["roc_auc"],
-                    "ROC-AUC_std": stds["roc_auc"],
-                    "PR-AUC": means["pr_auc"],
-                    "PR-AUC_std": stds["pr_auc"],
-                    "Prec": means["precision"],
-                    "Prec_std": stds["precision"],
-                    "Rec": means["recall"],
-                    "Rec_std": stds["recall"],
-                    "Acc": means["accuracy"],
-                    "Acc_std": stds["accuracy"],
-                }
-            )
+            _append_row(table2_rows, "Table 2", "LLM Engineered Only", set_id, "", metrics_only, stds_only)
 
-            if llm_engineered_feature_names:
-                means, stds = _train_and_log_cv(
-                    llm_engineered_feature_names,
-                    llm_all,
+            for combo, cols in reasoning_combo_cols.items():
+                combo_tag = combo.replace("+", "_")
+                combo_df = reasoning_combo_frames[combo]
+                set_plus_all = pd.concat([set_all, combo_df], axis=1)
+                metrics_plus, stds_plus = _train_and_log_cv(
+                    features + cols,
+                    set_plus_all,
                     labels,
                     args,
                     input_csv,
-                    "LLM Engineered Only",
+                    f"LLM Engineered + Reasoning {combo}",
                     cv_folds=cv_folds,
-                    log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "only",
+                    log_dir=Path(__file__).parent
+                    / "training_logs"
+                    / "llm_engineered"
+                    / f"family_{family_id}"
+                    / set_id
+                    / "plus_reasoning"
+                    / combo_tag,
                     cv_splits=cv_splits,
                 )
-                summary_rows.append(
-                    {
-                        "name": "LLM Engineered Only",
-                        "F0.5": means["f0.5"],
-                        "F0.5_std": stds["f0.5"],
-                        "ROC-AUC": means["roc_auc"],
-                        "ROC-AUC_std": stds["roc_auc"],
-                        "PR-AUC": means["pr_auc"],
-                        "PR-AUC_std": stds["pr_auc"],
-                        "Prec": means["precision"],
-                        "Prec_std": stds["precision"],
-                        "Rec": means["recall"],
-                        "Rec_std": stds["recall"],
-                        "Acc": means["accuracy"],
-                        "Acc_std": stds["accuracy"],
-                    }
-                )
-                llm_plus_reasoning = pd.concat([llm_all, reasoning_all], axis=1)
-                means, stds = _train_and_log_cv(
-                    llm_engineered_feature_names + reasoning_feature_names,
-                    llm_plus_reasoning,
-                    labels,
-                    args,
-                    input_csv,
+                _append_row(
+                    table2_rows,
+                    "Table 2",
                     "LLM Engineered + Reasoning",
-                    cv_folds=cv_folds,
-                    log_dir=Path(__file__).parent / "training_logs" / "llm_engineered" / "plus_reasoning",
-                    cv_splits=cv_splits,
-                )
-                summary_rows.append(
-                    {
-                        "name": "LLM Engineered + Reasoning",
-                        "F0.5": means["f0.5"],
-                        "F0.5_std": stds["f0.5"],
-                        "ROC-AUC": means["roc_auc"],
-                        "ROC-AUC_std": stds["roc_auc"],
-                        "PR-AUC": means["pr_auc"],
-                        "PR-AUC_std": stds["pr_auc"],
-                        "Prec": means["precision"],
-                        "Prec_std": stds["precision"],
-                        "Rec": means["recall"],
-                        "Rec_std": stds["recall"],
-                        "Acc": means["accuracy"],
-                        "Acc_std": stds["accuracy"],
-                    }
+                    set_id,
+                    combo,
+                    metrics_plus,
+                    stds_plus,
                 )
 
-            report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
-            if summary_rows:
-                table = _write_f05_table(summary_rows, report_path)
-                note = f"\n\n*CV: {cv_folds}-fold stratified on {len(labels)} founders (seed excluded).*\n"
-                report_path.write_text(report_path.read_text(encoding="utf-8") + note, encoding="utf-8")
-                _log("\nCV summary:\n" + table)
-                _write_snapshot_combined_report()
-
-        # Run-family mode (multiple engineered feature sets + leaderboard)
-        if llm_engineered_run_family:
-            if not reasoning_feature_names:
-                raise RuntimeError("Run-family mode requires reasoning features to be loaded.")
-            families_dir = cache_dir / "families"
-            archives_dir = cache_dir / "archives"
-            family_dir: Path | None = None
-            family_id = llm_engineered_run_family_id or ""
-            if llm_engineered_freeze and not family_id:
-                if families_dir.exists():
-                    consolidated = sorted(
-                        families_dir.glob("family_*_features.parquet"),
-                        key=lambda p: p.stat().st_mtime,
-                        reverse=True,
+        if llm_engineered_freeze and family_features_path.exists() and family_meta_path.exists():
+            df = pd.read_parquet(family_features_path)
+            meta = json.loads(family_meta_path.read_text(encoding="utf-8"))
+            if meta.get("seed_hash") != seed_hash:
+                if not llm_engineered_family_allow_seed_mismatch:
+                    raise RuntimeError(
+                        "Run-family cache seed hash mismatch. "
+                        "Delete the family cache or reset the seed file to regenerate."
                     )
-                    if consolidated:
-                        latest = consolidated[0]
-                        family_id = latest.stem.replace("family_", "").replace("_features", "")
-                        _log(f"  [Run-family] Reusing consolidated family: family_{family_id}")
-                if not family_id:
-                    existing = sorted(
-                        [p for p in cache_dir.glob("family_*") if p.is_dir()],
-                        key=lambda p: p.stat().st_mtime,
-                        reverse=True,
-                    )
-                    for candidate in existing:
-                        set_dirs = list(candidate.glob("set_*"))
-                        if not set_dirs:
-                            continue
-                        has_cache = any(
-                            (sd / "llm_features.parquet").exists()
-                            and (sd / "llm_features_meta.json").exists()
-                            for sd in set_dirs
-                        )
-                        if has_cache:
-                            family_dir = candidate
-                            family_id = candidate.name.replace("family_", "")
-                            _log(f"  [Run-family] Reusing existing family cache: {candidate.name}")
-                            break
-            if family_dir is None:
-                if not family_id:
-                    family_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-                family_dir = cache_dir / f"family_{family_id}"
-                family_dir.mkdir(parents=True, exist_ok=True)
-            family_features_path = families_dir / f"family_{family_id}_features.parquet"
-            family_meta_path = families_dir / f"family_{family_id}_meta.json"
-            run_n = llm_engineered_run_family_n or llm_n
-            rows: list[dict[str, Any]] = []
-            skipped_sets: list[str] = []
-            reasoning_label = "+".join(cfg_llm_reasoning_experiments or [])
-            founder_ids = [r.get("founder_uuid") for r in records]
-            family_frames: list[pd.DataFrame] = []
-            family_set_features: dict[str, list[str]] = {}
-            _log_run(
-                f"Run-family start: id={family_id} n_sets={llm_engineered_run_family_size} n_features={run_n}"
-            )
-            def _evaluate_from_consolidated(
-                df: pd.DataFrame, meta: dict[str, Any]
-            ) -> list[dict[str, Any]]:
-                set_features: dict[str, list[str]] = meta.get("set_features", {})
-                out_rows: list[dict[str, Any]] = []
-                for set_id, features in set_features.items():
-                    df_set = df[df["set_id"] == set_id].set_index("row_index").sort_index()
-                    set_all = df_set[features]
-                    metrics_only, _ = _train_and_log_cv(
-                        features,
-                        set_all,
-                        labels,
-                        args,
-                        input_csv,
-                        "LLM Engineered Only",
-                        cv_folds=cv_folds,
-                        log_dir=Path(__file__).parent
-                        / "training_logs"
-                        / "llm_engineered"
-                        / f"family_{family_id}"
-                        / set_id
-                        / "only",
-                        cv_splits=cv_splits,
-                    )
-                    out_rows.append(
-                        {
-                            "set_id": set_id,
-                            "regression": "LLM Engineered Only",
-                            "F0.5": metrics_only.get("f0.5", float("nan")),
-                            "ROC-AUC": metrics_only.get("roc_auc", float("nan")),
-                            "PR-AUC": metrics_only.get("pr_auc", float("nan")),
-                            "Prec": metrics_only.get("precision", float("nan")),
-                            "Rec": metrics_only.get("recall", float("nan")),
-                            "Acc": metrics_only.get("accuracy", float("nan")),
-                            "reasoning_experiment": reasoning_label,
-                        }
-                    )
-                    set_plus_all = pd.concat([set_all, reasoning_all], axis=1)
-                    metrics_plus, _ = _train_and_log_cv(
-                        features + reasoning_feature_names,
-                        set_plus_all,
-                        labels,
-                        args,
-                        input_csv,
-                        "LLM Engineered + Reasoning",
-                        cv_folds=cv_folds,
-                        log_dir=Path(__file__).parent
-                        / "training_logs"
-                        / "llm_engineered"
-                        / f"family_{family_id}"
-                        / set_id
-                        / "plus_reasoning",
-                        cv_splits=cv_splits,
-                    )
-                    out_rows.append(
-                        {
-                            "set_id": set_id,
-                            "regression": "LLM Engineered + Reasoning",
-                            "F0.5": metrics_plus.get("f0.5", float("nan")),
-                            "ROC-AUC": metrics_plus.get("roc_auc", float("nan")),
-                            "PR-AUC": metrics_plus.get("pr_auc", float("nan")),
-                            "Prec": metrics_plus.get("precision", float("nan")),
-                            "Rec": metrics_plus.get("recall", float("nan")),
-                            "Acc": metrics_plus.get("accuracy", float("nan")),
-                            "reasoning_experiment": reasoning_label,
-                        }
-                    )
-                return out_rows
-
-            if llm_engineered_freeze and family_features_path.exists() and family_meta_path.exists():
-                df = pd.read_parquet(family_features_path)
-                meta = json.loads(family_meta_path.read_text(encoding="utf-8"))
-                if meta.get("seed_hash") != seed_hash:
-                    if not llm_engineered_family_allow_seed_mismatch:
-                        raise RuntimeError(
-                            "Run-family cache seed hash mismatch. "
-                            "Delete the family cache or reset the seed file to regenerate."
-                        )
-                    _log(
-                        "  WARNING: Run-family seed hash mismatch; proceeding because "
-                        "llm_engineered_family_allow_seed_mismatch=true."
-                    )
-                rows = _evaluate_from_consolidated(df, meta)
-                report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
-                leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
-                _write_family_leaderboard(rows, report_path, leaderboard_csv, cv_folds, len(labels))
-                _log(f"\nRun-family leaderboard appended to: {report_path}")
-                _write_snapshot_combined_report()
-                return
+                _log(
+                    "  WARNING: Run-family seed hash mismatch; proceeding because "
+                    "llm_engineered_family_allow_seed_mismatch=true."
+                )
+            set_features: dict[str, list[str]] = meta.get("set_features", {})
+            for set_id, features in set_features.items():
+                df_set = df[df["set_id"] == set_id].set_index("row_index").sort_index()
+                set_all = df_set[features].copy()
+                set_all.index = range(len(records))
+                _evaluate_family_set(set_id, features, set_all)
+        else:
             for idx in range(1, llm_engineered_run_family_size + 1):
                 set_id = f"set_{idx:02d}"
                 set_dir = family_dir / set_id
@@ -2573,9 +3092,7 @@ def main() -> None:
                                     )
                                 )
                             else:
-                                set_all, _, _, set_names = asyncio.run(
-                                    _run_generate()
-                                )
+                                set_all, _, _, set_names = asyncio.run(_run_generate())
                             break
                         except Exception:
                             err = traceback.format_exc()
@@ -2613,74 +3130,19 @@ def main() -> None:
                             n_features=run_n,
                             seed_hash=seed_hash,
                         )
-                else:
-                    pass
 
                 if set_all is None or set_names is None:
                     continue
 
-                if set_all is not None and set_names is not None:
-                    set_df = set_all.copy()
-                    set_df.insert(0, "row_index", np.arange(len(records)))
-                    set_df.insert(1, "founder_uuid", founder_ids)
-                    set_df.insert(2, "success", labels)
-                    set_df.insert(3, "set_id", set_id)
-                    family_frames.append(set_df)
-                    family_set_features[set_id] = set_names
+                set_df = set_all.copy()
+                set_df.insert(0, "row_index", np.arange(len(records)))
+                set_df.insert(1, "founder_uuid", founder_ids)
+                set_df.insert(2, "success", labels)
+                set_df.insert(3, "set_id", set_id)
+                family_frames.append(set_df)
+                family_set_features[set_id] = set_names
 
-                set_only_log = Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "only"
-                set_plus_log = Path(__file__).parent / "training_logs" / "llm_engineered" / f"family_{family_id}" / set_id / "plus_reasoning"
-
-                metrics_only, _ = _train_and_log_cv(
-                    set_names,
-                    set_all,
-                    labels,
-                    args,
-                    input_csv,
-                    "LLM Engineered Only",
-                    cv_folds=cv_folds,
-                    log_dir=set_only_log,
-                    cv_splits=cv_splits,
-                )
-                rows.append(
-                    {
-                        "set_id": set_id,
-                        "regression": "LLM Engineered Only",
-                        "F0.5": metrics_only.get("f0.5", float("nan")),
-                        "ROC-AUC": metrics_only.get("roc_auc", float("nan")),
-                        "PR-AUC": metrics_only.get("pr_auc", float("nan")),
-                        "Prec": metrics_only.get("precision", float("nan")),
-                        "Rec": metrics_only.get("recall", float("nan")),
-                        "Acc": metrics_only.get("accuracy", float("nan")),
-                        "reasoning_experiment": reasoning_label,
-                    }
-                )
-
-                set_plus_all = pd.concat([set_all, reasoning_all], axis=1)
-                metrics_plus, _ = _train_and_log_cv(
-                    set_names + reasoning_feature_names,
-                    set_plus_all,
-                    labels,
-                    args,
-                    input_csv,
-                    "LLM Engineered + Reasoning",
-                    cv_folds=cv_folds,
-                    log_dir=set_plus_log,
-                    cv_splits=cv_splits,
-                )
-                rows.append(
-                    {
-                        "set_id": set_id,
-                        "regression": "LLM Engineered + Reasoning",
-                        "F0.5": metrics_plus.get("f0.5", float("nan")),
-                        "ROC-AUC": metrics_plus.get("roc_auc", float("nan")),
-                        "PR-AUC": metrics_plus.get("pr_auc", float("nan")),
-                        "Prec": metrics_plus.get("precision", float("nan")),
-                        "Rec": metrics_plus.get("recall", float("nan")),
-                        "Acc": metrics_plus.get("accuracy", float("nan")),
-                        "reasoning_experiment": reasoning_label,
-                    }
-                )
+                _evaluate_family_set(set_id, set_names, set_all)
                 _log_run(f"Run-family completed {set_id}")
 
             if family_frames:
@@ -2699,7 +3161,6 @@ def main() -> None:
                     "timestamp": datetime.now().isoformat(),
                 }
                 family_meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
-                # Archive per-set caches to reduce clutter
                 if family_dir.exists():
                     archives_dir.mkdir(parents=True, exist_ok=True)
                     archive_target = archives_dir / f"family_{family_id}"
@@ -2707,15 +3168,11 @@ def main() -> None:
                         shutil.rmtree(archive_target)
                     shutil.move(str(family_dir), str(archive_target))
 
-            report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
-            leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
-            _write_family_leaderboard(rows, report_path, leaderboard_csv, cv_folds, len(labels))
             meta_path = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard_meta.json"
             meta = {
                 "family_id": family_id,
                 "n_sets": llm_engineered_run_family_size,
                 "n_features": run_n,
-                "reasoning_experiment": reasoning_label,
                 "model": args.llm_model,
                 "cv_folds": cv_folds,
                 "pool_size": len(labels),
@@ -2725,9 +3182,15 @@ def main() -> None:
                 "skipped_sets": skipped_sets,
             }
             meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
-            _log(f"\nRun-family leaderboard appended to: {report_path}")
-            _write_snapshot_combined_report()
-            return
+
+    if table1_rows or table2_rows:
+        report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
+        full_csv = Path(__file__).parent / "docs" / "llm_full_results.csv"
+        _write_full_results_report(table1_rows, table2_rows, report_path, full_csv, cv_folds, len(labels))
+        _log(f"\nUpdated report: {report_path}")
+        _log(f"Full results CSV: {full_csv}")
+        _write_snapshot_combined_report()
+        return
 
     # Placeholder for future multiple training loops over feature subsets.
     # TODO: add loop over named feature sets and aggregate metrics.

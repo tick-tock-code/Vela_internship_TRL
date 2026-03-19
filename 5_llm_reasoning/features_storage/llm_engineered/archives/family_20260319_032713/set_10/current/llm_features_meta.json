@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_rank",
+    "industry_in_tech_related",
+    "has_exited_before",
+    "has_advanced_education",
+    "industry_is_nan_or_empty",
+    "has_experience_in_large_company",
+    "multiple_jobs_experience",
+    "education_in_top_qs",
+    "industry_in_healthcare",
+    "has_education_field",
+    "industry_is_nan",
+    "has_corporate_experience",
+    "has_education_in_qs_top_100",
+    "has_education_in_field",
+    "has_experience_in_startup",
+    "has_experience_in_nonprofit",
+    "has_experience_in_leadership"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}
