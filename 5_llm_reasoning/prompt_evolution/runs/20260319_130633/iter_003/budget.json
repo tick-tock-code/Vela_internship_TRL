@@ -1,0 +1,153 @@
+{
+  "budget_usd": 10.0,
+  "spent_usd": 0.19681610000000002,
+  "input_tokens": 882333,
+  "output_tokens": 542914,
+  "records": [
+    {
+      "stage": "generation",
+      "prompt_id": "6af4951678e5",
+      "input_tokens": 78921,
+      "output_tokens": 50271,
+      "cost_usd": 0.017946300000000002,
+      "spent_usd": 0.017946300000000002
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "8ec12b46fab1",
+      "input_tokens": 78921,
+      "output_tokens": 50611,
+      "cost_usd": 0.0180143,
+      "spent_usd": 0.0359606
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "d87ea8f9bc12",
+      "input_tokens": 79022,
+      "output_tokens": 50301,
+      "cost_usd": 0.017962400000000003,
+      "spent_usd": 0.053923000000000006
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "85478028ebf5",
+      "input_tokens": 95023,
+      "output_tokens": 61349,
+      "cost_usd": 0.0217721,
+      "spent_usd": 0.0756951
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "07a8965392ab",
+      "input_tokens": 87716,
+      "output_tokens": 56009,
+      "cost_usd": 0.019973400000000002,
+      "spent_usd": 0.0956685
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "c8f339bc367a",
+      "input_tokens": 79062,
+      "output_tokens": 54503,
+      "cost_usd": 0.0188068,
+      "spent_usd": 0.1144753
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "830f3e445eb8",
+      "input_tokens": 79062,
+      "output_tokens": 51427,
+      "cost_usd": 0.018191600000000002,
+      "spent_usd": 0.1326669
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "008c7c747ddc",
+      "input_tokens": 79062,
+      "output_tokens": 50882,
+      "cost_usd": 0.0180826,
+      "spent_usd": 0.1507495
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "4a725306ac5a",
+      "input_tokens": 79062,
+      "output_tokens": 50195,
+      "cost_usd": 0.0179452,
+      "spent_usd": 0.1686947
+    },
+    {
+      "stage": "generation",
+      "prompt_id": "178d962be82f",
+      "input_tokens": 96398,
+      "output_tokens": 65879,
+      "cost_usd": 0.022815600000000002,
+      "spent_usd": 0.1915103
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "8ec12b46fab1",
+      "input_tokens": 6034,
+      "output_tokens": 179,
+      "cost_usd": 0.0006392,
+      "spent_usd": 0.1921495
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "830f3e445eb8",
+      "input_tokens": 6487,
+      "output_tokens": 194,
+      "cost_usd": 0.0006875,
+      "spent_usd": 0.192837
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "8ec12b46fab1",
+      "input_tokens": 6034,
+      "output_tokens": 178,
+      "cost_usd": 0.000639,
+      "spent_usd": 0.193476
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "830f3e445eb8",
+      "input_tokens": 6487,
+      "output_tokens": 191,
+      "cost_usd": 0.0006868999999999999,
+      "spent_usd": 0.1941629
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "8ec12b46fab1",
+      "input_tokens": 6034,
+      "output_tokens": 179,
+      "cost_usd": 0.0006392,
+      "spent_usd": 0.1948021
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "830f3e445eb8",
+      "input_tokens": 6487,
+      "output_tokens": 193,
+      "cost_usd": 0.0006873,
+      "spent_usd": 0.1954894
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "8ec12b46fab1",
+      "input_tokens": 6034,
+      "output_tokens": 179,
+      "cost_usd": 0.0006392,
+      "spent_usd": 0.19612860000000001
+    },
+    {
+      "stage": "critic",
+      "prompt_id": "830f3e445eb8",
+      "input_tokens": 6487,
+      "output_tokens": 194,
+      "cost_usd": 0.0006875,
+      "spent_usd": 0.19681610000000002
+    }
+  ],
+  "exceeded": false
+}

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\prompt_evolution.py", line 1297, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\prompt_evolution.py", line 1167, in main
+    ranked = sorted(
+        prompt_pool,
+        key=lambda p: metrics_by_prompt[p.prompt_id].get(args.selection_metric, 0.0),
+        reverse=True,
+    )
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\prompt_evolution.py", line 1169, in <lambda>
+    key=lambda p: metrics_by_prompt[p.prompt_id].get(args.selection_metric, 0.0),
+                  ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+KeyError: '9d7a6438be51'

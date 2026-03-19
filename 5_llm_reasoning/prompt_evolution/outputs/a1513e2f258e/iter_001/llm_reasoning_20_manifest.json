@@ -3,10 +3,10 @@
   "random_state": 42,
   "model": "gpt-4.1-nano",
   "providers": {
-    "openai": true,
-    "google": false
+    "openai": false,
+    "google": true
   },
-  "google_model": "gemini-2.0-flash",
+  "google_model": "gemini-2.5-flash",
   "experiments": [
     "AB"
   ],

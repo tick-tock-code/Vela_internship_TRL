@@ -1,0 +1,67 @@
+{
+  "total_rows": 200,
+  "numeric": {
+    "evidence_support_rating": {
+      "mean": 3.41,
+      "std": 0.7905853057249045,
+      "min": 1.0,
+      "max": 5.0,
+      "nan_count": 0
+    },
+    "AB_trajectory_strength": {
+      "mean": 3.33,
+      "std": 0.8688350659701165,
+      "min": 1.0,
+      "max": 5.0,
+      "nan_count": 0
+    },
+    "AB_ownership_signal": {
+      "mean": 3.195,
+      "std": 0.9280524807548203,
+      "min": 1.0,
+      "max": 4.0,
+      "nan_count": 0
+    },
+    "AB_career_coherence": {
+      "mean": 3.36,
+      "std": 0.8449673657877156,
+      "min": 1.0,
+      "max": 5.0,
+      "nan_count": 0
+    },
+    "AB_scrappiness": {
+      "mean": 3.065,
+      "std": 0.7705476744452382,
+      "min": 1.0,
+      "max": 4.0,
+      "nan_count": 0
+    },
+    "AB_rubric_score": {
+      "mean": 3.34,
+      "std": 0.8413915250895164,
+      "min": 1.0,
+      "max": 4.0,
+      "nan_count": 0
+    }
+  },
+  "text": {
+    "AB_trajectory_strength_justification": {
+      "empty_count": 0
+    },
+    "AB_ownership_signal_justification": {
+      "empty_count": 0
+    },
+    "AB_career_coherence_justification": {
+      "empty_count": 0
+    },
+    "AB_scrappiness_justification": {
+      "empty_count": 0
+    },
+    "AB_rubric_score_justification": {
+      "empty_count": 0
+    },
+    "AB_evidence_support_rating": {
+      "empty_count": 0
+    }
+  }
+}

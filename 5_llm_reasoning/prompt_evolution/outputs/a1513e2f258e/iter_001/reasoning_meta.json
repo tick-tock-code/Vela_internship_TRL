@@ -12,7 +12,7 @@
   "n_records": 20,
   "batch_size": 20,
   "n_batches": 1,
-  "concurrency": 2,
+  "concurrency": 4,
   "rate_limit_fallback_concurrency": 5,
   "rate_limit_fallback_windows": 1,
   "rate_limit_fallbacks": 0,
@@ -26,6 +26,6 @@
   "repair_nan": false,
   "nan_rows_before": 0,
   "nan_rows_after": 0,
-  "dry_run": true,
+  "dry_run": false,
   "dry_run_fast": false
 }

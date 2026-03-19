@@ -45,6 +45,60 @@ FORBIDDEN_MUTATION_MARKERS = [
     "justification",
 ]
 
+FALLBACK_MUTATION_TAILS = [
+    "Prioritize concrete evidence and avoid speculation.",
+    "Be conservative unless signals are strong and consistent.",
+    "When evidence conflicts, average rather than polarize.",
+    "Treat missing evidence as neutral, not negative.",
+    "Focus on leadership scope and ownership of outcomes.",
+    "Emphasize scrappiness and resourcefulness over pedigree.",
+    "Weight sustained progression more than one-off spikes.",
+    "Favor clear cause-and-effect in career impact.",
+    "Discount titles without demonstrated responsibility.",
+    "Prefer specific, verifiable signals over vague claims.",
+]
+
+
+def _sanitize_instruction_text(text: str) -> str:
+    lines = []
+    seen = set()
+    for raw in text.splitlines():
+        stripped = raw.strip()
+        if not stripped:
+            if lines and lines[-1] != "":
+                lines.append("")
+            continue
+        if stripped.lower().startswith("variation"):
+            continue
+        if stripped in seen:
+            continue
+        seen.add(stripped)
+        lines.append(stripped)
+    while lines and lines[0] == "":
+        lines.pop(0)
+    while lines and lines[-1] == "":
+        lines.pop()
+    return "\n".join(lines)
+
+
+def _ensure_unique_instruction(
+    text: str,
+    existing_hashes: set[str],
+    salt: str,
+) -> str:
+    base = _sanitize_instruction_text(text)
+    if _hash_text(base) not in existing_hashes:
+        return base
+    start = abs(hash(salt)) % len(FALLBACK_MUTATION_TAILS)
+    for offset in range(len(FALLBACK_MUTATION_TAILS)):
+        tail = FALLBACK_MUTATION_TAILS[(start + offset) % len(FALLBACK_MUTATION_TAILS)]
+        if tail.lower() in base.lower():
+            continue
+        candidate = _sanitize_instruction_text(base + "\n\n" + tail)
+        if _hash_text(candidate) not in existing_hashes:
+            return candidate
+    return base
+
 REQUIRED_COLUMNS = {
     "founder_uuid",
     "industry",
@@ -59,8 +113,12 @@ DEFAULTS: dict[str, Any] = {
     "sample_size": 200,
     "batch_size": 20,
     "concurrency": 10,
+    "concurrency_ladder": [10, 8, 6, 4, 2, 1],
     "iterations": 10,
-    "save_every": 2,
+    "save_every": 0,
+    "full_eval_enabled": False,
+    "full_eval_concurrency": 2,
+    "full_eval_max_batches": 0,
     "selection_metric": "f0.5",
     "random_state": 42,
     "dataset": "full",
@@ -80,6 +138,17 @@ DEFAULTS: dict[str, Any] = {
     "cv_folds": 4,
     "cv_use_fixed_folds": True,
     "cv_folds_path": "",
+    "budget_usd_per_iteration": 1.0,
+    "usd_per_1k_input": 0.001,
+    "usd_per_1k_output": 0.002,
+    "critic_usd_per_1k_input": 0.001,
+    "critic_usd_per_1k_output": 0.002,
+    "token_chars_per_token": 4.0,
+    "max_rate_limit_retries_per_batch": 2,
+    "max_rate_limit_errors": 20,
+    "rate_limit_sleep_min": 10.0,
+    "rate_limit_sleep_max": 120.0,
+    "max_batches": 0,
 }
 
 
@@ -141,6 +210,99 @@ class PromptVariant:
     experiments_path: Path
     parent_id: str | None = None
     created_iter: int | None = None
+
+
+@dataclass
+class BudgetTracker:
+    budget_usd: float
+    usd_per_1k_input: float
+    usd_per_1k_output: float
+    chars_per_token: float
+    spent_usd: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+    def add_tokens(self, input_tokens: int, output_tokens: int) -> float:
+        if input_tokens < 0:
+            input_tokens = 0
+        if output_tokens < 0:
+            output_tokens = 0
+        self.input_tokens += input_tokens
+        self.output_tokens += output_tokens
+        cost = 0.0
+        if self.usd_per_1k_input > 0:
+            cost += (input_tokens / 1000.0) * self.usd_per_1k_input
+        if self.usd_per_1k_output > 0:
+            cost += (output_tokens / 1000.0) * self.usd_per_1k_output
+        self.spent_usd += cost
+        return cost
+
+    def exceeded(self) -> bool:
+        return self.budget_usd > 0 and self.spent_usd >= self.budget_usd
+
+
+def _estimate_tokens_from_text(text: str, chars_per_token: float) -> int:
+    if not text:
+        return 0
+    denom = chars_per_token if chars_per_token > 0 else 4.0
+    return int((len(text) + denom - 1) // denom)
+
+
+def _estimate_tokens_from_chars(char_count: int, chars_per_token: float) -> int:
+    if char_count <= 0:
+        return 0
+    denom = chars_per_token if chars_per_token > 0 else 4.0
+    return int((char_count + denom - 1) // denom)
+
+
+def _estimate_cost_from_text(
+    prompt_text: str,
+    response_text: str,
+    usd_per_1k_input: float,
+    usd_per_1k_output: float,
+    chars_per_token: float,
+) -> tuple[int, int, float]:
+    input_tokens = _estimate_tokens_from_text(prompt_text, chars_per_token)
+    output_tokens = _estimate_tokens_from_text(response_text, chars_per_token)
+    cost = 0.0
+    if usd_per_1k_input > 0:
+        cost += (input_tokens / 1000.0) * usd_per_1k_input
+    if usd_per_1k_output > 0:
+        cost += (output_tokens / 1000.0) * usd_per_1k_output
+    return input_tokens, output_tokens, cost
+
+
+def _apply_budget(
+    tracker: BudgetTracker,
+    input_tokens: int,
+    output_tokens: int,
+    usd_per_1k_input: float,
+    usd_per_1k_output: float,
+) -> float:
+    if input_tokens < 0:
+        input_tokens = 0
+    if output_tokens < 0:
+        output_tokens = 0
+    tracker.input_tokens += input_tokens
+    tracker.output_tokens += output_tokens
+    cost = 0.0
+    if usd_per_1k_input > 0:
+        cost += (input_tokens / 1000.0) * usd_per_1k_input
+    if usd_per_1k_output > 0:
+        cost += (output_tokens / 1000.0) * usd_per_1k_output
+    tracker.spent_usd += cost
+    return cost
+
+
+def _is_rate_limit_error_message(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    tokens = ("rate limit", "429", "quota", "resource exhausted", "resource_exhausted")
+    return any(token in msg for token in tokens)
+
+
+def _fallback_mutation(instructions: str, salt: str) -> str:
+    tail = FALLBACK_MUTATION_TAILS[hash(salt) % len(FALLBACK_MUTATION_TAILS)]
+    return instructions.rstrip() + "\n\n" + tail
 
 
 def _hash_text(text: str) -> str:
@@ -228,6 +390,7 @@ def _persist_prompt_variant(
     parent_id: str | None,
     created_iter: int | None,
 ) -> PromptVariant:
+    instructions = _sanitize_instruction_text(instructions)
     prompt_hash = _hash_text(instructions)
     prompt_id = prompt_hash[:12]
     prompt_dir = root / "prompts" / prompt_id
@@ -322,6 +485,7 @@ def _critic_prompt(
         "You are a prompt critic improving Experiment AB instructions.\n"
         "You MUST NOT change output keys, schema, or formatting rules. "
         "Do NOT mention JSON, output keys, or formatting in your response.\n"
+        "You MAY rephrase the dimension labels to reduce bias, while keeping their intent.\n"
         "Return ONLY the new instruction text, no quotes, no markdown.\n\n"
         "Current instructions:\n"
         f"{current_instructions}\n\n"
@@ -341,10 +505,18 @@ def _mutate_with_critic(
     sample_outputs: list[dict[str, Any]],
     summary: dict[str, Any],
     dry_run: bool,
+    fallback_salt: str,
+    rate_limit_sleep_min: float,
+    rate_limit_sleep_max: float,
+    max_rate_limit_retries: int,
     max_attempts: int = 3,
-) -> str:
+) -> tuple[str, dict[str, int]]:
     if dry_run:
-        return instructions + "\n\nMake the rubric more concise and evidence-based."
+        mutated = instructions + "\n\nMake the rubric more concise and evidence-based."
+        return mutated, {
+            "prompt_chars": 0,
+            "response_chars": len(mutated),
+        }
 
     prompt = _critic_prompt(instructions, sample_outputs, summary)
     if provider == "google":
@@ -352,25 +524,46 @@ def _mutate_with_critic(
     else:
         choice = OpenAIChoice(model=model)
     last_text = ""
+    prompt_used = prompt
+    rate_limit_attempts = 0
     for attempt in range(max_attempts):
-        resp = trl_llm.respond_sync(
-            llm_priority=[choice],
-            query=prompt,
-            response_format=str,
-            temperature=temperature,
-        )
+        try:
+            resp = trl_llm.respond_sync(
+                llm_priority=[choice],
+                query=prompt,
+                response_format=str,
+                temperature=temperature,
+            )
+        except Exception as exc:
+            if _is_rate_limit_error_message(exc):
+                rate_limit_attempts += 1
+                if max_rate_limit_retries >= 0 and rate_limit_attempts > max_rate_limit_retries:
+                    break
+                sleep_seconds = max(rate_limit_sleep_min, 2 ** min(rate_limit_attempts, 5))
+                sleep_seconds = min(rate_limit_sleep_max, sleep_seconds)
+                time.sleep(sleep_seconds)
+                continue
+            break
         last_text = str(resp.response).strip()
+        prompt_used = prompt
         if last_text.startswith("```"):
             last_text = last_text.strip("`").strip()
         ok, _ = _validate_mutation(last_text)
         if ok:
-            return last_text
+            return last_text, {
+                "prompt_chars": len(prompt_used),
+                "response_chars": len(last_text),
+            }
         prompt = (
             prompt
             + "\n\nIMPORTANT: Return ONLY the revised instruction text. "
             "Do NOT mention JSON, output keys, or formatting."
         )
-    return last_text if last_text else instructions
+    fallback = _fallback_mutation(instructions, fallback_salt)
+    return fallback, {
+        "prompt_chars": len(prompt_used),
+        "response_chars": len(fallback),
+    }
 
 
 def _cv_metrics_from_fold_ids(
@@ -528,6 +721,7 @@ def _evaluate_prompt(
     llm_providers: dict[str, bool],
     llm_google_model: str | None,
     rng: np.random.RandomState,
+    concurrency: int,
 ) -> tuple[dict[str, float], list[dict[str, Any]], dict[str, Any]]:
     iter_label = f"iter_{iter_idx:03d}"
     output_dir = output_root / "outputs" / prompt.prompt_id / iter_label
@@ -543,7 +737,7 @@ def _evaluate_prompt(
         providers=llm_providers,
         google_model=llm_google_model,
         batch_size=args.batch_size,
-        concurrency=args.concurrency,
+        concurrency=concurrency,
         experiments=[args.experiment],
         dry_run=args.dry_run,
         dry_run_fast=False,
@@ -552,6 +746,12 @@ def _evaluate_prompt(
         repair_nan=False,
         repair_existing=False,
         skip_select=True,
+        rate_limit_sleep_min=args.rate_limit_sleep_min,
+        rate_limit_sleep_max=args.rate_limit_sleep_max,
+        max_rate_limit_retries_per_batch=args.max_rate_limit_retries_per_batch,
+        max_rate_limit_errors=args.max_rate_limit_errors,
+        max_batches=args.max_batches,
+        token_chars_per_token=args.token_chars_per_token,
     )
     df, numeric_keys = generate_reasoning_features(
         records=records,
@@ -591,6 +791,7 @@ def _full_eval(
     args: argparse.Namespace,
     llm_providers: dict[str, bool],
     llm_google_model: str | None,
+    concurrency: int,
 ) -> dict[str, float]:
     iter_label = f"iter_{iter_idx:03d}"
     output_dir = output_root / "full_eval" / iter_label
@@ -606,7 +807,7 @@ def _full_eval(
         providers=llm_providers,
         google_model=llm_google_model,
         batch_size=args.batch_size,
-        concurrency=args.concurrency,
+        concurrency=concurrency,
         experiments=[args.experiment],
         dry_run=args.dry_run,
         dry_run_fast=False,
@@ -615,6 +816,12 @@ def _full_eval(
         repair_nan=False,
         repair_existing=False,
         skip_select=True,
+        rate_limit_sleep_min=args.rate_limit_sleep_min,
+        rate_limit_sleep_max=args.rate_limit_sleep_max,
+        max_rate_limit_retries_per_batch=args.max_rate_limit_retries_per_batch,
+        max_rate_limit_errors=args.max_rate_limit_errors,
+        max_batches=args.full_eval_max_batches,
+        token_chars_per_token=args.token_chars_per_token,
     )
     df, numeric_keys = generate_reasoning_features(
         records=records,
@@ -643,11 +850,40 @@ def _load_config(args: argparse.Namespace) -> dict[str, Any]:
     return {}
 
 
+def _parse_ladder(value: Any, fallback: int) -> list[int]:
+    if isinstance(value, list):
+        ladder = []
+        for v in value:
+            try:
+                iv = int(v)
+                if iv > 0:
+                    ladder.append(iv)
+            except Exception:
+                continue
+        return ladder if ladder else [fallback]
+    if isinstance(value, str):
+        parts = []
+        for chunk in value.split(","):
+            chunk = chunk.strip()
+            if not chunk:
+                continue
+            try:
+                iv = int(chunk)
+                if iv > 0:
+                    parts.append(iv)
+            except Exception:
+                continue
+        return parts if parts else [fallback]
+    return [fallback]
+
+
 def _apply_config(args: argparse.Namespace, cfg: dict[str, Any]) -> argparse.Namespace:
     for key, value in cfg.items():
         if hasattr(args, key) and key in DEFAULTS:
             if getattr(args, key) == DEFAULTS[key]:
                 setattr(args, key, value)
+        if key == "concurrency_ladder":
+            setattr(args, key, value)
     return args
 
 
@@ -659,8 +895,12 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--sample_size", type=int, default=DEFAULTS["sample_size"])
     p.add_argument("--batch_size", type=int, default=DEFAULTS["batch_size"])
     p.add_argument("--concurrency", type=int, default=DEFAULTS["concurrency"])
+    p.add_argument("--concurrency_ladder", type=str, default="10,8,6,4,2,1")
     p.add_argument("--iterations", type=int, default=DEFAULTS["iterations"])
     p.add_argument("--save_every", type=int, default=DEFAULTS["save_every"])
+    p.add_argument("--full_eval_enabled", action="store_true")
+    p.add_argument("--full_eval_concurrency", type=int, default=DEFAULTS["full_eval_concurrency"])
+    p.add_argument("--full_eval_max_batches", type=int, default=DEFAULTS["full_eval_max_batches"])
     p.add_argument("--selection_metric", type=str, default=DEFAULTS["selection_metric"])
     p.add_argument("--random_state", type=int, default=DEFAULTS["random_state"])
     p.add_argument("--dataset", type=str, default=DEFAULTS["dataset"], choices=["full", "sample"])
@@ -680,6 +920,17 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--cv_folds", type=int, default=DEFAULTS["cv_folds"])
     p.add_argument("--cv_use_fixed_folds", type=int, default=DEFAULTS["cv_use_fixed_folds"])
     p.add_argument("--cv_folds_path", type=str, default=DEFAULTS["cv_folds_path"])
+    p.add_argument("--budget_usd_per_iteration", type=float, default=DEFAULTS["budget_usd_per_iteration"])
+    p.add_argument("--usd_per_1k_input", type=float, default=DEFAULTS["usd_per_1k_input"])
+    p.add_argument("--usd_per_1k_output", type=float, default=DEFAULTS["usd_per_1k_output"])
+    p.add_argument("--critic_usd_per_1k_input", type=float, default=DEFAULTS["critic_usd_per_1k_input"])
+    p.add_argument("--critic_usd_per_1k_output", type=float, default=DEFAULTS["critic_usd_per_1k_output"])
+    p.add_argument("--token_chars_per_token", type=float, default=DEFAULTS["token_chars_per_token"])
+    p.add_argument("--max_rate_limit_retries_per_batch", type=int, default=DEFAULTS["max_rate_limit_retries_per_batch"])
+    p.add_argument("--max_rate_limit_errors", type=int, default=DEFAULTS["max_rate_limit_errors"])
+    p.add_argument("--rate_limit_sleep_min", type=float, default=DEFAULTS["rate_limit_sleep_min"])
+    p.add_argument("--rate_limit_sleep_max", type=float, default=DEFAULTS["rate_limit_sleep_max"])
+    p.add_argument("--max_batches", type=int, default=DEFAULTS["max_batches"])
     return p.parse_args()
 
 
@@ -688,6 +939,14 @@ def main() -> None:
     args = _parse_args()
     cfg = _load_config(args)
     args = _apply_config(args, cfg)
+    concurrency_ladder = _parse_ladder(
+        getattr(args, "concurrency_ladder", None),
+        fallback=int(args.concurrency),
+    )
+    if int(args.concurrency) not in concurrency_ladder:
+        concurrency_ladder = [int(args.concurrency)] + [
+            v for v in concurrency_ladder if v != int(args.concurrency)
+        ]
 
     core_prompt_path = Path(args.core_prompt_path)
     if not core_prompt_path.is_absolute():
@@ -703,7 +962,9 @@ def main() -> None:
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_root = root / "runs" / run_id
     run_root.mkdir(parents=True, exist_ok=True)
-    _write_json(run_root / "run_config.json", vars(args))
+    run_cfg = dict(vars(args))
+    run_cfg["concurrency_ladder"] = concurrency_ladder
+    _write_json(run_root / "run_config.json", run_cfg)
 
     input_csv = _resolve_input_csv(args.dataset, args.input_csv or None)
     records, labels = _load_vcbench_local(input_csv)
@@ -767,18 +1028,39 @@ def main() -> None:
     )
 
     prompt_pool: list[PromptVariant] = []
+    prompt_hashes: set[str] = set()
+    base_instructions_clean = _ensure_unique_instruction(base_instructions, prompt_hashes, "base")
     base_prompt = _persist_prompt_variant(
         root=root,
         base_experiment=base_experiment,
-        instructions=base_instructions,
+        instructions=base_instructions_clean,
         parent_id=None,
         created_iter=None,
     )
+    prompt_hashes.add(_hash_text(base_instructions_clean))
     prompt_pool.append(base_prompt)
+
+    critic_input_rate = (
+        args.critic_usd_per_1k_input
+        if args.critic_usd_per_1k_input > 0
+        else args.usd_per_1k_input
+    )
+    critic_output_rate = (
+        args.critic_usd_per_1k_output
+        if args.critic_usd_per_1k_output > 0
+        else args.usd_per_1k_output
+    )
+
+    seed_budget = BudgetTracker(
+        budget_usd=float(args.budget_usd_per_iteration),
+        usd_per_1k_input=float(critic_input_rate),
+        usd_per_1k_output=float(critic_output_rate),
+        chars_per_token=float(args.token_chars_per_token),
+    )
 
     initial_mutations = max(0, int(args.initial_mutations))
     for i in range(min(initial_mutations, args.pool_size - 1)):
-        mutated = _mutate_with_critic(
+        mutated, usage = _mutate_with_critic(
             instructions=base_instructions,
             model=args.critic_model,
             provider=args.critic_provider,
@@ -786,13 +1068,33 @@ def main() -> None:
             sample_outputs=[],
             summary={"note": "initial mutation"},
             dry_run=args.dry_run,
+            fallback_salt=f"init-{i}",
+            rate_limit_sleep_min=args.rate_limit_sleep_min,
+            rate_limit_sleep_max=args.rate_limit_sleep_max,
+            max_rate_limit_retries=args.max_rate_limit_retries_per_batch,
         )
+        mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"init-{i}")
+        if usage:
+            prompt_tokens = _estimate_tokens_from_chars(
+                usage.get("prompt_chars", 0), args.token_chars_per_token
+            )
+            response_tokens = _estimate_tokens_from_chars(
+                usage.get("response_chars", 0), args.token_chars_per_token
+            )
+            _apply_budget(
+                seed_budget,
+                prompt_tokens,
+                response_tokens,
+                critic_input_rate,
+                critic_output_rate,
+            )
+            if seed_budget.exceeded():
+                break
         ok, _ = _validate_mutation(mutated)
         if not ok:
             mutated = base_instructions + "\n\nEmphasize consistency and evidence."
-        prompt_id = _hash_text(mutated)[:12]
-        if any(p.prompt_id == prompt_id for p in prompt_pool):
-            mutated = mutated + f"\n\nVariation init {i+1}."
+        mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"init-{i}-fallback")
+        prompt_hashes.add(_hash_text(mutated))
         prompt_pool.append(
             _persist_prompt_variant(
                 root=root,
@@ -806,6 +1108,8 @@ def main() -> None:
     while len(prompt_pool) < args.pool_size:
         prompt_pool.append(base_prompt)
 
+    current_concurrency = int(args.concurrency)
+    stop_run = False
     for iter_idx in range(1, args.iterations + 1):
         iter_label = f"iter_{iter_idx:03d}"
         iter_root = run_root / iter_label
@@ -818,32 +1122,115 @@ def main() -> None:
         sample_labels = labels[sample_indices]
         _write_json(iter_root / "sample_indices.json", [int(i) for i in sample_indices])
 
+        iter_budget = BudgetTracker(
+            budget_usd=float(args.budget_usd_per_iteration),
+            usd_per_1k_input=float(args.usd_per_1k_input),
+            usd_per_1k_output=float(args.usd_per_1k_output),
+            chars_per_token=float(args.token_chars_per_token),
+        )
+        budget_records: list[dict[str, Any]] = []
+        budget_exceeded = False
+
         metrics_by_prompt: dict[str, dict[str, float]] = {}
         outputs_by_prompt: dict[str, list[dict[str, Any]]] = {}
         summary_by_prompt: dict[str, dict[str, Any]] = {}
 
         for prompt in prompt_pool:
-            metrics, outputs, summary = _evaluate_prompt(
-                prompt=prompt,
-                records=sample_records,
-                labels=sample_labels,
-                cv_folds=cv_folds,
-                output_root=root,
-                iter_idx=iter_idx,
-                args=args,
-                llm_providers=llm_providers,
-                llm_google_model=llm_google_model,
-                rng=rng,
-            )
-            metrics_by_prompt[prompt.prompt_id] = metrics
-            outputs_by_prompt[prompt.prompt_id] = outputs
-            summary_by_prompt[prompt.prompt_id] = summary
+            ladder_index = concurrency_ladder.index(current_concurrency)
+            while True:
+                try:
+                    metrics, outputs, summary = _evaluate_prompt(
+                        prompt=prompt,
+                        records=sample_records,
+                        labels=sample_labels,
+                        cv_folds=cv_folds,
+                        output_root=root,
+                        iter_idx=iter_idx,
+                        args=args,
+                        llm_providers=llm_providers,
+                        llm_google_model=llm_google_model,
+                        rng=rng,
+                        concurrency=current_concurrency,
+                    )
+                    metrics_by_prompt[prompt.prompt_id] = metrics
+                    outputs_by_prompt[prompt.prompt_id] = outputs
+                    summary_by_prompt[prompt.prompt_id] = summary
+                    meta_path = root / "outputs" / prompt.prompt_id / iter_label / "reasoning_meta.json"
+                    if meta_path.exists():
+                        try:
+                            meta = _read_json(meta_path)
+                            input_tokens = int(meta.get("estimated_prompt_tokens", 0))
+                            output_tokens = int(meta.get("estimated_completion_tokens", 0))
+                        except Exception:
+                            input_tokens = 0
+                            output_tokens = 0
+                        cost = _apply_budget(
+                            iter_budget,
+                            input_tokens,
+                            output_tokens,
+                            float(args.usd_per_1k_input),
+                            float(args.usd_per_1k_output),
+                        )
+                        budget_records.append(
+                            {
+                                "stage": "generation",
+                                "prompt_id": prompt.prompt_id,
+                                "input_tokens": input_tokens,
+                                "output_tokens": output_tokens,
+                                "cost_usd": cost,
+                                "spent_usd": iter_budget.spent_usd,
+                            }
+                        )
+                    if iter_budget.exceeded():
+                        budget_exceeded = True
+                    break
+                except Exception as exc:
+                    msg = str(exc).lower()
+                    should_downshift = any(
+                        token in msg
+                        for token in ("rate limit", "429", "quota", "resource", "timeout", "socket", "connection")
+                    )
+                    if should_downshift and ladder_index < len(concurrency_ladder) - 1:
+                        ladder_index += 1
+                        current_concurrency = concurrency_ladder[ladder_index]
+                        _write_json(
+                            iter_root / "concurrency_fallback.json",
+                            {
+                                "iteration": iter_idx,
+                                "prompt_id": prompt.prompt_id,
+                                "error": str(exc),
+                                "concurrency_now": current_concurrency,
+                                "timestamp": datetime.now().isoformat(),
+                            },
+                        )
+                        continue
+                    raise
+            if budget_exceeded:
+                break
 
         _write_json(iter_root / "metrics.json", metrics_by_prompt)
 
+        available_prompts = [p for p in prompt_pool if p.prompt_id in metrics_by_prompt]
+        missing_prompts = [p.prompt_id for p in prompt_pool if p.prompt_id not in metrics_by_prompt]
+        if missing_prompts:
+            _write_json(
+                iter_root / "missing_metrics.json",
+                {"missing_prompt_ids": missing_prompts, "timestamp": datetime.now().isoformat()},
+            )
+
+        if not available_prompts:
+            _write_json(
+                iter_root / "iteration_error.json",
+                {
+                    "error": "No prompts completed with metrics in this iteration.",
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
+            break
+
         ranked = sorted(
-            prompt_pool,
-            key=lambda p: metrics_by_prompt[p.prompt_id].get(args.selection_metric, 0.0),
+            available_prompts,
+            key=lambda p: metrics_by_prompt.get(p.prompt_id, {}).get(args.selection_metric, 0.0),
             reverse=True,
         )
         top_keep = ranked[: min(2, len(ranked))]
@@ -858,10 +1245,13 @@ def main() -> None:
 
         desired_new = args.pool_size - len(next_pool)
         for i in range(desired_new):
+            if iter_budget.exceeded():
+                budget_exceeded = True
+                break
             parent = parent_cycle[i % len(parent_cycle)]
             outputs = outputs_by_prompt.get(parent.prompt_id, [])
             summary = summary_by_prompt.get(parent.prompt_id, {})
-            mutated = _mutate_with_critic(
+            mutated, usage = _mutate_with_critic(
                 instructions=parent.instructions,
                 model=args.critic_model,
                 provider=args.critic_provider,
@@ -869,13 +1259,44 @@ def main() -> None:
                 sample_outputs=outputs,
                 summary=summary,
                 dry_run=args.dry_run,
+                fallback_salt=f"{iter_idx}-{i}",
+                rate_limit_sleep_min=args.rate_limit_sleep_min,
+                rate_limit_sleep_max=args.rate_limit_sleep_max,
+                max_rate_limit_retries=args.max_rate_limit_retries_per_batch,
             )
+            mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"{iter_idx}-{i}")
+            if usage:
+                prompt_tokens = _estimate_tokens_from_chars(
+                    usage.get("prompt_chars", 0), args.token_chars_per_token
+                )
+                response_tokens = _estimate_tokens_from_chars(
+                    usage.get("response_chars", 0), args.token_chars_per_token
+                )
+                cost = _apply_budget(
+                    iter_budget,
+                    prompt_tokens,
+                    response_tokens,
+                    critic_input_rate,
+                    critic_output_rate,
+                )
+                budget_records.append(
+                    {
+                        "stage": "critic",
+                        "prompt_id": parent.prompt_id,
+                        "input_tokens": prompt_tokens,
+                        "output_tokens": response_tokens,
+                        "cost_usd": cost,
+                        "spent_usd": iter_budget.spent_usd,
+                    }
+                )
+                if iter_budget.exceeded():
+                    budget_exceeded = True
+                    break
             ok, _ = _validate_mutation(mutated)
             if not ok:
                 mutated = parent.instructions + "\n\nFavor concise, evidence-backed scoring."
-            prompt_id = _hash_text(mutated)[:12]
-            if any(p.prompt_id == prompt_id for p in next_pool):
-                mutated = mutated + f"\n\nVariation {iter_idx}-{i+1}."
+            mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"{iter_idx}-{i}-fallback")
+            prompt_hashes.add(_hash_text(mutated))
             next_pool.append(
                 _persist_prompt_variant(
                     root=root,
@@ -888,8 +1309,36 @@ def main() -> None:
 
         prompt_pool = next_pool
 
-        if args.save_every > 0 and iter_idx % args.save_every == 0:
+        _write_json(
+            iter_root / "budget.json",
+            {
+                "budget_usd": iter_budget.budget_usd,
+                "spent_usd": iter_budget.spent_usd,
+                "input_tokens": iter_budget.input_tokens,
+                "output_tokens": iter_budget.output_tokens,
+                "records": budget_records,
+                "exceeded": budget_exceeded,
+            },
+        )
+
+        if budget_exceeded:
+            stop_run = True
+            _write_json(
+                iter_root / "budget_exceeded.json",
+                {
+                    "iteration": iter_idx,
+                    "spent_usd": iter_budget.spent_usd,
+                    "budget_usd": iter_budget.budget_usd,
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
+            break
+
+        if args.full_eval_enabled and args.save_every > 0 and iter_idx % args.save_every == 0:
             best = ranked[0]
+            full_eval_concurrency = int(args.full_eval_concurrency) if args.full_eval_concurrency else current_concurrency
+            if full_eval_concurrency < 1:
+                full_eval_concurrency = 1
             _full_eval(
                 prompt=best,
                 records=records,
@@ -901,7 +1350,11 @@ def main() -> None:
                 args=args,
                 llm_providers=llm_providers,
                 llm_google_model=llm_google_model,
+                concurrency=full_eval_concurrency,
             )
+
+        if stop_run:
+            break
 
 
 if __name__ == "__main__":

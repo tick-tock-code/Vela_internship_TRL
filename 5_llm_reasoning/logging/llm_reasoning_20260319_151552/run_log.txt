@@ -1,0 +1,11 @@
+run_log started
+[2026-03-19T15:15:52.116969] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T15:15:52.506495] Loaded records: 4500 labels: 4500
+[2026-03-19T15:15:52.507107] Use LLM reasoning: True
+[2026-03-19T15:15:52.507638] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-19T15:15:52.510983] Seed size=100 pool size=4400
+[2026-03-19T15:15:52.511511] OPENAI_API_KEY set: True
+[2026-03-19T15:15:52.515917] CV fold sizes: 440, 440, 440, 440, 440, 440, 440, 440, 440, 440
+[2026-03-19T15:15:52.516460] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k10_seed42.json
+[2026-03-19T15:15:52.791518] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-19T15:15:52.915749] Repair check: A nan_rows=0

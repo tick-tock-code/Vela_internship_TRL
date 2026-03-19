@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Score each of the following dimensions from 1 to 5 based strictly on the founder profile:\n- trajectory strength\n- ownership signal\n- career coherence\n- scrappiness\n\nThen assign an overall founder quality score using this rubric:\n\nTop founder:\n- rapid progression or early leadership\n- clear ownership in ambiguous environments\n- operates in high-growth or technical contexts\n\nWeak founder:\n- limited ownership\n- slow progression\n- inconsistent direction\n\nIf evidence is mixed, use a middle score and rely on the strongest evidence in the profile.\n\nEmphasize consistency and evidence.\n\nVariation init 3.\n\nFavor concise, evidence-backed scoring.\n\nVariation 1-7.\n\nFavor concise, evidence-backed scoring.\n\nVariation 2-8.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

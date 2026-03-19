@@ -10,6 +10,7 @@ import re
 import time
 import hashlib
 import threading
+import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 from collections import Counter
@@ -52,6 +53,12 @@ class ReasoningConfig:
     inline_repair: bool = True
     inline_repair_max_attempts: int = 1
     target_batch_indices: list[int] | None = None
+    rate_limit_sleep_min: float = 5.0
+    rate_limit_sleep_max: float = 120.0
+    max_rate_limit_retries_per_batch: int = 3
+    max_rate_limit_errors: int = 100
+    max_batches: int = 0
+    token_chars_per_token: float = 4.0
 
 
 def _load_core_prompt(path: Path) -> str:
@@ -210,6 +217,36 @@ def _get_openai_client() -> OpenAI:
     return client
 
 
+def _get_google_client():
+    client = getattr(_THREAD_LOCAL, "google_client", None)
+    if client is None:
+        try:
+            from google import genai
+        except Exception as exc:
+            raise RuntimeError("Google genai client not available.") from exc
+        api_key = os.getenv("GOOGLE_AI_API_KEY", "")
+        client = genai.Client(api_key=api_key)
+        _THREAD_LOCAL.google_client = client
+    return client
+
+
+def _google_output_text(response: Any) -> str:
+    try:
+        candidates = getattr(response, "candidates", None)
+        if candidates:
+            content = getattr(candidates[0], "content", None)
+            if content is not None:
+                parts = getattr(content, "parts", None)
+                if parts:
+                    part = parts[0]
+                    text = getattr(part, "text", "")
+                    if text is not None:
+                        return str(text)
+    except Exception:
+        return str(response)
+    return ""
+
+
 def _short_key(key: str) -> str:
     if key in GLOBAL_NUMERIC_KEYS or key in GLOBAL_TEXT_KEYS:
         return key
@@ -244,6 +281,36 @@ def _is_rate_limit_error(exc: Exception) -> bool:
     if resp is not None and getattr(resp, "status_code", None) == 429:
         return True
     return False
+
+
+def _extract_retry_delay_seconds(message: str) -> float | None:
+    msg = message.lower()
+    match = re.search(r"retry in ([0-9]+(?:\\.[0-9]+)?)s", msg)
+    if match:
+        try:
+            return float(match.group(1))
+        except Exception:
+            return None
+    match = re.search(r"retrydelay['\\\"]?:\\s*['\\\"]?([0-9]+(?:\\.[0-9]+)?)s", msg)
+    if match:
+        try:
+            return float(match.group(1))
+        except Exception:
+            return None
+    match = re.search(r"retrydelay['\\\"]?:\\s*['\\\"]?([0-9]+(?:\\.[0-9]+)?)", msg)
+    if match:
+        try:
+            return float(match.group(1))
+        except Exception:
+            return None
+    return None
+
+
+def _estimate_tokens(text: str, chars_per_token: float) -> int:
+    if not text:
+        return 0
+    denom = chars_per_token if chars_per_token > 0 else 4.0
+    return int(math.ceil(len(text) / denom))
 
 
 def write_per_experiment_parquets(
@@ -475,6 +542,14 @@ def generate_reasoning_features(
     processed = 0
     completed_batches = 0
     log_lock = threading.Lock()
+    usage_lock = threading.Lock()
+    usage = {
+        "prompt_chars": 0,
+        "completion_chars": 0,
+        "prompt_tokens_est": 0,
+        "completion_tokens_est": 0,
+        "requests": 0,
+    }
     inline_repair_retries = 0
     inline_attempts: dict[int, int] = {}
 
@@ -512,9 +587,28 @@ def generate_reasoning_features(
     fallback_concurrency = max(1, int(config.rate_limit_fallback_concurrency))
     fallback_windows = max(0, int(config.rate_limit_fallback_windows))
     rate_limit_fallbacks = 0
-    if use_google and concurrency > 1:
-        # Google client is managed by TRL and not thread-safe in this pipeline.
-        concurrency = 1
+    google_model = config.google_model or "gemini-2.0-flash"
+    chars_per_token = float(config.token_chars_per_token) if config.token_chars_per_token else 4.0
+    max_rate_limit_retries = max(0, int(config.max_rate_limit_retries_per_batch))
+    max_rate_limit_errors = max(0, int(config.max_rate_limit_errors))
+    rate_limit_sleep_min = max(0.0, float(config.rate_limit_sleep_min))
+    rate_limit_sleep_max = max(rate_limit_sleep_min, float(config.rate_limit_sleep_max))
+    rate_limit_attempts: dict[int, int] = {}
+    rate_limit_error_count = 0
+
+    def _accumulate_usage(prompt_text: str, response_text: str) -> None:
+        if not prompt_text and not response_text:
+            return
+        prompt_len = len(prompt_text or "")
+        completion_len = len(response_text or "")
+        prompt_tokens = _estimate_tokens(prompt_text or "", chars_per_token)
+        completion_tokens = _estimate_tokens(response_text or "", chars_per_token)
+        with usage_lock:
+            usage["prompt_chars"] += prompt_len
+            usage["completion_chars"] += completion_len
+            usage["prompt_tokens_est"] += prompt_tokens
+            usage["completion_tokens_est"] += completion_tokens
+            usage["requests"] += 1
 
     def _append_jsonl(path: Path | None, entry: dict[str, Any]) -> None:
         if path is None:
@@ -642,6 +736,26 @@ def generate_reasoning_features(
                     )
                     raw_text = resp.output_text
                     response = True
+                elif use_google and concurrency > 1:
+                    client = _get_google_client()
+                    try:
+                        from google.genai import types as gtypes
+                        config_obj = gtypes.GenerateContentConfig(
+                            temperature=0.0,
+                            response_mime_type="application/json",
+                        )
+                        resp = client.models.generate_content(
+                            model=google_model,
+                            contents=prompt,
+                            config=config_obj,
+                        )
+                    except Exception:
+                        resp = client.models.generate_content(
+                            model=google_model,
+                            contents=prompt,
+                        )
+                    raw_text = _google_output_text(resp)
+                    response = True
                 else:
                     resp = trl_llm.respond_sync(
                         llm_priority=[model_choice],
@@ -669,6 +783,7 @@ def generate_reasoning_features(
                     time.sleep(2 ** attempt)
         if not response:
             raise last_exc if last_exc else RuntimeError("LLM call failed.")
+        _accumulate_usage(prompt, raw_text)
         if use_batch:
             parsed_items = _parse_batch_response(raw_text, batch_len)
             invalid = False
@@ -712,6 +827,25 @@ def generate_reasoning_features(
                         temperature=0.0,
                     )
                     raw_text_retry = resp.output_text
+                elif use_google and concurrency > 1:
+                    client = _get_google_client()
+                    try:
+                        from google.genai import types as gtypes
+                        config_obj = gtypes.GenerateContentConfig(
+                            temperature=0.0,
+                            response_mime_type="application/json",
+                        )
+                        resp = client.models.generate_content(
+                            model=google_model,
+                            contents=retry_prompt,
+                            config=config_obj,
+                        )
+                    except Exception:
+                        resp = client.models.generate_content(
+                            model=google_model,
+                            contents=retry_prompt,
+                        )
+                    raw_text_retry = _google_output_text(resp)
                 else:
                     resp = trl_llm.respond_sync(
                         llm_priority=[model_choice],
@@ -720,6 +854,7 @@ def generate_reasoning_features(
                         temperature=0.0,
                     )
                     raw_text_retry = str(resp.response)
+                _accumulate_usage(retry_prompt, raw_text_retry)
                 raw_text = raw_text + "\n\n--- RETRY ---\n\n" + raw_text_retry
                 parsed_items = _parse_batch_response(raw_text_retry, batch_len)
                 if len(parsed_items) != batch_len:
@@ -739,6 +874,25 @@ def generate_reasoning_features(
                             temperature=0.0,
                         )
                         raw_text_retry2 = resp.output_text
+                    elif use_google and concurrency > 1:
+                        client = _get_google_client()
+                        try:
+                            from google.genai import types as gtypes
+                            config_obj = gtypes.GenerateContentConfig(
+                                temperature=0.0,
+                                response_mime_type="application/json",
+                            )
+                            resp = client.models.generate_content(
+                                model=google_model,
+                                contents=retry_prompt_2,
+                                config=config_obj,
+                            )
+                        except Exception:
+                            resp = client.models.generate_content(
+                                model=google_model,
+                                contents=retry_prompt_2,
+                            )
+                        raw_text_retry2 = _google_output_text(resp)
                     else:
                         resp = trl_llm.respond_sync(
                             llm_priority=[model_choice],
@@ -747,6 +901,7 @@ def generate_reasoning_features(
                             temperature=0.0,
                         )
                         raw_text_retry2 = str(resp.response)
+                    _accumulate_usage(retry_prompt_2, raw_text_retry2)
                     raw_text = raw_text + "\n\n--- RETRY 2 ---\n\n" + raw_text_retry2
                     parsed_items = _parse_batch_response(raw_text_retry2, batch_len)
         else:
@@ -771,6 +926,25 @@ def generate_reasoning_features(
                         temperature=0.0,
                     )
                     raw_text_retry = resp.output_text
+                elif use_google and concurrency > 1:
+                    client = _get_google_client()
+                    try:
+                        from google.genai import types as gtypes
+                        config_obj = gtypes.GenerateContentConfig(
+                            temperature=0.0,
+                            response_mime_type="application/json",
+                        )
+                        resp = client.models.generate_content(
+                            model=google_model,
+                            contents=prompt,
+                            config=config_obj,
+                        )
+                    except Exception:
+                        resp = client.models.generate_content(
+                            model=google_model,
+                            contents=prompt,
+                        )
+                    raw_text_retry = _google_output_text(resp)
                 else:
                     resp = trl_llm.respond_sync(
                         llm_priority=[model_choice],
@@ -779,6 +953,7 @@ def generate_reasoning_features(
                         temperature=0.0,
                     )
                     raw_text_retry = str(resp.response)
+                _accumulate_usage(prompt, raw_text_retry)
                 raw_text = raw_text + "\n\n--- RETRY ---\n\n" + raw_text_retry
                 try:
                     parsed_single = json.loads(raw_text_retry)
@@ -803,6 +978,25 @@ def generate_reasoning_features(
                             temperature=0.0,
                         )
                         raw_text_retry = resp.output_text
+                    elif use_google and concurrency > 1:
+                        client = _get_google_client()
+                        try:
+                            from google.genai import types as gtypes
+                            config_obj = gtypes.GenerateContentConfig(
+                                temperature=0.0,
+                                response_mime_type="application/json",
+                            )
+                            resp = client.models.generate_content(
+                                model=google_model,
+                                contents=retry_prompt,
+                                config=config_obj,
+                            )
+                        except Exception:
+                            resp = client.models.generate_content(
+                                model=google_model,
+                                contents=retry_prompt,
+                            )
+                        raw_text_retry = _google_output_text(resp)
                     else:
                         resp = trl_llm.respond_sync(
                             llm_priority=[model_choice],
@@ -811,6 +1005,7 @@ def generate_reasoning_features(
                             temperature=0.0,
                         )
                         raw_text_retry = str(resp.response)
+                    _accumulate_usage(retry_prompt, raw_text_retry)
                     raw_text = raw_text + "\n\n--- RETRY ---\n\n" + raw_text_retry
                     try:
                         parsed_single = json.loads(raw_text_retry)
@@ -924,6 +1119,9 @@ def generate_reasoning_features(
                         },
                     )
 
+    if config.max_batches and int(config.max_batches) > 0:
+        batches = batches[: int(config.max_batches)]
+
     def _apply_result(
         batch_idx: int,
         batch_start: int,
@@ -983,6 +1181,7 @@ def generate_reasoning_features(
             window_index += 1
             failed_batches: list[tuple[int, int, list[dict[str, Any]], bool]] = []
             rate_limited = False
+            max_retry_delay = 0.0
             with ThreadPoolExecutor(max_workers=current_concurrency) as executor:
                 future_map = {
                     executor.submit(_call_batch, batch_idx, batch_start, batch_recs, strict_retry): (batch_idx, batch_start, batch_recs, strict_retry)
@@ -1003,6 +1202,28 @@ def generate_reasoning_features(
                     except Exception as exc:
                         if _is_rate_limit_error(exc):
                             rate_limited = True
+                            delay = _extract_retry_delay_seconds(str(exc))
+                            if delay is not None:
+                                max_retry_delay = max(max_retry_delay, delay)
+                            rate_limit_error_count += 1
+                            attempts = rate_limit_attempts.get(batch_idx, 0) + 1
+                            rate_limit_attempts[batch_idx] = attempts
+                            if max_rate_limit_errors and rate_limit_error_count >= max_rate_limit_errors:
+                                raise RuntimeError(
+                                    f"Max rate limit errors reached ({rate_limit_error_count})."
+                                ) from exc
+                            if max_rate_limit_retries and attempts > max_rate_limit_retries:
+                                _append_jsonl(
+                                    error_log,
+                                    {
+                                        "index": batch_idx,
+                                        "error": str(exc),
+                                        "stage": "rate_limit_exceeded",
+                                        "attempt": attempts,
+                                        "timestamp": time.time(),
+                                    },
+                                )
+                                continue
                             failed_batches.append((batch_idx, batch_start, batch_recs, strict_retry))
                             _append_jsonl(
                                 error_log,
@@ -1010,6 +1231,7 @@ def generate_reasoning_features(
                                     "index": batch_idx,
                                     "error": str(exc),
                                     "stage": "rate_limit",
+                                    "attempt": attempts,
                                     "timestamp": time.time(),
                                 },
                             )
@@ -1074,6 +1296,25 @@ def generate_reasoning_features(
                 rate_limit_fallbacks += 1
                 if fallback_windows > 0:
                     fallback_windows_remaining = fallback_windows
+                sleep_seconds = 0.0
+                if max_retry_delay > 0:
+                    sleep_seconds = max(rate_limit_sleep_min, max_retry_delay)
+                else:
+                    sleep_seconds = max(rate_limit_sleep_min, 2 ** min(rate_limit_fallbacks, 5))
+                if sleep_seconds > 0:
+                    sleep_seconds = min(rate_limit_sleep_max, sleep_seconds)
+                    if progress_log is not None:
+                        _append_jsonl(
+                            progress_log,
+                            {
+                                "index": window_index - 1,
+                                "stage": "rate_limit_sleep",
+                                "experiment": exp_label,
+                                "sleep_seconds": sleep_seconds,
+                                "timestamp": time.time(),
+                            },
+                        )
+                    time.sleep(sleep_seconds)
                 queue = failed_batches + queue
                 if progress_log is not None:
                     _append_jsonl(
@@ -1094,15 +1335,64 @@ def generate_reasoning_features(
         queue = list(batches)
         while queue:
             batch_idx, batch_start, batch_recs, strict_retry = queue.pop(0)
-            (
-                _batch_idx,
-                _batch_start,
-                _batch_recs,
-                parsed_items,
-                parsed_single,
-                raw_text,
-                batch_failures,
-            ) = _call_batch(batch_idx, batch_start, batch_recs, strict_retry)
+            skip_batch = False
+            attempts = 0
+            while True:
+                try:
+                    (
+                        _batch_idx,
+                        _batch_start,
+                        _batch_recs,
+                        parsed_items,
+                        parsed_single,
+                        raw_text,
+                        batch_failures,
+                    ) = _call_batch(batch_idx, batch_start, batch_recs, strict_retry)
+                    break
+                except Exception as exc:
+                    if _is_rate_limit_error(exc):
+                        attempts += 1
+                        rate_limit_error_count += 1
+                        delay = _extract_retry_delay_seconds(str(exc))
+                        if max_rate_limit_errors and rate_limit_error_count >= max_rate_limit_errors:
+                            raise RuntimeError(
+                                f"Max rate limit errors reached ({rate_limit_error_count})."
+                            ) from exc
+                        if max_rate_limit_retries and attempts > max_rate_limit_retries:
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": str(exc),
+                                    "stage": "rate_limit_exceeded",
+                                    "attempt": attempts,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            skip_batch = True
+                            break
+                        sleep_seconds = 0.0
+                        if delay is not None and delay > 0:
+                            sleep_seconds = max(rate_limit_sleep_min, delay)
+                        else:
+                            sleep_seconds = max(rate_limit_sleep_min, 2 ** min(attempts, 5))
+                        if sleep_seconds > 0:
+                            sleep_seconds = min(rate_limit_sleep_max, sleep_seconds)
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": str(exc),
+                                    "stage": "rate_limit_sleep",
+                                    "sleep_seconds": sleep_seconds,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            time.sleep(sleep_seconds)
+                        continue
+                    raise
+            if skip_batch:
+                continue
             failures += batch_failures
             _apply_result(batch_idx, batch_start, batch_recs, parsed_items, parsed_single)
             if raw_text:
@@ -1203,6 +1493,7 @@ def generate_reasoning_features(
         "rate_limit_fallback_concurrency": fallback_concurrency,
         "rate_limit_fallback_windows": fallback_windows,
         "rate_limit_fallbacks": rate_limit_fallbacks,
+        "rate_limit_error_count": rate_limit_error_count,
         "inline_repair": config.inline_repair,
         "inline_repair_max_attempts": config.inline_repair_max_attempts,
         "inline_repair_retries": inline_repair_retries,
@@ -1215,6 +1506,11 @@ def generate_reasoning_features(
         "nan_rows_after": len(nan_rows_after),
         "dry_run": config.dry_run,
         "dry_run_fast": config.dry_run_fast,
+        "estimated_prompt_tokens": usage["prompt_tokens_est"],
+        "estimated_completion_tokens": usage["completion_tokens_est"],
+        "estimated_prompt_chars": usage["prompt_chars"],
+        "estimated_completion_chars": usage["completion_chars"],
+        "estimated_requests": usage["requests"],
     }
     metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     manifest = {
@@ -1252,8 +1548,14 @@ def generate_reasoning_features(
             "nan_rows_before": len(initial_nan_rows),
             "nan_rows_after": len(nan_rows_after),
             "rate_limit_fallbacks": rate_limit_fallbacks,
+            "rate_limit_error_count": rate_limit_error_count,
             "inline_repair_retries": inline_repair_retries,
             "repair_only": bool(config.target_batch_indices),
+            "estimated_prompt_tokens": usage["prompt_tokens_est"],
+            "estimated_completion_tokens": usage["completion_tokens_est"],
+            "estimated_prompt_chars": usage["prompt_chars"],
+            "estimated_completion_chars": usage["completion_chars"],
+            "estimated_requests": usage["requests"],
             "timestamp": time.time(),
         }
         summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")

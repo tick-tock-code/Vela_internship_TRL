@@ -1,0 +1,22 @@
+{"index": -1, "stage": "start_run", "experiment": "AB", "processed": 0, "total": 200, "batch_size": 20, "n_batches": 10, "timestamp": 1773933115.224946}
+{"index": 0, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773933115.2257345}
+{"index": 1, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 1, "batch_start": 20, "batch_end": 39, "batch_size": 20, "timestamp": 1773933115.2261903}
+{"index": 2, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 2, "batch_start": 40, "batch_end": 59, "batch_size": 20, "timestamp": 1773933115.226491}
+{"index": 3, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 3, "batch_start": 60, "batch_end": 79, "batch_size": 20, "timestamp": 1773933115.226932}
+{"index": 4, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 4, "batch_start": 80, "batch_end": 99, "batch_size": 20, "timestamp": 1773933115.2272115}
+{"index": 5, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 5, "batch_start": 100, "batch_end": 119, "batch_size": 20, "timestamp": 1773933115.227503}
+{"index": 6, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 6, "batch_start": 120, "batch_end": 139, "batch_size": 20, "timestamp": 1773933115.2277708}
+{"index": 7, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 7, "batch_start": 140, "batch_end": 159, "batch_size": 20, "timestamp": 1773933115.2280133}
+{"index": 8, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 8, "batch_start": 160, "batch_end": 179, "batch_size": 20, "timestamp": 1773933115.2282495}
+{"index": 9, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 200, "batch_index": 9, "batch_start": 180, "batch_end": 199, "batch_size": 20, "timestamp": 1773933115.2284982}
+{"index": 0, "stage": "window_start", "experiment": "AB", "window": 0, "concurrency": 10, "batch_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "timestamp": 1773933115.2287557}
+{"index": 4, "stage": "done", "experiment": "AB", "processed": 20, "total": 200, "batch_index": 4, "batch_start": 80, "batch_end": 99, "batch_size": 20, "timestamp": 1773933171.7254043}
+{"index": 2, "stage": "done", "experiment": "AB", "processed": 40, "total": 200, "batch_index": 2, "batch_start": 40, "batch_end": 59, "batch_size": 20, "timestamp": 1773933176.713512}
+{"index": 7, "stage": "done", "experiment": "AB", "processed": 60, "total": 200, "batch_index": 7, "batch_start": 140, "batch_end": 159, "batch_size": 20, "timestamp": 1773933178.1796386}
+{"index": 6, "stage": "done", "experiment": "AB", "processed": 80, "total": 200, "batch_index": 6, "batch_start": 120, "batch_end": 139, "batch_size": 20, "timestamp": 1773933181.2801323}
+{"index": 5, "stage": "done", "experiment": "AB", "processed": 100, "total": 200, "batch_index": 5, "batch_start": 100, "batch_end": 119, "batch_size": 20, "timestamp": 1773933185.3760571}
+{"index": 1, "stage": "done", "experiment": "AB", "processed": 120, "total": 200, "batch_index": 1, "batch_start": 20, "batch_end": 39, "batch_size": 20, "timestamp": 1773933188.6598651}
+{"index": 3, "stage": "done", "experiment": "AB", "processed": 140, "total": 200, "batch_index": 3, "batch_start": 60, "batch_end": 79, "batch_size": 20, "timestamp": 1773933193.057501}
+{"index": 0, "stage": "done", "experiment": "AB", "processed": 160, "total": 200, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773933196.2149804}
+{"index": 8, "stage": "done", "experiment": "AB", "processed": 180, "total": 200, "batch_index": 8, "batch_start": 160, "batch_end": 179, "batch_size": 20, "timestamp": 1773933197.7863142}
+{"index": 9, "stage": "done", "experiment": "AB", "processed": 200, "total": 200, "batch_index": 9, "batch_start": 180, "batch_end": 199, "batch_size": 20, "timestamp": 1773933206.5758514}

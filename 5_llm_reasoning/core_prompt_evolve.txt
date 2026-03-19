@@ -21,6 +21,7 @@ Required keys for each founder:
 - scrappiness_justification (string, 2 sentences)
 - rubric_score (int 1-5)
 - rubric_score_justification (string, 2 sentences)
+  Description: Overall founder quality based on the rubric.
 
 Global output (always include in the final JSON):
 - evidence_support_rating (int 1-5)

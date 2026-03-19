@@ -54,6 +54,38 @@ from llm_reasoning_features import (
 
 RUN_LOG_PATH: Path | None = None
 
+HQ_FEATURES_BASE = [
+    "has_prior_ipo",
+    "has_prior_acquisition",
+    "exit_count",
+    "max_company_size_before_founding",
+    "prestige_sacrifice_score",
+    "years_in_large_company",
+    "comfort_index",
+    "founding_timing",
+    "edu_prestige_tier",
+    "field_relevance_score",
+    "prestige_x_relevance",
+    "degree_level",
+    "stem_flag",
+    "best_degree_prestige",
+    "max_seniority_reached",
+    "seniority_is_monotone",
+    "company_size_is_growing",
+    "restlessness_score",
+    "founding_role_count",
+    "longest_founding_tenure",
+    "industry_pivot_count",
+    "industry_alignment",
+    "total_inferred_experience",
+    "is_serial_founder",
+    "exit_x_serial",
+    "sacrifice_x_serial",
+    "industry_prestige_penalty",
+    "persistence_score",
+]
+HQ_FEATURES_WITH_GAP = HQ_FEATURES_BASE + ["repeat_founding_gap"]
+
 
 def _install_excepthook() -> None:
     def _hook(exc_type, exc, tb):
@@ -140,6 +172,60 @@ def _load_base_feature_extractor(script_path: Path):
             f"Base script missing _extract_human_features: {script_path}"
         )
     return module._extract_human_features  # type: ignore[attr-defined]
+
+
+def _load_high_quality_extractor(script_path: Path):
+    spec = importlib.util.spec_from_file_location("vcbench_hq_features", script_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load HQ feature script: {script_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)  # type: ignore[assignment]
+    if not hasattr(module, "extract_features"):
+        raise AttributeError(
+            f"HQ script missing extract_features: {script_path}"
+        )
+    return module.extract_features  # type: ignore[attr-defined]
+
+
+def _build_high_quality_features(
+    records: list[dict[str, Any]],
+    script_path: Path,
+) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    for rec in records:
+        rows.append(
+            {
+                "industry": rec.get("industry", "") or "",
+                "educations_json": json.dumps(rec.get("educations", [])),
+                "jobs_json": json.dumps(rec.get("jobs", [])),
+                "ipos": json.dumps(rec.get("ipos", [])),
+                "acquisitions": json.dumps(rec.get("acquisitions", [])),
+            }
+        )
+    base_df = pd.DataFrame(rows)
+    extractor = _load_high_quality_extractor(script_path)
+    return extractor(base_df)
+
+
+def _save_high_quality_features(
+    hq_df: pd.DataFrame,
+    founder_ids: list[str | None],
+    labels: np.ndarray,
+    out_dir: Path,
+) -> None:
+    save_df = hq_df.copy()
+    save_df.insert(0, "founder_uuid", founder_ids)
+    save_df.insert(1, "success", labels)
+    save_df.insert(2, "row_index", np.arange(len(save_df)))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    save_df.to_parquet(out_dir / "features_full.parquet", index=False)
+    meta = {
+        "features_no_gap": HQ_FEATURES_BASE,
+        "features_with_gap": HQ_FEATURES_WITH_GAP,
+        "repeat_founding_gap_impute": "0.0 for HQ-only+gap",
+        "n_rows": len(save_df),
+    }
+    (out_dir / "feature_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
 
 def _load_llm_engineered_cache(
@@ -727,12 +813,13 @@ def _build_reasoning_combos(
 def _write_full_results_report(
     table1_rows: list[dict[str, Any]],
     table2_rows: list[dict[str, Any]],
+    table_hq_rows: list[dict[str, Any]],
     report_path: Path,
     csv_path: Path,
     cv_folds: int,
     pool_size: int,
 ) -> None:
-    all_rows = table1_rows + table2_rows
+    all_rows = table1_rows + table2_rows + table_hq_rows
     if not all_rows:
         return
 
@@ -811,6 +898,21 @@ def _write_full_results_report(
         )[:n]
 
     table1_md = _render_table(table1_rows, include_set=False) if table1_rows else ""
+    if table_hq_rows:
+        hq_priority = {
+            "HQ Only": 0,
+            "HQ Only (+repeat_founding_gap)": 1,
+        }
+        table_hq_rows_sorted = sorted(
+            table_hq_rows,
+            key=lambda r: (
+                hq_priority.get(r.get("regression", ""), 2),
+                r.get("reasoning_combo", "") or "",
+            ),
+        )
+    else:
+        table_hq_rows_sorted = []
+    table_hq_md = _render_table(table_hq_rows_sorted, include_set=False) if table_hq_rows_sorted else ""
     table2_md = _render_table(table2_rows, include_set=True) if table2_rows else ""
 
     top3 = _top_rows(table1_rows, 3)
@@ -838,6 +940,16 @@ def _write_full_results_report(
         section_lines.append(table1_md)
     else:
         section_lines.append("_No Table 1 rows._")
+    section_lines.extend(
+        [
+            "",
+            "### Table HQ — High-Quality Human & Reasoning Combos",
+        ]
+    )
+    if table_hq_md:
+        section_lines.append(table_hq_md)
+    else:
+        section_lines.append("_No Table HQ rows._")
     section_lines.extend(
         [
             "",
@@ -896,6 +1008,12 @@ def _parse_args() -> argparse.Namespace:
         "--features",
         default="",
         help="Optional comma-separated custom feature names (overrides feature_set)",
+    )
+    p.add_argument(
+        "--human_feature_source",
+        choices=["baseline", "high_quality"],
+        default=None,
+        help="Select human feature source: baseline or high_quality (CLI overrides config).",
     )
     p.add_argument(
         "--feature_config",
@@ -1154,6 +1272,7 @@ def main() -> None:
     cfg_llm_reasoning_repair_nan: bool | None = None
     cfg_llm_reasoning_repair_existing: bool | None = None
     cfg_llm_engineered_for_reasoning: bool | None = None
+    cfg_human_feature_source: str | None = None
     cfg_llm_reasoning_split_batches: bool | None = None
     cfg_llm_reasoning_batch_within_folds: bool | None = None
     cfg_llm_engineered_cache: bool | None = None
@@ -1200,6 +1319,8 @@ def main() -> None:
             cfg_llm_reasoning_experiments = [
                 e for e in data.get("llm_reasoning_experiments", []) if isinstance(e, str)
             ]
+        if isinstance(data.get("human_feature_source"), str):
+            cfg_human_feature_source = data.get("human_feature_source")
         if isinstance(data.get("llm_reasoning_mode"), str):
             cfg_llm_reasoning_mode = data.get("llm_reasoning_mode")
         if isinstance(data.get("llm_reasoning_sequential"), list):
@@ -1428,6 +1549,13 @@ def main() -> None:
         if cfg_llm_engineered_family_allow_seed_mismatch is not None
         else False
     )
+    human_feature_source = (
+        args.human_feature_source
+        if args.human_feature_source is not None
+        else (cfg_human_feature_source if cfg_human_feature_source is not None else "baseline")
+    )
+    if human_feature_source not in ("baseline", "high_quality"):
+        human_feature_source = "baseline"
     llm_engineered_rotated = False
     cv_folds = cfg_cv_folds if cfg_cv_folds is not None else 10
     cv_use_fixed_folds = cfg_cv_use_fixed_folds if cfg_cv_use_fixed_folds is not None else True
@@ -1453,6 +1581,13 @@ def main() -> None:
         f"llm_engineered_force_recompute={llm_engineered_force_recompute} "
         f"llm_engineered_run_family_id={llm_engineered_run_family_id}"
     )
+    _log(f"  Human feature source: {human_feature_source}")
+    _log_run(f"Human feature source: {human_feature_source}")
+    if human_feature_source == "high_quality":
+        llm_engineered_run_family = False
+        llm_engineered_cache = False
+        llm_engineered_for_reasoning = False
+        _log_run("HQ mode: disabled LLM engineered/run-family features.")
     if llm_reasoning_dry_run_fast:
         llm_reasoning_dry_run = True
         use_llm_reasoning = True
@@ -1558,38 +1693,70 @@ def main() -> None:
         )
         return
 
-    base_script = Path(args.base_script)
-    extract_base = _load_base_feature_extractor(base_script)
-    base_all = pd.DataFrame([extract_base(r) for r in records])
-    base_feature_names = list(base_all.columns)
-
-    if selected_features:
-        base_selected = [f for f in selected_features if f in base_feature_names]
-        custom_features = [f for f in selected_features if f in FEATURE_REGISTRY]
-        unknown = [
-            f
-            for f in selected_features
-            if f not in base_feature_names and f not in FEATURE_REGISTRY
-        ]
-        if unknown:
-            print(f"  WARNING: Unknown features in config: {', '.join(unknown)}")
-    elif args.features.strip():
-        base_selected = base_feature_names
-        custom_features = [f.strip() for f in args.features.split(",") if f.strip()]
+    hq_full_no_gap: pd.DataFrame | None = None
+    hq_full_with_gap: pd.DataFrame | None = None
+    if human_feature_source == "high_quality":
+        hq_script = (
+            Path(__file__).parent.parent
+            / "High_Quality_human_features"
+            / "features"
+            / "extract_structured.py"
+        )
+        hq_df_full = _build_high_quality_features(records, hq_script)
+        missing = [f for f in HQ_FEATURES_WITH_GAP if f not in hq_df_full.columns]
+        if missing:
+            raise RuntimeError(
+                "High-quality feature extraction missing columns: "
+                + ", ".join(missing)
+            )
+        hq_full_no_gap = hq_df_full[HQ_FEATURES_BASE].copy()
+        hq_full_with_gap = hq_df_full[HQ_FEATURES_WITH_GAP].copy()
+        hq_full_with_gap["repeat_founding_gap"] = hq_full_with_gap["repeat_founding_gap"].fillna(0.0)
+        base_all = hq_full_no_gap
+        base_feature_names = list(base_all.columns)
+        custom_features = []
+        custom_all = pd.DataFrame(index=range(len(records)))
+        selected_features = []
+        hq_out_dir = Path(__file__).parent / "features_storage" / "human_high_quality"
+        _save_high_quality_features(
+            hq_df_full[HQ_FEATURES_WITH_GAP],
+            founder_ids,
+            labels,
+            hq_out_dir,
+        )
     else:
-        base_selected = base_feature_names
-        custom_features = FEATURE_SETS[args.feature_set]
-
-    # Apply baseline selection if provided
-    if selected_features:
-        base_all = base_all[base_selected]
+        base_script = Path(args.base_script)
+        extract_base = _load_base_feature_extractor(base_script)
+        base_all = pd.DataFrame([extract_base(r) for r in records])
         base_feature_names = list(base_all.columns)
 
-    custom_all = (
-        _custom_feature_df(records, custom_features)
-        if custom_features
-        else pd.DataFrame(index=range(len(records)))
-    )
+        if selected_features:
+            base_selected = [f for f in selected_features if f in base_feature_names]
+            custom_features = [f for f in selected_features if f in FEATURE_REGISTRY]
+            unknown = [
+                f
+                for f in selected_features
+                if f not in base_feature_names and f not in FEATURE_REGISTRY
+            ]
+            if unknown:
+                print(f"  WARNING: Unknown features in config: {', '.join(unknown)}")
+        elif args.features.strip():
+            base_selected = base_feature_names
+            custom_features = [f.strip() for f in args.features.split(",") if f.strip()]
+        else:
+            base_selected = base_feature_names
+            custom_features = FEATURE_SETS[args.feature_set]
+
+        # Apply baseline selection if provided
+        if selected_features:
+            base_all = base_all[base_selected]
+            base_feature_names = list(base_all.columns)
+
+        custom_all = (
+            _custom_feature_df(records, custom_features)
+            if custom_features
+            else pd.DataFrame(index=range(len(records)))
+        )
 
     llm_feature_names: list[str] = []
     llm_all = pd.DataFrame(index=range(len(records)))
@@ -1599,10 +1766,13 @@ def main() -> None:
     llm_engineered_feature_names: list[str] = []
 
     mode = args.mode
-    if cfg_use_llm is True and mode == "human":
-        mode = "hybrid"
-    if cfg_use_llm_reasoning is True and mode == "human":
-        mode = "hybrid"
+    if human_feature_source != "high_quality":
+        if cfg_use_llm is True and mode == "human":
+            mode = "hybrid"
+        if cfg_use_llm_reasoning is True and mode == "human":
+            mode = "hybrid"
+    else:
+        mode = "human"
 
     _log(f"  Mode: {mode}\n")
 
@@ -2795,7 +2965,10 @@ def main() -> None:
         out_path = Path(args.output_parquet)
     else:
         if mode == "human":
-            out_path = features_storage / "human" / "features_full.parquet"
+            if human_feature_source == "high_quality":
+                out_path = features_storage / "human_high_quality" / "features_full.parquet"
+            else:
+                out_path = features_storage / "human" / "features_full.parquet"
         elif mode == "llm":
             out_path = features_storage / "llm_engineered" / "llm_features.parquet"
         elif mode == "reasoning":
@@ -2825,6 +2998,7 @@ def main() -> None:
     # Expanded reasoning + engineered evaluations (CV).
     table1_rows: list[dict[str, Any]] = []
     table2_rows: list[dict[str, Any]] = []
+    table_hq_rows: list[dict[str, Any]] = []
     reasoning_combo_cols: dict[str, list[str]] = {}
     reasoning_combo_frames: dict[str, pd.DataFrame] = {}
 
@@ -2872,49 +3046,117 @@ def main() -> None:
         if not reasoning_combo_cols:
             _log("  WARNING: No reasoning combos found; check reasoning columns.")
 
-        human_full = pd.concat([base_all, custom_all], axis=1)
-        means, stds = _train_and_log_cv(
-            base_feature_names + custom_features,
-            human_full,
-            labels,
-            args,
-            input_csv,
-            "Human Only",
-            cv_folds=cv_folds,
-            log_dir=Path(__file__).parent / "training_logs" / "human" / "only",
-            cv_splits=cv_splits,
-        )
-        _append_row(table1_rows, "Table 1", "Human Only", "", "", means, stds)
+        if human_feature_source == "high_quality":
+            if hq_full_no_gap is None or hq_full_with_gap is None:
+                raise RuntimeError("High-quality feature frames missing.")
 
-        for combo, cols in reasoning_combo_cols.items():
-            combo_tag = combo.replace("+", "_")
-            combo_df = reasoning_combo_frames[combo]
             means, stds = _train_and_log_cv(
-                cols,
-                combo_df,
+                HQ_FEATURES_BASE,
+                hq_full_no_gap,
                 labels,
                 args,
                 input_csv,
-                f"Reasoning {combo}",
+                "HQ Only",
                 cv_folds=cv_folds,
-                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / combo_tag,
+                log_dir=Path(__file__).parent / "training_logs" / "human_high_quality" / "only",
                 cv_splits=cv_splits,
             )
-            _append_row(table1_rows, "Table 1", "Reasoning Only", "", combo, means, stds)
+            _append_row(table_hq_rows, "Table HQ", "HQ Only", "", "", means, stds)
 
-            combo_plus = pd.concat([human_full, combo_df], axis=1)
             means, stds = _train_and_log_cv(
-                base_feature_names + custom_features + cols,
-                combo_plus,
+                HQ_FEATURES_WITH_GAP,
+                hq_full_with_gap,
                 labels,
                 args,
                 input_csv,
-                f"Human + Reasoning {combo}",
+                "HQ Only (+repeat_founding_gap)",
                 cv_folds=cv_folds,
-                log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "human_plus" / combo_tag,
+                log_dir=Path(__file__).parent / "training_logs" / "human_high_quality" / "only_with_gap",
                 cv_splits=cv_splits,
             )
-            _append_row(table1_rows, "Table 1", "Human + Reasoning", "", combo, means, stds)
+            _append_row(
+                table_hq_rows,
+                "Table HQ",
+                "HQ Only (+repeat_founding_gap)",
+                "",
+                "",
+                means,
+                stds,
+            )
+
+            for combo, cols in reasoning_combo_cols.items():
+                combo_tag = combo.replace("+", "_")
+                combo_df = reasoning_combo_frames[combo]
+                means, stds = _train_and_log_cv(
+                    cols,
+                    combo_df,
+                    labels,
+                    args,
+                    input_csv,
+                    f"Reasoning {combo}",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / combo_tag,
+                    cv_splits=cv_splits,
+                )
+                _append_row(table_hq_rows, "Table HQ", "Reasoning Only", "", combo, means, stds)
+
+                combo_plus = pd.concat([hq_full_no_gap, combo_df], axis=1)
+                means, stds = _train_and_log_cv(
+                    HQ_FEATURES_BASE + cols,
+                    combo_plus,
+                    labels,
+                    args,
+                    input_csv,
+                    f"HQ + Reasoning {combo}",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "hq_plus" / combo_tag,
+                    cv_splits=cv_splits,
+                )
+                _append_row(table_hq_rows, "Table HQ", "HQ + Reasoning", "", combo, means, stds)
+        else:
+            human_full = pd.concat([base_all, custom_all], axis=1)
+            means, stds = _train_and_log_cv(
+                base_feature_names + custom_features,
+                human_full,
+                labels,
+                args,
+                input_csv,
+                "Human Only",
+                cv_folds=cv_folds,
+                log_dir=Path(__file__).parent / "training_logs" / "human" / "only",
+                cv_splits=cv_splits,
+            )
+            _append_row(table1_rows, "Table 1", "Human Only", "", "", means, stds)
+
+            for combo, cols in reasoning_combo_cols.items():
+                combo_tag = combo.replace("+", "_")
+                combo_df = reasoning_combo_frames[combo]
+                means, stds = _train_and_log_cv(
+                    cols,
+                    combo_df,
+                    labels,
+                    args,
+                    input_csv,
+                    f"Reasoning {combo}",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / combo_tag,
+                    cv_splits=cv_splits,
+                )
+                _append_row(table1_rows, "Table 1", "Reasoning Only", "", combo, means, stds)
+
+                combo_plus = pd.concat([human_full, combo_df], axis=1)
+                means, stds = _train_and_log_cv(
+                    base_feature_names + custom_features + cols,
+                    combo_plus,
+                    labels,
+                    args,
+                    input_csv,
+                    f"Human + Reasoning {combo}",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "human_plus" / combo_tag,
+                    cv_splits=cv_splits,
+                )
+                _append_row(table1_rows, "Table 1", "Human + Reasoning", "", combo, means, stds)
 
     # Run-family mode (multiple engineered feature sets + leaderboard)
     if llm_engineered_run_family:
@@ -3183,10 +3425,18 @@ def main() -> None:
             }
             meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
-    if table1_rows or table2_rows:
+    if table1_rows or table2_rows or table_hq_rows:
         report_path = Path(__file__).parent / "docs" / "llm_regression_report.md"
         full_csv = Path(__file__).parent / "docs" / "llm_full_results.csv"
-        _write_full_results_report(table1_rows, table2_rows, report_path, full_csv, cv_folds, len(labels))
+        _write_full_results_report(
+            table1_rows,
+            table2_rows,
+            table_hq_rows,
+            report_path,
+            full_csv,
+            cv_folds,
+            len(labels),
+        )
         _log(f"\nUpdated report: {report_path}")
         _log(f"Full results CSV: {full_csv}")
         _write_snapshot_combined_report()

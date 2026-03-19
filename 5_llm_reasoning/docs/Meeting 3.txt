@@ -29,4 +29,6 @@ Evaluating features on rest of full dataset -> cross validation
 
 
 
-Mixing the batches - does the score for an individual founder vary?
+Mixing the batches - does the score for an individual founder vary? - POTENTIAL IMPORTANT THING TO LOOK INTO 
+Look into which reasoning provides the uplift - 
+Strongly made human features - no improvement?
