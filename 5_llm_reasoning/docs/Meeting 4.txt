@@ -1,0 +1,11 @@
+Getting the benchmark of 0.3
+Once you have features, change logistic regression to something else
+
+Recreate results of Yigit's brother - try reasoning and try to get a boost.
+
+Look into the 5 series for prompt mutation - use simpler modelling rather than reasoning models evolve better
+Use more complex models for prompt mutation, 
+
+Workshop at the start of May - 6 weeks 
+
+Focus on interpretability - which features are driving things

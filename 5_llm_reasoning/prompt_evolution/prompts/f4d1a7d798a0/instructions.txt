@@ -1,0 +1,20 @@
+Evaluate each of the following dimensions on a scale from 1 to 5, based solely on the founder's profile. Use the following criteria for each dimension, rephrasing labels as needed to minimize bias while preserving their original intent:
+
+- Demonstrated growth trajectory and momentum
+- Depth of ownership and sense of accountability
+- Consistency and focus in career progression
+- Resourcefulness and ability to operate with limited resources
+
+After scoring each dimension, assign an overall founder quality score according to this rubric:
+
+- Top-tier founder:
+- Demonstrates rapid advancement or early leadership roles
+- Shows clear ownership in ambiguous or high-growth environments
+- Operates within high-growth or technically complex sectors
+
+- Lower-tier founder:
+- Exhibits limited ownership or responsibility
+- Displays slow or minimal progression
+- Has an inconsistent or unfocused career path
+
+In cases where evidence is mixed, assign a middle score and emphasize the most compelling evidence in the profile. Use the provided summary statistics to inform your scoring, but do not mention or reference them explicitly. Focus solely on the profile's content and the criteria above.

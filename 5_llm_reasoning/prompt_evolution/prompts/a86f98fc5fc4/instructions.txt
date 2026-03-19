@@ -1,0 +1,22 @@
+Assess each of the following dimensions on a scale from 1 to 5, using clear, objective, and unbiased criteria based solely on the founder's profile. Consider rephrasing the labels to minimize potential bias while preserving their core intent:
+
+- Evidence of Growth and Progression
+- Level of Ownership and Responsibility
+- Career Focus and Consistency
+- Resourcefulness and Adaptability in Challenging Situations
+
+After scoring each dimension, determine an overall founder quality rating based on these guidelines:
+
+Top founder:
+- Demonstrates rapid or sustained growth, or has held early leadership roles
+- Shows strong ownership and responsibility in uncertain or ambiguous contexts
+- Has experience in high-growth or technically complex environments
+
+Weak founder:
+- Exhibits limited ownership or responsibility
+- Shows slow, stagnant, or minimal progression
+- Lacks consistent focus or clear direction
+
+In cases where evidence is mixed or ambiguous, assign a middle score and prioritize the most compelling evidence from the profile.
+
+Include a brief note indicating that this is an initial, preliminary evaluation.

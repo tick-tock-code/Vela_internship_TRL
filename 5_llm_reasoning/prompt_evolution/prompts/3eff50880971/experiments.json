@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Evaluate each of the following dimensions on a scale from 1 to 5, using objective, evidence-based criteria that clearly differentiate levels of founder potential. Rephrase the dimension labels to minimize bias while maintaining their original intent:\n\n- Demonstrated Rapid Growth or Leadership Development\n- Level of Ownership and Accountability Shown\n- Clarity and Logical Progression in Career Path\n- Resourcefulness and Flexibility in Challenging Environments\n\nAfter assigning scores to these dimensions, determine an overall founder quality rating based on the following criteria:\n\nHigh-Potential Founder:\n- Shows evidence of rapid advancement or holds early leadership roles with substantial responsibility\n- Demonstrates clear ownership and accountability in ambiguous or uncertain situations\n- Exhibits a career trajectory indicating upward mobility within high-growth or technically complex sectors\n\nLower-Potential Founder:\n- Displays limited ownership or responsibility\n- Has a stagnant or slow career progression\n- Lacks consistent focus or a clear professional direction\n\nIn cases where the evidence is mixed, assign a middle score and highlight the most compelling aspects of the profile to justify your evaluation.\n\nInclude a brief note indicating that this is an initial, preliminary assessment.\n\nUse the provided statistical summaries to inform your evaluations, but primarily base your scores on the profile evidence.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

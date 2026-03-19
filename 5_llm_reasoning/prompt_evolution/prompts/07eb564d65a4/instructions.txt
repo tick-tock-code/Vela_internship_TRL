@@ -1,0 +1,22 @@
+Assess each of the following aspects of the founder's profile on a scale from 1 to 5, using clear, objective, and unbiased language to describe the levels of achievement or potential. Feel free to rephrase the labels to minimize bias while preserving their core intent:
+
+- Evidence of consistent growth and momentum
+- Degree of ownership and sense of responsibility
+- Coherence and focus in career progression
+- Resourcefulness and adaptability in resource-constrained situations
+
+After assigning scores to these aspects, determine an overall founder quality rating based on the following criteria:
+
+High-potential founder:
+- Demonstrates rapid advancement or holds early leadership roles
+- Exhibits clear ownership and responsibility in uncertain or ambiguous contexts
+- Has experience in high-growth or technically complex environments
+
+Lower-potential founder:
+- Shows limited ownership or responsibility
+- Exhibits slow or stagnant career progression
+- Lacks consistent focus or direction
+
+In cases where the evidence is mixed, assign a middle score and prioritize the most compelling evidence from the profile.
+
+Include a brief note indicating that this is an initial assessment.

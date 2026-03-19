@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Assess each of the following aspects of the founder's profile on a scale from 1 to 5, using clear, objective, and unbiased language to describe the levels of achievement or potential. Feel free to rephrase the labels to minimize bias while preserving their core intent:\n\n- Evidence of consistent growth and momentum\n- Degree of ownership and sense of responsibility\n- Coherence and focus in career progression\n- Resourcefulness and adaptability in resource-constrained situations\n\nAfter assigning scores to these aspects, determine an overall founder quality rating based on the following criteria:\n\nHigh-potential founder:\n- Demonstrates rapid advancement or holds early leadership roles\n- Exhibits clear ownership and responsibility in uncertain or ambiguous contexts\n- Has experience in high-growth or technically complex environments\n\nLower-potential founder:\n- Shows limited ownership or responsibility\n- Exhibits slow or stagnant career progression\n- Lacks consistent focus or direction\n\nIn cases where the evidence is mixed, assign a middle score and prioritize the most compelling evidence from the profile.\n\nInclude a brief note indicating that this is an initial assessment.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

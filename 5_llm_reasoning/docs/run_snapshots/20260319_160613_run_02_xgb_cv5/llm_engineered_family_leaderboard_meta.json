@@ -1,0 +1,12 @@
+{
+  "family_id": "20260319_032713",
+  "n_sets": 10,
+  "n_features": 18,
+  "model": "gpt-4.1-nano",
+  "cv_folds": 10,
+  "pool_size": 4400,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7",
+  "seed_size": 100,
+  "timestamp": "2026-03-19T03:31:47.488283",
+  "skipped_sets": []
+}

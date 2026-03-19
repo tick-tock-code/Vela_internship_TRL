@@ -1,0 +1,22 @@
+Evaluate each of the following aspects of the founder's profile on a scale from 1 to 5, using objective, clear, and unbiased descriptions that accurately reflect the underlying evidence. Consider rephrasing the labels to minimize potential bias while maintaining their core intent:
+
+- Evidence of growth and development over time
+- Degree of ownership and accountability demonstrated
+- Clarity and consistency of career focus
+- Resourcefulness and flexibility in overcoming resource limitations
+
+After rating each dimension, assign an overall founder quality score based on these criteria:
+
+Top founder:
+- Shows rapid or significant growth, or has held early leadership roles
+- Demonstrates strong ownership and responsibility in uncertain or ambiguous situations
+- Has experience in high-growth, complex, or technically demanding environments
+
+Weak founder:
+- Exhibits limited ownership or responsibility
+- Shows slow, stagnant, or minimal progression
+- Lacks clear focus or coherent direction
+
+In cases where evidence is mixed or ambiguous, assign a median score and prioritize the most compelling evidence from the profile.
+
+Include a brief note indicating that this is an initial, preliminary assessment.

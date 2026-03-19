@@ -1,0 +1,7 @@
+run_log started
+[2026-03-19T15:47:01.329747] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public_sample100.csv
+[2026-03-19T15:47:01.346896] Loaded records: 100 labels: 100
+[2026-03-19T15:47:01.347480] Use LLM reasoning: True
+[2026-03-19T15:47:01.347830] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-19T15:47:01.348389] Human feature source: baseline
+[2026-03-19T15:47:01.348942] Model type: logistic

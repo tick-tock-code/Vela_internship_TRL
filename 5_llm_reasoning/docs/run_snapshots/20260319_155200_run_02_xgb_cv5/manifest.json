@@ -1,0 +1,11 @@
+{
+  "label": "run_02_xgb_cv5",
+  "timestamp": "20260319_155200",
+  "files": [
+    "llm_regression_report.md",
+    "llm_full_results.csv",
+    "llm_engineered_family_leaderboard.csv",
+    "llm_engineered_family_leaderboard_meta.json",
+    "feature_weight_summary.md"
+  ]
+}

@@ -12,6 +12,7 @@ Pipeline steps:
 from __future__ import annotations
 
 import argparse
+import re
 import os
 import shutil
 import json
@@ -369,11 +370,70 @@ def _train_sklearn(
     X_test: np.ndarray,
     random_state: int,
 ) -> tuple[np.ndarray, np.ndarray, LogisticRegression]:
-    clf = LogisticRegression(max_iter=1000, random_state=random_state)
+    clf = LogisticRegression(max_iter=3000, random_state=random_state)
     clf.fit(X_train, y_train)
     train_scores = clf.predict_proba(X_train)[:, 1]
     test_scores = clf.predict_proba(X_test)[:, 1]
     return train_scores, test_scores, clf
+
+
+def _train_xgboost(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_test: np.ndarray,
+    random_state: int,
+) -> tuple[np.ndarray, np.ndarray, Any]:
+    try:
+        import xgboost as xgb  # type: ignore
+    except Exception as exc:  # pragma: no cover - import-time failure
+        raise RuntimeError(
+            "xgboost is required for model_type=xgboost. "
+            "Install with: pip install xgboost"
+        ) from exc
+
+    params = {
+        "n_estimators": 227,
+        "max_depth": 1,
+        "learning_rate": 0.0674,
+        "subsample": 0.949,
+        "colsample_bytree": 0.413,
+        "scale_pos_weight": 10,
+        "min_child_weight": 14,
+        "gamma": 4.19,
+        "reg_alpha": 0.73,
+        "reg_lambda": 15.0,
+        "objective": "binary:logistic",
+        "eval_metric": "logloss",
+        "random_state": random_state,
+        "n_jobs": 1,
+    }
+    model = xgb.XGBClassifier(**params)
+    model.fit(X_train, y_train)
+    train_scores = model.predict_proba(X_train)[:, 1]
+    test_scores = model.predict_proba(X_test)[:, 1]
+    return train_scores, test_scores, model
+
+
+def _apply_rule_override(scores: np.ndarray, rule_mask: np.ndarray | None) -> np.ndarray:
+    if rule_mask is None:
+        return scores
+    if scores.shape[0] != rule_mask.shape[0]:
+        raise ValueError("Rule mask length mismatch for score override.")
+    adjusted = scores.copy()
+    adjusted[rule_mask] = 1.0
+    return adjusted
+
+
+def _train_model(
+    model_type: str,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_test: np.ndarray,
+    random_state: int,
+) -> tuple[np.ndarray, np.ndarray, Any]:
+    if model_type == "xgboost":
+        return _train_xgboost(X_train, y_train, X_test, random_state)
+    return _train_sklearn(X_train, y_train, X_test, random_state)
 
 
 def _report_metrics(
@@ -458,6 +518,7 @@ def _cv_evaluate(
     n_splits: int,
     random_state: int,
     splits: list[tuple[np.ndarray, np.ndarray]] | None = None,
+    rule_mask: np.ndarray | None = None,
 ) -> tuple[dict[str, float], dict[str, float]]:
     metrics_list: list[dict[str, float]] = []
     if splits is None:
@@ -470,13 +531,18 @@ def _cv_evaluate(
             fill_values = X_train.mean()
             X_train = X_train.fillna(fill_values)
             X_test = X_test.fillna(fill_values)
-        X_train, X_test = _standardize_continuous(X_train, X_test, feature_names)
-        train_scores, test_scores, _ = _train_sklearn(
+        if args.model_type == "logistic":
+            X_train, X_test = _standardize_continuous(X_train, X_test, feature_names)
+        train_scores, test_scores, _ = _train_model(
+            args.model_type,
             X_train.values.astype(float),
             y[train_idx],
             X_test.values.astype(float),
             args.random_state,
         )
+        if rule_mask is not None:
+            train_scores = _apply_rule_override(train_scores, rule_mask[train_idx])
+            test_scores = _apply_rule_override(test_scores, rule_mask[test_idx])
         metrics = _report_metrics(y[train_idx], train_scores, y[test_idx], test_scores)
         acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y[test_idx]))
         metrics["accuracy"] = acc
@@ -549,9 +615,17 @@ def _train_and_log_cv(
     cv_folds: int,
     log_dir: Path | None = None,
     cv_splits: list[tuple[np.ndarray, np.ndarray]] | None = None,
+    rule_mask: np.ndarray | None = None,
 ) -> tuple[dict[str, float], dict[str, float]]:
     means, stds = _cv_evaluate(
-        full_df, y, feature_names, args, cv_folds, args.random_state, splits=cv_splits
+        full_df,
+        y,
+        feature_names,
+        args,
+        cv_folds,
+        args.random_state,
+        splits=cv_splits,
+        rule_mask=rule_mask,
     )
     log_lines: list[str] = []
     log_lines.append(f"Features used: {', '.join(feature_names)}")
@@ -605,6 +679,7 @@ def _train_and_log(
     input_csv: str,
     mode_label: str,
     log_dir: Path | None = None,
+    rule_mask: np.ndarray | None = None,
 ) -> tuple[dict[str, float], LogisticRegression]:
     # Impute missing values using training means (prevents leakage).
     if full_train.isna().any().any() or full_test.isna().any().any():
@@ -612,12 +687,18 @@ def _train_and_log(
         full_train = full_train.fillna(fill_values)
         full_test = full_test.fillna(fill_values)
 
+    if args.model_type == "logistic":
+        full_train, full_test = _standardize_continuous(full_train, full_test, feature_names)
+
     X_train = full_train.values.astype(float)
     X_test = full_test.values.astype(float)
 
-    train_scores, test_scores, model = _train_sklearn(
-        X_train, y_train, X_test, args.random_state
+    train_scores, test_scores, model = _train_model(
+        args.model_type, X_train, y_train, X_test, args.random_state
     )
+    if rule_mask is not None:
+        train_scores = _apply_rule_override(train_scores, rule_mask[: len(y_train)])
+        test_scores = _apply_rule_override(test_scores, rule_mask[len(y_train) :])
     metrics = _report_metrics(y_train, train_scores, y_test, test_scores)
     acc = float(np.mean((test_scores >= metrics["threshold"]).astype(int) == y_test))
     metrics["accuracy"] = acc
@@ -627,11 +708,12 @@ def _train_and_log(
     log_lines.append(
         f"\n[{mode_label}]   {len(feature_names)} features, threshold={metrics['threshold']:.2f}"
     )
-    coef = model.coef_[0]
-    ranked = sorted(zip(feature_names, coef), key=lambda x: abs(x[1]), reverse=True)
-    for name, c in ranked:
-        sign = "+" if c >= 0 else "-"
-        log_lines.append(f"  {sign}{abs(c):.3f}  {name}")
+    if args.model_type == "logistic":
+        coef = model.coef_[0]
+        ranked = sorted(zip(feature_names, coef), key=lambda x: abs(x[1]), reverse=True)
+        for name, c in ranked:
+            sign = "+" if c >= 0 else "-"
+            log_lines.append(f"  {sign}{abs(c):.3f}  {name}")
     log_lines.append(
         f"\nROC-AUC={metrics['roc_auc']:.3f}  PR-AUC={metrics['pr_auc']:.3f}  "
         f"Prec={metrics['precision']:.3f}  Rec={metrics['recall']:.3f}  "
@@ -818,6 +900,7 @@ def _write_full_results_report(
     csv_path: Path,
     cv_folds: int,
     pool_size: int,
+    model_type: str,
 ) -> None:
     all_rows = table1_rows + table2_rows + table_hq_rows
     if not all_rows:
@@ -916,6 +999,7 @@ def _write_full_results_report(
     table2_md = _render_table(table2_rows, include_set=True) if table2_rows else ""
 
     top3 = _top_rows(table1_rows, 3)
+    top_hq = _top_rows(table_hq_rows, 3) if table_hq_rows else []
     top10 = _top_rows(table2_rows, 10)
 
     def _format_top(rows: list[dict[str, Any]], include_set: bool) -> str:
@@ -934,7 +1018,9 @@ def _write_full_results_report(
     section_lines: list[str] = [
         f"## Full Pipeline Results ({datetime.now().strftime('%Y-%m-%d %H:%M')})",
         "",
-        "### Table 1 — Human & Reasoning Combos",
+        f"**Run settings:** model={model_type}, CV folds={cv_folds}, pool={pool_size} founders (seed excluded)",
+        "",
+        f"### Table 1 - Human & Reasoning Combos (model={model_type}, CV={cv_folds})",
     ]
     if table1_md:
         section_lines.append(table1_md)
@@ -943,7 +1029,8 @@ def _write_full_results_report(
     section_lines.extend(
         [
             "",
-            "### Table HQ — High-Quality Human & Reasoning Combos",
+            f"### Table HQ - High-Quality Human & Reasoning Combos (model={model_type}, CV={cv_folds})",
+            "_HQ features = Structured v2 (28 features), with optional repeat_founding_gap and A/B/E reasoning combos._",
         ]
     )
     if table_hq_md:
@@ -955,7 +1042,9 @@ def _write_full_results_report(
             "",
             "### Top 3 (Table 1) by F0.5",
             _format_top(top3, include_set=False),
-            "### Table 2 — Engineered Family (18 rules × 10 sets)",
+            "### Top 3 (Table HQ) by F0.5",
+            _format_top(top_hq, include_set=False),
+            f"### Table 2 - Engineered Family (18 rules x 10 sets) (model={model_type}, CV={cv_folds})",
         ]
     )
     if table2_md:
@@ -973,11 +1062,7 @@ def _write_full_results_report(
     section = "\n".join(section_lines)
 
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    if report_path.exists():
-        base = report_path.read_text(encoding="utf-8").rstrip()
-        report_path.write_text(base + "\n\n" + section + "\n", encoding="utf-8")
-    else:
-        report_path.write_text("# LLM Regression Summary (F0.5)\n\n" + section + "\n", encoding="utf-8")
+    report_path.write_text("# LLM Regression Summary (F0.5)\n\n" + section + "\n", encoding="utf-8")
 
 def _write_snapshot_combined_report() -> None:
     snapshot_dir = Path(__file__).parent / "docs" / "post_CV_implementation_before_recalculating_features"
@@ -992,6 +1077,42 @@ def _write_snapshot_combined_report() -> None:
         if entry.is_file() and entry.name != combined_path.name:
             entry.unlink()
 
+
+def _write_run_snapshot(label: str) -> Path:
+    docs_dir = Path(__file__).parent / "docs"
+    snapshot_root = docs_dir / "run_snapshots"
+    snapshot_root.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_label = re.sub(r"[^A-Za-z0-9._-]+", "_", label).strip("_")
+    if not safe_label:
+        safe_label = "run"
+    snapshot_dir = snapshot_root / f"{ts}_{safe_label}"
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+
+    candidate_names = [
+        "llm_regression_report.md",
+        "llm_full_results.csv",
+        "llm_engineered_family_leaderboard.md",
+        "llm_engineered_family_leaderboard.csv",
+        "llm_engineered_family_leaderboard_meta.json",
+        "feature_weight_summary.md",
+    ]
+    copied: list[str] = []
+    for name in candidate_names:
+        src = docs_dir / name
+        if src.exists():
+            shutil.copy2(src, snapshot_dir / name)
+            copied.append(name)
+    manifest = {
+        "label": label,
+        "timestamp": ts,
+        "files": copied,
+    }
+    (snapshot_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
+    return snapshot_dir
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="VCBench in-depth pipeline.")
     p.add_argument("--dataset", choices=["sample", "full"], default="sample")
@@ -999,6 +1120,18 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--label_column", default="success")
     p.add_argument("--test_size", type=float, default=0.20)
     p.add_argument("--random_state", type=int, default=42)
+    p.add_argument(
+        "--model_type",
+        choices=["logistic", "xgboost"],
+        default="logistic",
+        help="Model type: logistic (default) or xgboost.",
+    )
+    p.add_argument(
+        "--cv_folds",
+        type=int,
+        default=None,
+        help="Optional override for CV folds (e.g., 5).",
+    )
     p.add_argument(
         "--feature_set",
         choices=sorted(FEATURE_SETS.keys()),
@@ -1024,6 +1157,16 @@ def _parse_args() -> argparse.Namespace:
         "--extract_only",
         action="store_true",
         help="Extract features and save Parquet, then exit before training.",
+    )
+    p.add_argument(
+        "--snapshot_label",
+        default="",
+        help="If set, save a run snapshot with this label.",
+    )
+    p.add_argument(
+        "--snapshot_only",
+        action="store_true",
+        help="Only write a snapshot (requires --snapshot_label) and exit.",
     )
     p.add_argument(
         "--mode",
@@ -1287,6 +1430,7 @@ def main() -> None:
     cfg_cv_folds: int | None = None
     cfg_cv_use_fixed_folds: bool | None = None
     cfg_cv_folds_path: str | None = None
+    cfg_model_type: str | None = None
     cfg_llm_sweep_range: str | None = None
     cfg_llm_sweep_repeats: int | None = None
     cfg_llm_sweep_seed_holdout_pct: float | None = None
@@ -1427,6 +1571,8 @@ def main() -> None:
             cfg_cv_use_fixed_folds = bool(data.get("cv_use_fixed_folds"))
         if "cv_folds_path" in data:
             cfg_cv_folds_path = str(data.get("cv_folds_path") or "")
+        if "model_type" in data:
+            cfg_model_type = str(data.get("model_type") or "") or None
         if "llm_temperature" in data:
             try:
                 cfg_llm_temperature = float(data.get("llm_temperature"))
@@ -1557,7 +1703,11 @@ def main() -> None:
     if human_feature_source not in ("baseline", "high_quality"):
         human_feature_source = "baseline"
     llm_engineered_rotated = False
-    cv_folds = cfg_cv_folds if cfg_cv_folds is not None else 10
+    cv_folds = (
+        int(args.cv_folds)
+        if args.cv_folds is not None
+        else (cfg_cv_folds if cfg_cv_folds is not None else 10)
+    )
     cv_use_fixed_folds = cfg_cv_use_fixed_folds if cfg_cv_use_fixed_folds is not None else True
     cv_folds_path = cfg_cv_folds_path if cfg_cv_folds_path else ""
     llm_temperature = cfg_llm_temperature if cfg_llm_temperature is not None else 0.0
@@ -1583,6 +1733,27 @@ def main() -> None:
     )
     _log(f"  Human feature source: {human_feature_source}")
     _log_run(f"Human feature source: {human_feature_source}")
+    model_type = (
+        args.model_type
+        if args.model_type != "logistic" or cfg_model_type is None
+        else cfg_model_type
+    )
+    if model_type not in ("logistic", "xgboost"):
+        model_type = "logistic"
+    args.model_type = model_type
+    _log(f"  Model type: {model_type}")
+    _log_run(f"Model type: {model_type}")
+    if model_type == "xgboost" and human_feature_source != "high_quality":
+        raise ValueError(
+            "model_type=xgboost requires human_feature_source=high_quality to match the HQ pipeline."
+        )
+
+    if args.snapshot_only:
+        if not args.snapshot_label:
+            raise ValueError("--snapshot_only requires --snapshot_label.")
+        snapshot_dir = _write_run_snapshot(args.snapshot_label)
+        _log(f"Snapshot written to: {snapshot_dir}")
+        return
     if human_feature_source == "high_quality":
         llm_engineered_run_family = False
         llm_engineered_cache = False
@@ -1695,6 +1866,7 @@ def main() -> None:
 
     hq_full_no_gap: pd.DataFrame | None = None
     hq_full_with_gap: pd.DataFrame | None = None
+    rule_mask_all: np.ndarray | None = None
     if human_feature_source == "high_quality":
         hq_script = (
             Path(__file__).parent.parent
@@ -1712,6 +1884,10 @@ def main() -> None:
         hq_full_no_gap = hq_df_full[HQ_FEATURES_BASE].copy()
         hq_full_with_gap = hq_df_full[HQ_FEATURES_WITH_GAP].copy()
         hq_full_with_gap["repeat_founding_gap"] = hq_full_with_gap["repeat_founding_gap"].fillna(0.0)
+        if args.model_type == "xgboost":
+            rule_mask_all = (
+                hq_df_full["exit_count"].fillna(0.0).astype(float).values > 0
+            )
         base_all = hq_full_no_gap
         base_feature_names = list(base_all.columns)
         custom_features = []
@@ -3001,6 +3177,7 @@ def main() -> None:
     table_hq_rows: list[dict[str, Any]] = []
     reasoning_combo_cols: dict[str, list[str]] = {}
     reasoning_combo_frames: dict[str, pd.DataFrame] = {}
+    rule_mask = rule_mask_all if args.model_type == "xgboost" else None
 
     def _append_row(
         target: list[dict[str, Any]],
@@ -3011,6 +3188,8 @@ def main() -> None:
         means: dict[str, float],
         stds: dict[str, float],
     ) -> None:
+        if args.model_type == "xgboost":
+            regression = f"XGB {regression}"
         target.append(
             {
                 "table": table,
@@ -3045,7 +3224,6 @@ def main() -> None:
             }
         if not reasoning_combo_cols:
             _log("  WARNING: No reasoning combos found; check reasoning columns.")
-
         if human_feature_source == "high_quality":
             if hq_full_no_gap is None or hq_full_with_gap is None:
                 raise RuntimeError("High-quality feature frames missing.")
@@ -3060,6 +3238,7 @@ def main() -> None:
                 cv_folds=cv_folds,
                 log_dir=Path(__file__).parent / "training_logs" / "human_high_quality" / "only",
                 cv_splits=cv_splits,
+                rule_mask=rule_mask,
             )
             _append_row(table_hq_rows, "Table HQ", "HQ Only", "", "", means, stds)
 
@@ -3073,6 +3252,7 @@ def main() -> None:
                 cv_folds=cv_folds,
                 log_dir=Path(__file__).parent / "training_logs" / "human_high_quality" / "only_with_gap",
                 cv_splits=cv_splits,
+                rule_mask=rule_mask,
             )
             _append_row(
                 table_hq_rows,
@@ -3097,6 +3277,7 @@ def main() -> None:
                     cv_folds=cv_folds,
                     log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / combo_tag,
                     cv_splits=cv_splits,
+                    rule_mask=rule_mask,
                 )
                 _append_row(table_hq_rows, "Table HQ", "Reasoning Only", "", combo, means, stds)
 
@@ -3111,6 +3292,7 @@ def main() -> None:
                     cv_folds=cv_folds,
                     log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "hq_plus" / combo_tag,
                     cv_splits=cv_splits,
+                    rule_mask=rule_mask,
                 )
                 _append_row(table_hq_rows, "Table HQ", "HQ + Reasoning", "", combo, means, stds)
         else:
@@ -3125,6 +3307,7 @@ def main() -> None:
                 cv_folds=cv_folds,
                 log_dir=Path(__file__).parent / "training_logs" / "human" / "only",
                 cv_splits=cv_splits,
+                rule_mask=rule_mask,
             )
             _append_row(table1_rows, "Table 1", "Human Only", "", "", means, stds)
 
@@ -3141,6 +3324,7 @@ def main() -> None:
                     cv_folds=cv_folds,
                     log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "only" / combo_tag,
                     cv_splits=cv_splits,
+                    rule_mask=rule_mask,
                 )
                 _append_row(table1_rows, "Table 1", "Reasoning Only", "", combo, means, stds)
 
@@ -3155,6 +3339,7 @@ def main() -> None:
                     cv_folds=cv_folds,
                     log_dir=Path(__file__).parent / "training_logs" / "llm_reasoning" / "human_plus" / combo_tag,
                     cv_splits=cv_splits,
+                    rule_mask=rule_mask,
                 )
                 _append_row(table1_rows, "Table 1", "Human + Reasoning", "", combo, means, stds)
 
@@ -3229,6 +3414,7 @@ def main() -> None:
                 / set_id
                 / "only",
                 cv_splits=cv_splits,
+                rule_mask=rule_mask,
             )
             _append_row(table2_rows, "Table 2", "LLM Engineered Only", set_id, "", metrics_only, stds_only)
 
@@ -3252,6 +3438,7 @@ def main() -> None:
                     / "plus_reasoning"
                     / combo_tag,
                     cv_splits=cv_splits,
+                    rule_mask=rule_mask,
                 )
                 _append_row(
                     table2_rows,
@@ -3436,10 +3623,14 @@ def main() -> None:
             full_csv,
             cv_folds,
             len(labels),
+            args.model_type,
         )
         _log(f"\nUpdated report: {report_path}")
         _log(f"Full results CSV: {full_csv}")
         _write_snapshot_combined_report()
+        if args.snapshot_label:
+            snapshot_dir = _write_run_snapshot(args.snapshot_label)
+            _log(f"Snapshot saved to: {snapshot_dir}")
         return
 
     # Placeholder for future multiple training loops over feature subsets.
@@ -3455,6 +3646,7 @@ def main() -> None:
         cv_folds=cv_folds,
         log_dir=_log_dir_for_mode(mode, llm_reasoning_dry_run, llm_reasoning_dry_run_fast),
         cv_splits=cv_splits,
+        rule_mask=rule_mask,
     )
     _log(f"\n  Features used: {', '.join(feature_names)}")
     _log(f"\n  [{mode_label}]   {len(feature_names)} features, CV={cv_folds} folds")
