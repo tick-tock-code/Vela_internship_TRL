@@ -5,3 +5,4 @@ loss_curve_*.csv
 human_feature_correlations.csv
 human_feature_correlations.png
 __pycache__/
+.python_deps/
