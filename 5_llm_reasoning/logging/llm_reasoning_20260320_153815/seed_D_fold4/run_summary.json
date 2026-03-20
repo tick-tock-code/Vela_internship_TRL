@@ -1,0 +1,20 @@
+{
+  "status": "completed",
+  "experiment": "D",
+  "total_records": 22,
+  "processed": 22,
+  "validation_failures": 1,
+  "dataset_size": "full",
+  "nan_rows_before": 0,
+  "nan_rows_after": 0,
+  "rate_limit_fallbacks": 0,
+  "rate_limit_error_count": 0,
+  "inline_repair_retries": 0,
+  "repair_only": false,
+  "estimated_prompt_tokens": 15733,
+  "estimated_completion_tokens": 4674,
+  "estimated_prompt_chars": 62931,
+  "estimated_completion_chars": 18690,
+  "estimated_requests": 3,
+  "timestamp": 1774021708.8664231
+}

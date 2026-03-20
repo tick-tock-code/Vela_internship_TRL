@@ -1,0 +1,21 @@
+{
+  "dataset_size": "full",
+  "random_state": 42,
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": "gemini-2.0-flash",
+  "experiments": [
+    "F"
+  ],
+  "core_prompt_hash": "3e23f2a4b6bc1e8c1b170b1ad4c302e9a6cb92f1605137dc48e480611d865cb4",
+  "experiments_hash": "f264a5afe452dd415bd85f920c8ca51fc914e3972d10ba71f2f9f306197b3642",
+  "global_numeric_keys": [
+    "evidence_support_rating"
+  ],
+  "global_text_keys": [],
+  "output_parquet": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\F\\folds\\fold_3\\llm_reasoning_full.parquet",
+  "experiment_parquets_root": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\F\\folds\\fold_3\\experiments"
+}

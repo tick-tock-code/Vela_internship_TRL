@@ -1,0 +1,211 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has advanced degrees in structural engineering and materials, with leadership experience in a relevant industry, indicating strong technical ownership and expertise.",
+    "latent_risk_justification": "Limited duration in roles (<2 years) and no evidence of entrepreneurial ownership or product development increase risk.",
+    "signal_1": "Advanced technical education in structural engineering and materials",
+    "signal_2": "Leadership role in a relevant industry",
+    "signal_3": "Short professional tenure in roles"
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "latent_strength": 2,
+    "latent_risk": 4,
+    "latent_strength_justification": "The founder's role as CTO & CIO suggests technical leadership, but lack of educational background and limited context on ownership reduce confidence.",
+    "latent_risk_justification": "No educational or entrepreneurial evidence, and leadership in a large company may not translate to startup success.",
+    "signal_1": "Leadership role as CTO & CIO",
+    "signal_2": "Industry experience in IT services",
+    "signal_3": "Lack of educational background or ownership evidence"
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple advanced degrees in relevant fields and extensive leadership roles across industries demonstrate strong ownership and technical expertise.",
+    "latent_risk_justification": "Diverse industry experience and leadership roles with relatively short durations (<2 years) pose some risk, but overall evidence is strong.",
+    "signal_1": "Multiple advanced degrees in relevant fields",
+    "signal_2": "Leadership roles in multiple industries",
+    "signal_3": "Diverse professional experience"
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership roles in healthcare with an MBA suggest operational ownership, but limited technical or entrepreneurial evidence.",
+    "latent_risk_justification": "No direct evidence of startup ownership or technical expertise, moderate risk.",
+    "signal_1": "Leadership roles in healthcare",
+    "signal_2": "MBA in Finance",
+    "signal_3": "Industry-specific leadership experience"
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 3,
+    "latent_strength_justification": "Ownership in a related industry and education in education and biology suggest some domain ownership, but limited evidence of startup or product ownership.",
+    "latent_risk_justification": "Longer ownership in unrelated industry and no technical or entrepreneurial experience increase risk.",
+    "signal_1": "Ownership in a related industry",
+    "signal_2": "Educational background in biology and education",
+    "signal_3": "Leadership in a different industry"
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "latent_strength": 2,
+    "latent_risk": 4,
+    "latent_strength_justification": "Leadership roles in multiple industries suggest versatility, but lack of educational background and small startup size increase risk.",
+    "latent_risk_justification": "Limited evidence of technical or entrepreneurial ownership, and leadership in large companies may not translate to startup success.",
+    "signal_1": "Leadership roles in multiple industries",
+    "signal_2": "Leadership in small startup",
+    "signal_3": "No educational background provided"
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Educational background in electrical engineering and extensive leadership roles in technology companies indicate strong technical ownership.",
+    "latent_risk_justification": "Long tenure (>9 years) in a large company reduces startup risk, but limited entrepreneurial evidence.",
+    "signal_1": "Degree in Electrical Engineering",
+    "signal_2": "Leadership in technology companies",
+    "signal_3": "Long industry tenure"
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 3,
+    "latent_strength_justification": "Design leadership roles and education in package design and illustration suggest creative ownership, but limited entrepreneurial evidence.",
+    "latent_risk_justification": "No evidence of startup ownership or product development experience, moderate risk.",
+    "signal_1": "Leadership in design roles",
+    "signal_2": "Education in creative fields",
+    "signal_3": "Multiple design roles over several years"
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple roles in biotech and pharma with relevant education indicate strong domain ownership and technical expertise.",
+    "latent_risk_justification": "Short durations (<2 years) in some roles and no entrepreneurial evidence pose some risk, but overall strong signals.",
+    "signal_1": "Degree in Biology",
+    "signal_2": "Multiple roles in biotech/pharma",
+    "signal_3": "Leadership in relevant industry"
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 1,
+    "latent_strength": 1,
+    "latent_risk": 5,
+    "latent_strength_justification": "Lack of educational background, industry experience, or evidence of ownership or leadership in a startup context.",
+    "latent_risk_justification": "Minimal evidence to support startup success, high risk.",
+    "signal_1": "No educational or professional evidence",
+    "signal_2": "Leadership roles not specified",
+    "signal_3": "No industry or ownership evidence"
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Extensive leadership in medical equipment manufacturing and relevant education suggest strong ownership and technical expertise.",
+    "latent_risk_justification": "Long tenure (>2 years) in leadership roles reduces risk, but some roles are short-term, moderate risk.",
+    "signal_1": "Leadership in medical equipment manufacturing",
+    "signal_2": "Degree in Mechanical Engineering",
+    "signal_3": "Multiple leadership roles"
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Long-term CEO role and relevant education in dentistry indicate strong ownership and leadership in healthcare.",
+    "latent_risk_justification": "High industry relevance and long tenure reduce risk, but lack of entrepreneurial or startup-specific evidence.",
+    "signal_1": "CEO & Chairman role for >9 years",
+    "signal_2": "Degree in Dentistry",
+    "signal_3": "Leadership in healthcare"
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 3,
+    "latent_strength_justification": "Ownership in real estate and industry experience suggest domain ownership, but limited evidence of entrepreneurial leadership.",
+    "latent_risk_justification": "Short ownership duration and no evidence of startup or product development increase risk.",
+    "signal_1": "Ownership in real estate",
+    "signal_2": "Industry experience in leasing",
+    "signal_3": "Leadership in real estate"
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership in data analytics and education in economics suggest operational ownership and domain expertise.",
+    "latent_risk_justification": "Long-term leadership in relevant industry reduces risk, but limited entrepreneurial evidence.",
+    "signal_1": "Leadership in data analytics",
+    "signal_2": "Degree in Economics and Business",
+    "signal_3": "Leadership roles in relevant industry"
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Ownership in education and research, with leadership roles, indicates strong domain ownership and experience.",
+    "latent_risk_justification": "Long-term ownership and leadership in academia and research reduce risk, limited entrepreneurial evidence.",
+    "signal_1": "Ownership in education & research",
+    "signal_2": "Leadership in academia",
+    "signal_3": "Multiple research roles"
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 1,
+    "latent_strength": 1,
+    "latent_risk": 5,
+    "latent_strength_justification": "No educational, professional, or ownership evidence provided.",
+    "latent_risk_justification": "Lack of information indicates very high risk.",
+    "signal_1": "No evidence provided",
+    "signal_2": "No industry or leadership info",
+    "signal_3": "No ownership or entrepreneurial signals"
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Extensive experience in financial industry with relevant education indicates strong ownership and domain expertise.",
+    "latent_risk_justification": "Long tenure (>2 years) in multiple roles reduces risk, but no entrepreneurial evidence.",
+    "signal_1": "Leadership in financial industry",
+    "signal_2": "Degree in Finance",
+    "signal_3": "Multiple roles in finance"
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership roles in semiconductor industry and relevant education suggest strong technical ownership.",
+    "latent_risk_justification": "Multiple leadership roles over several years indicate stability, moderate risk due to industry-specific focus.",
+    "signal_1": "Leadership in semiconductor industry",
+    "signal_2": "Degree in Electrical Engineering",
+    "signal_3": "Multiple senior engineering roles"
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership in health and wellness sectors with relevant education suggests domain ownership, but limited entrepreneurial evidence.",
+    "latent_risk_justification": "Long-term leadership in relevant industries reduces risk, but lack of startup-specific experience increases risk.",
+    "signal_1": "Leadership in health & wellness",
+    "signal_2": "Degree in Computer Science",
+    "signal_3": "Leadership roles in relevant sectors"
+  }
+]

@@ -1,0 +1,16 @@
+run_log started
+[2026-03-20T16:53:51.083096] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-20T16:53:51.478615] Loaded records: 4500 labels: 4500
+[2026-03-20T16:53:51.479139] Use LLM reasoning: True
+[2026-03-20T16:53:51.479430] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-20T16:53:51.479686] Human feature source: baseline
+[2026-03-20T16:53:51.479931] Model type: logistic
+[2026-03-20T16:53:51.480377] Run profile: full
+[2026-03-20T16:53:51.483230] Seed size=100 pool size=4400
+[2026-03-20T16:53:51.483654] OPENAI_API_KEY set: True
+[2026-03-20T16:53:51.488798] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-20T16:53:51.489119] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-20T16:53:58.289447] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-20T16:53:59.580193] Part1 prefix counts: A_0, B_0, E_0
+[2026-03-20T16:53:59.580657] Part1 combos: total=0 examples=[]
+[2026-03-20T16:54:28.017267] Run-family start: id=20260319_032713 n_sets=10 n_features=18

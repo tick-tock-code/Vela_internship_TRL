@@ -582,7 +582,7 @@ def _cv_evaluate(
     random_state: int,
     splits: list[tuple[np.ndarray, np.ndarray]] | None = None,
     rule_mask: np.ndarray | None = None,
-    threshold_tuning: str = "train",
+    threshold_tuning: str = "oof",
 ) -> tuple[dict[str, float], dict[str, float]]:
     metrics_list: list[dict[str, float]] = []
     oof_scores: list[np.ndarray] = []
@@ -710,7 +710,7 @@ def _train_and_log_cv(
     log_dir: Path | None = None,
     cv_splits: list[tuple[np.ndarray, np.ndarray]] | None = None,
     rule_mask: np.ndarray | None = None,
-    threshold_tuning: str = "train",
+    threshold_tuning: str = "oof",
 ) -> tuple[dict[str, float], dict[str, float]]:
     means, stds = _cv_evaluate(
         full_df,
@@ -913,37 +913,14 @@ def _write_family_leaderboard(
                 pr=float(row.get("PR-AUC", float("nan"))),
                 prec=float(row.get("Prec", float("nan"))),
                 rec=float(row.get("Rec", float("nan"))),
-                  acc=float(row.get("Acc", float("nan"))),
-              )
-          )
+                acc=float(row.get("Acc", float("nan"))),
+            )
+        )
     leaderboard_table = "\n".join(lines)
-
-    metrics = ["F0.5", "ROC-AUC", "PR-AUC", "Prec", "Rec", "Acc"]
-    improvements: dict[str, list[float]] = {m: [] for m in metrics}
-    for set_id in df["set_id"].unique():
-        subset = df[df["set_id"] == set_id]
-        only = subset[subset["regression"] == "LLM Engineered Only"]
-        plus = subset[subset["regression"] == "LLM Engineered + Reasoning"]
-        if only.empty or plus.empty:
-            continue
-        for m in metrics:
-            try:
-                delta = float(plus.iloc[0][m]) - float(only.iloc[0][m])
-                improvements[m].append(delta)
-            except Exception:
-                continue
-
-    avg_lines = ["### Average Improvement (Engineered + Reasoning vs Engineered Only)"]
-    for m in metrics:
-        vals = improvements.get(m, [])
-        avg = float(np.nanmean(vals)) if vals else float("nan")
-        avg_lines.append(f"- {m}: {avg:+.3f}")
 
     section = (
         "## LLM Engineered Run-Family Leaderboard\n\n"
         + leaderboard_table
-        + "\n\n"
-        + "\n".join(avg_lines)
         + "\n\n"
         + f"*Metrics are {cv_folds}-fold stratified CV on {pool_size} founders (seed excluded).*\n"
     )
@@ -987,6 +964,35 @@ def _build_reasoning_combos(
             if cols:
                 combos[combo] = sorted(cols)
     return combos
+
+
+def _filter_reasoning_combos_no_f_with_ab(
+    combos: dict[str, list[str]],
+) -> dict[str, list[str]]:
+    filtered: dict[str, list[str]] = {}
+    for combo, cols in combos.items():
+        parts = set(combo.split("+"))
+        if "F" in parts and ("A" in parts or "B" in parts):
+            continue
+        filtered[combo] = cols
+    return filtered
+
+
+def _load_reasoning_numeric_map(
+    experiments_path: Path,
+    exp_list: list[str],
+) -> dict[str, list[str]]:
+    data = json.loads(experiments_path.read_text(encoding="utf-8-sig"))
+    exp_set = set(exp_list)
+    mapping: dict[str, list[str]] = {}
+    for exp in data:
+        exp_id = str(exp.get("id"))
+        if exp_id not in exp_set:
+            continue
+        keys = [f"{exp_id}_{k}" for k in exp.get("numeric_keys", [])]
+        keys.append(f"{exp_id}_evidence_support_rating")
+        mapping[exp_id] = keys
+    return mapping
 
 
 def _write_full_results_report(
@@ -1101,60 +1107,127 @@ def _write_full_results_report(
         if variant is not None:
             filtered = [r for r in filtered if (r.get("variant", "") == variant)]
         if tuning is not None:
-            filtered = [r for r in filtered if (r.get("tuning", "train") == tuning)]
+            filtered = [r for r in filtered if (r.get("tuning", "oof") == tuning)]
         return filtered
+
+    def _top_k_block(
+        rows: list[dict[str, Any]],
+        *,
+        title: str,
+        include_set: bool,
+        k: int = 5,
+    ) -> str:
+        if not rows:
+            return "_No rows to summarize._"
+        def _score(row: dict[str, Any]) -> float:
+            try:
+                val = float(row.get("F0.5", float("nan")))
+                return val if not math.isnan(val) else -1e9
+            except Exception:
+                return -1e9
+
+        ranked = sorted(rows, key=_score, reverse=True)[:k]
+        lines = [f"**{title}**"]
+        for idx, row in enumerate(ranked, 1):
+            combo = row.get("reasoning_combo", "") or "n/a"
+            f0 = _fmt(row, "F0.5")
+            if include_set:
+                lines.append(
+                    f"{idx}. {row.get('set_id', '')} | {row.get('regression', '')} | {combo} | {f0}"
+                )
+            else:
+                lines.append(
+                    f"{idx}. {row.get('regression', '')} | {combo} | {f0}"
+                )
+        return "\n".join(lines)
+
+    def _avg_improvement_table(
+        rows: list[dict[str, Any]],
+        *,
+        title: str,
+    ) -> str:
+        if not rows:
+            return "_No rows to summarize._"
+        base_by_set: dict[str, float] = {}
+        for row in rows:
+            if row.get("regression") == "LLM Engineered Only":
+                set_id = row.get("set_id", "")
+                try:
+                    base_by_set[set_id] = float(row.get("F0.5", float("nan")))
+                except Exception:
+                    continue
+        delta_by_combo: dict[str, list[float]] = {}
+        for row in rows:
+            if row.get("regression") != "LLM Engineered + Reasoning":
+                continue
+            combo = row.get("reasoning_combo", "") or ""
+            set_id = row.get("set_id", "")
+            if not combo or set_id not in base_by_set:
+                continue
+            try:
+                delta = float(row.get("F0.5", float("nan"))) - base_by_set[set_id]
+            except Exception:
+                continue
+            delta_by_combo.setdefault(combo, []).append(delta)
+        if not delta_by_combo:
+            return "_No rows to summarize._"
+        header = "| Reasoning Combo | Avg dF0.5 | Std dF0.5 | N |"
+        sep = "|---|---:|---:|---:|"
+        lines = [f"**{title}**", header, sep]
+        for combo in sorted(delta_by_combo.keys()):
+            vals = np.array(delta_by_combo[combo], dtype=float)
+            avg = float(np.nanmean(vals)) if vals.size else float("nan")
+            std = float(np.nanstd(vals)) if vals.size else float("nan")
+            lines.append(f"| {combo} | {avg:+.3f} | {std:.3f} | {vals.size} |")
+        return "\n".join(lines)
 
     section_lines: list[str] = [
         f"## Part 1: Pool ({pool_size})",
         "",
         f"**CV folds:** {cv_folds}",
         "",
-        "### Logistic Regression (train-tuned)",
+        "### Logistic Regression (oof-tuned)",
         "#### Human + Reasoning",
         _render_table(lr_table1_rows, include_set=False),
+        _top_k_block(lr_table1_rows, title="Top 5 by F0.5", include_set=False),
         "#### LLM-Engineered + Reasoning",
         _render_table(lr_table2_rows, include_set=True),
+        _avg_improvement_table(lr_table2_rows, title="Average ΔF0.5 vs Engineered Only (LR)"),
+        _top_k_block(lr_table2_rows, title="Top 5 by F0.5", include_set=True),
         "#### HQ Human + Reasoning",
         "_HQ features = Structured v2 (28 features)._\n",
         _render_table(lr_table_hq_rows, include_set=False),
+        _top_k_block(lr_table_hq_rows, title="Top 5 by F0.5", include_set=False),
         "",
-        "### XGBoost (train-tuned)",
+        "### XGBoost (oof-tuned)",
         "#### Human + Reasoning",
         _render_table(xgb_table1_rows, include_set=False),
+        _top_k_block(xgb_table1_rows, title="Top 5 by F0.5", include_set=False),
         "#### LLM-Engineered + Reasoning",
         _render_table(xgb_table2_rows, include_set=True),
+        _avg_improvement_table(xgb_table2_rows, title="Average ΔF0.5 vs Engineered Only (XGB)"),
+        _top_k_block(xgb_table2_rows, title="Top 5 by F0.5", include_set=True),
         "#### HQ Human + Reasoning",
         "_HQ features = Structured v2 (28 features)._\n",
         _render_table(xgb_table_hq_rows, include_set=False),
+        _top_k_block(xgb_table_hq_rows, title="Top 5 by F0.5", include_set=False),
         "",
         f"## Part 2: Full ({full_size})",
         "### HQ + Reasoning (no rule layer)",
-        "#### Logistic (train-tuned)",
-        _render_table(_filter_rows(full_lr_rows, variant="full_hq_no_rule", tuning="train"), include_set=False),
-        "#### Logistic (val-tuned)",
-        _render_table(_filter_rows(full_lr_rows, variant="full_hq_no_rule", tuning="val"), include_set=False),
         "#### Logistic (oof-tuned)",
         _render_table(_filter_rows(full_lr_rows, variant="full_hq_no_rule", tuning="oof"), include_set=False),
-        "#### XGBoost (train-tuned)",
-        _render_table(_filter_rows(full_xgb_rows, variant="full_hq_no_rule", tuning="train"), include_set=False),
-        "#### XGBoost (val-tuned)",
-        _render_table(_filter_rows(full_xgb_rows, variant="full_hq_no_rule", tuning="val"), include_set=False),
+        _top_k_block(_filter_rows(full_lr_rows, variant="full_hq_no_rule", tuning="oof"), title="Top 5 by F0.5", include_set=False),
         "#### XGBoost (oof-tuned)",
         _render_table(_filter_rows(full_xgb_rows, variant="full_hq_no_rule", tuning="oof"), include_set=False),
+        _top_k_block(_filter_rows(full_xgb_rows, variant="full_hq_no_rule", tuning="oof"), title="Top 5 by F0.5", include_set=False),
         "",
         "### Full Mirror + Reasoning (rule layer)",
-        "#### Logistic (train-tuned)",
-        _render_table(_filter_rows(full_lr_rows, variant="full_mirror_rule", tuning="train"), include_set=False),
-        "#### Logistic (val-tuned)",
-        _render_table(_filter_rows(full_lr_rows, variant="full_mirror_rule", tuning="val"), include_set=False),
         "#### Logistic (oof-tuned)",
         _render_table(_filter_rows(full_lr_rows, variant="full_mirror_rule", tuning="oof"), include_set=False),
-        "#### XGBoost (train-tuned)",
-        _render_table(_filter_rows(full_xgb_rows, variant="full_mirror_rule", tuning="train"), include_set=False),
-        "#### XGBoost (val-tuned)",
-        _render_table(_filter_rows(full_xgb_rows, variant="full_mirror_rule", tuning="val"), include_set=False),
+        _top_k_block(_filter_rows(full_lr_rows, variant="full_mirror_rule", tuning="oof"), title="Top 5 by F0.5", include_set=False),
         "#### XGBoost (oof-tuned)",
         _render_table(_filter_rows(full_xgb_rows, variant="full_mirror_rule", tuning="oof"), include_set=False),
+        _top_k_block(_filter_rows(full_xgb_rows, variant="full_mirror_rule", tuning="oof"), title="Top 5 by F0.5", include_set=False),
         "",
         f"*Metrics are {cv_folds}-fold stratified CV. Pool excludes seed_100; full uses 4,500 founders.*",
     ]
@@ -1162,6 +1235,83 @@ def _write_full_results_report(
     section = "\n".join(section_lines)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("# LLM Regression Summary (F0.5)\n\n" + section + "\n", encoding="utf-8")
+
+
+def _write_reasoning_xgb_oof_report(
+    hq_rows: list[dict[str, Any]],
+    mirror_rows: list[dict[str, Any]],
+    report_path: Path,
+    csv_path: Path,
+    cv_folds: int,
+    full_size: int,
+) -> None:
+    def _fmt(row: dict[str, Any], key: str) -> str:
+        return _format_mean_std(float(row.get(key, float("nan"))), float(row.get(f"{key}_std", float("nan"))))
+
+    def _render_table(rows: list[dict[str, Any]]) -> str:
+        if not rows:
+            return "_No rows._"
+        header = "| Reasoning Combo | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |"
+        sep = "|---|---:|---:|---:|---:|---:|---:|"
+        lines = [header, sep]
+        for row in rows:
+            combo = row.get("reasoning_combo", "") or "n/a"
+            lines.append(
+                "| {combo} | {f0} | {roc} | {pr} | {prec} | {rec} | {acc} |".format(
+                    combo=combo,
+                    f0=_fmt(row, "F0.5"),
+                    roc=_fmt(row, "ROC-AUC"),
+                    pr=_fmt(row, "PR-AUC"),
+                    prec=_fmt(row, "Prec"),
+                    rec=_fmt(row, "Rec"),
+                    acc=_fmt(row, "Acc"),
+                )
+            )
+        return "\n".join(lines)
+
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    csv_rows: list[dict[str, Any]] = []
+    for variant, rows in (("hq_no_rule", hq_rows), ("full_mirror_rule", mirror_rows)):
+        for row in rows:
+            csv_rows.append(
+                {
+                    "variant": variant,
+                    "reasoning_combo": row.get("reasoning_combo", ""),
+                    "F0.5_mean": row.get("F0.5", float("nan")),
+                    "F0.5_std": row.get("F0.5_std", float("nan")),
+                    "ROC-AUC_mean": row.get("ROC-AUC", float("nan")),
+                    "ROC-AUC_std": row.get("ROC-AUC_std", float("nan")),
+                    "PR-AUC_mean": row.get("PR-AUC", float("nan")),
+                    "PR-AUC_std": row.get("PR-AUC_std", float("nan")),
+                    "Prec_mean": row.get("Prec", float("nan")),
+                    "Prec_std": row.get("Prec_std", float("nan")),
+                    "Rec_mean": row.get("Rec", float("nan")),
+                    "Rec_std": row.get("Rec_std", float("nan")),
+                    "Acc_mean": row.get("Acc", float("nan")),
+                    "Acc_std": row.get("Acc_std", float("nan")),
+                    "threshold_tuning": row.get("tuning", "oof"),
+                    "cv_folds": cv_folds,
+                    "dataset_size": full_size,
+                }
+            )
+    pd.DataFrame(csv_rows).to_csv(csv_path, index=False)
+
+    section_lines = [
+        "# XGBoost Reasoning Sweep (OOF-tuned)",
+        "",
+        f"**Dataset:** full ({full_size})",
+        f"**CV folds:** {cv_folds}",
+        "",
+        "## HQ + Reasoning (no rule layer)",
+        _render_table(hq_rows),
+        "",
+        "## Full Mirror + Reasoning (rule layer)",
+        _render_table(mirror_rows),
+        "",
+        "*All rows are XGBoost with OOF-tuned thresholds.*",
+    ]
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(section_lines) + "\n", encoding="utf-8")
 
 
 def _write_snapshot_combined_report() -> None:
@@ -1270,9 +1420,9 @@ def _parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--run_profile",
-        choices=["full", "xgb_mirror"],
+        choices=["full", "xgb_mirror", "reasoning_xgb_oof"],
         default="full",
-        help="Run profile: full (default) or xgb_mirror (HQ+reasoning only).",
+        help="Run profile: full (default), xgb_mirror (HQ+reasoning only), or reasoning_xgb_oof.",
     )
     p.add_argument(
         "--dry_validate",
@@ -1308,6 +1458,16 @@ def _parse_args() -> argparse.Namespace:
         help="Path to experiments JSON for LLM reasoning features.",
     )
     p.add_argument(
+        "--llm_reasoning_sequential",
+        default="",
+        help="Comma-separated list of sequential LLM reasoning experiments.",
+    )
+    p.add_argument(
+        "--llm_reasoning_combined",
+        default="",
+        help="Comma-separated list of combined LLM reasoning experiments.",
+    )
+    p.add_argument(
         "--llm_reasoning_dataset_size",
         default="full",
         help="Dataset size for reasoning features: full, 200, 400, 1000.",
@@ -1327,6 +1487,11 @@ def _parse_args() -> argparse.Namespace:
         "--llm_reasoning_dry_run_fast",
         action="store_true",
         help="Run a fast dry-run (small subset, no sleep, no training).",
+    )
+    p.add_argument(
+        "--reasoning_seed_only",
+        action="store_true",
+        help="Generate seed_100 reasoning for full_current and exit.",
     )
     p.add_argument(
         "--llm_sweep_repeats",
@@ -1699,6 +1864,16 @@ def main() -> None:
                 cfg_llm_temperature = float(data.get("llm_temperature"))
             except Exception:
                 cfg_llm_temperature = None
+
+    def _parse_comma_list(value: str | None) -> list[str]:
+        if not value:
+            return []
+        return [v.strip() for v in value.split(",") if v.strip()]
+
+    if args.llm_reasoning_sequential:
+        cfg_llm_reasoning_sequential = _parse_comma_list(args.llm_reasoning_sequential)
+    if args.llm_reasoning_combined:
+        cfg_llm_reasoning_combined = _parse_comma_list(args.llm_reasoning_combined)
     # Set up run-level logging early for full traceability
     run_log = None
     log_root = None
@@ -1729,6 +1904,9 @@ def main() -> None:
             sweep_terminal_log.parent.mkdir(parents=True, exist_ok=True)
             with sweep_terminal_log.open("a", encoding="utf-8") as f:
                 f.write(msg + "\n")
+
+    def _log_exception(err: BaseException) -> None:
+        _log_run("Unhandled exception:\n" + "".join(traceback.format_exception(type(err), err, err.__traceback__)))
 
     mode = args.mode
     _log(f"\n{'=' * 60}")
@@ -1881,7 +2059,10 @@ def main() -> None:
     dry_validate = bool(args.dry_validate)
     _log_run(f"Run profile: {run_profile}")
     _log(f"  Run profile: {run_profile}")
-    skip_llm_engineered = run_profile == "xgb_mirror"
+    skip_llm_engineered = run_profile in ("xgb_mirror", "reasoning_xgb_oof")
+    if run_profile == "reasoning_xgb_oof":
+        use_llm_reasoning = True
+        reasoning_dataset_size = "full"
     if llm_reasoning_dry_run_fast:
         llm_reasoning_dry_run = True
         use_llm_reasoning = True
@@ -2120,6 +2301,9 @@ def main() -> None:
         for e in (cfg_llm_reasoning_sequential or cfg_llm_reasoning_experiments or [])
         if isinstance(e, str)
     ]
+    if run_profile == "reasoning_xgb_oof":
+        exp_list_for_combo = ["A", "B", "C", "D", "E", "F"]
+        use_llm_reasoning = True
 
     def _dry_validate_xgb_mirror(exp_list: list[str]) -> None:
         _log_run("DRY_VALIDATE: xgb_mirror started")
@@ -2149,7 +2333,7 @@ def main() -> None:
     if run_profile == "xgb_mirror" and dry_validate:
         _dry_validate_xgb_mirror(exp_list_for_combo)
         return
-    if run_profile == "xgb_mirror":
+    if run_profile in ("xgb_mirror", "reasoning_xgb_oof"):
         use_llm = False
         args.llm_features = False
         llm_engineered_run_family = False
@@ -2745,6 +2929,11 @@ def main() -> None:
             fallback_total = 0
             feature_cols: list[str] | None = None
             full_features: pd.DataFrame | None = None
+            _log_run(
+                f"[{log_label}] Starting fold-batched reasoning. "
+                f"experiments={experiments_list} folds={cv_folds} "
+                f"records={len(local_records)}"
+            )
             if repair_batches_by_fold is not None and existing_full_df is not None:
                 feature_cols = [
                     c for c in existing_full_df.columns if c not in ("founder_uuid", "success")
@@ -2753,13 +2942,19 @@ def main() -> None:
             for fold_id in range(cv_folds):
                 fold_idx = np.where(local_fold_ids == fold_id)[0]
                 if fold_idx.size == 0:
+                    _log_run(f"[{log_label}] Fold {fold_id}: empty, skipping.")
                     continue
                 if repair_batches_by_fold is not None:
                     target_batches = repair_batches_by_fold.get(fold_id, [])
                     if not target_batches:
+                        _log_run(f"[{log_label}] Fold {fold_id}: no target batches, skipping.")
                         continue
                 else:
                     target_batches = None
+                _log_run(
+                    f"[{log_label}] Fold {fold_id}: start "
+                    f"(records={len(fold_idx)} target_batches={len(target_batches or [])})"
+                )
                 fold_records = [local_records[i] for i in fold_idx]
                 fold_labels = local_labels[fold_idx]
                 fold_existing = None
@@ -2801,6 +2996,7 @@ def main() -> None:
                     metadata_path=fold_meta,
                     existing_df=fold_existing,
                 )
+                _log_run(f"[{log_label}] Fold {fold_id}: completed ({len(fold_df)} rows).")
                 try:
                     fold_meta_data = json.loads(fold_meta.read_text(encoding="utf-8"))
                     fallback_total += int(fold_meta_data.get("rate_limit_fallbacks", 0))
@@ -2829,6 +3025,10 @@ def main() -> None:
             output_dir.mkdir(parents=True, exist_ok=True)
             combined_path = output_dir / f"llm_reasoning_{reasoning_dataset_size}.parquet"
             combined_df.to_parquet(combined_path, index=False)
+            _log_run(
+                f"[{log_label}] Combined parquet saved: {combined_path} "
+                f"(rows={len(combined_df)})"
+            )
 
             _, exp_to_keys = build_experiment_key_map(
                 reasoning_experiments_path, experiments_list
@@ -2867,6 +3067,11 @@ def main() -> None:
         combined = cfg_llm_reasoning_combined or []
         reasoning_df: pd.DataFrame | None = None
         skip_sequential = False
+        if run_profile == "reasoning_xgb_oof":
+            reasoning_df = _load_currently_in_use_df()
+            if reasoning_df is None:
+                raise RuntimeError("No reasoning features found in currently_in_use.")
+            skip_sequential = True
         if reasoning_mode == "sequential_and_combined" and sequential and not combined:
             selected_runs = _select_latest_valid_runs(sequential)
             if len(selected_runs) == len(sequential):
@@ -3246,7 +3451,7 @@ def main() -> None:
                 return None
             return df_full
 
-        def _build_full_current_df(exp_list: list[str]) -> pd.DataFrame:
+        def _build_full_current_df(exp_list: list[str], *, seed_separate: bool = False) -> pd.DataFrame:
             if reasoning_df is None or not reasoning_feature_names:
                 raise RuntimeError("Pool reasoning features are required to build full_current.")
             full_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "full_current"
@@ -3259,6 +3464,7 @@ def main() -> None:
             existing_cols: list[str] = []
             existing_full: pd.DataFrame | None = None
             existing_path = full_root / "llm_reasoning_full.parquet"
+            seed_missing_exp_ids: set[str] = set()
             if existing_path.exists():
                 try:
                     existing_full = pd.read_parquet(existing_path)
@@ -3268,26 +3474,46 @@ def main() -> None:
                             for c in existing_full.columns
                             if c not in ("founder_uuid", "success", "row_index")
                         ]
+                        try:
+                            # Detect missing experiments in seed rows using numeric keys from experiments.json.
+                            numeric_map = _load_reasoning_numeric_map(reasoning_experiments_path, exp_list)
+                            seed_slice = existing_full.iloc[seed_idx]
+                            for exp_id in exp_list:
+                                exp_cols = [c for c in numeric_map.get(exp_id, []) if c in existing_full.columns]
+                                if not exp_cols:
+                                    seed_missing_exp_ids.add(exp_id)
+                                    continue
+                                if seed_slice[exp_cols].isna().any(axis=1).any():
+                                    seed_missing_exp_ids.add(exp_id)
+                        except Exception:
+                            seed_missing_exp_ids = set()
                     else:
                         existing_full = None
                         existing_cols = []
                 except Exception:
                     existing_full = None
                     existing_cols = []
-            # Preserve existing columns, append new ones.
-            full_cols = existing_cols + [c for c in new_cols if c not in existing_cols]
+            # Preserve existing columns, append new ones (missing only).
+            new_cols_to_add = [c for c in new_cols if c not in existing_cols]
+            if not new_cols_to_add and existing_full is not None:
+                num_existing = existing_full.select_dtypes(include=[np.number]).drop(
+                    columns=["success"], errors="ignore"
+                )
+                if num_existing.empty or not num_existing.isna().any(axis=1).any():
+                    return existing_full
+            full_cols = existing_cols + new_cols_to_add
             full_features = pd.DataFrame(index=range(len(all_records)), columns=full_cols)
             if existing_full is not None and existing_cols:
                 existing_full = existing_full.set_index("founder_uuid")
                 existing_full = existing_full.reindex(all_founder_ids)
                 full_features[existing_cols] = existing_full[existing_cols].values
-            if new_cols:
-                full_features.loc[pool_idx, new_cols] = reasoning_df[new_cols].values
+            if new_cols_to_add:
+                full_features.loc[pool_idx, new_cols_to_add] = reasoning_df[new_cols_to_add].values
             # Infer experiment IDs directly from pool reasoning columns to ensure
             # seed generation matches the exact column schema.
             seed_exp_list: list[str] = []
             seen_exp = set()
-            for col in new_cols:
+            for col in new_cols_to_add:
                 if "_" not in col:
                     continue
                 exp_id = col.split("_", 1)[0]
@@ -3295,8 +3521,21 @@ def main() -> None:
                     continue
                 seen_exp.add(exp_id)
                 seed_exp_list.append(exp_id)
+            if not seed_exp_list and seed_missing_exp_ids:
+                seed_exp_list = sorted(seed_missing_exp_ids)
             if not seed_exp_list:
                 seed_exp_list = list(exp_list)
+            seed_cols_target = (
+                [c for c in full_cols if "_" in c and c.split("_", 1)[0] in seed_exp_list]
+                if not new_cols_to_add
+                else list(new_cols_to_add)
+            )
+            mode_label = "separate" if seed_separate else "combined"
+            _log_run(
+                f"Seed reasoning generation for full_current ({mode_label}). "
+                f"new_cols={len(new_cols_to_add)} seed_exp_list={seed_exp_list} "
+                f"seed_cols_target={len(seed_cols_target)}"
+            )
 
             seed_records = [all_records[i] for i in seed_idx]
             seed_labels = all_labels[seed_idx]
@@ -3306,23 +3545,75 @@ def main() -> None:
             seed_tmp = full_root / "_seed"
             seed_tmp.mkdir(parents=True, exist_ok=True)
             seed_meta = seed_tmp / f"llm_reasoning_{reasoning_dataset_size}_seed.json"
-            seed_df, _ = _generate_reasoning_fold_batches(
-                experiments_list=seed_exp_list,
-                output_dir=seed_tmp,
-                meta_path=seed_meta,
-                log_label="seed_reasoning",
-                records_override=seed_records,
-                labels_override=seed_labels,
-                founder_ids_override=seed_founder_ids,
-                fold_ids_override=seed_fold_ids,
+            if seed_separate:
+                seed_frames: list[pd.DataFrame] = []
+                join_key = "founder_uuid"
+                if not seed_founder_ids or all(v is None for v in seed_founder_ids):
+                    join_key = "row_index"
+                use_row_index = join_key == "row_index"
+                for exp_id in seed_exp_list:
+                    exp_tmp = seed_tmp / exp_id
+                    exp_tmp.mkdir(parents=True, exist_ok=True)
+                    exp_meta = seed_tmp / f"llm_reasoning_{reasoning_dataset_size}_seed_{exp_id}.json"
+                    exp_parquet = exp_tmp / f"llm_reasoning_{reasoning_dataset_size}.parquet"
+                    if exp_parquet.exists():
+                        exp_df = pd.read_parquet(exp_parquet)
+                        _log_run(f"[seed_{exp_id}] Reusing existing seed parquet ({len(exp_df)} rows).")
+                    else:
+                        exp_df, _ = _generate_reasoning_fold_batches(
+                            experiments_list=[exp_id],
+                            output_dir=exp_tmp,
+                            meta_path=exp_meta,
+                            log_label=f"seed_{exp_id}",
+                            records_override=seed_records,
+                            labels_override=seed_labels,
+                            founder_ids_override=seed_founder_ids,
+                            fold_ids_override=seed_fold_ids,
+                        )
+                    if join_key == "row_index":
+                        exp_df = exp_df.reset_index(drop=True)
+                        exp_df["row_index"] = exp_df.index
+                    seed_frames.append(exp_df)
+                seed_df = seed_frames[0]
+                for extra_df in seed_frames[1:]:
+                    extra_df = extra_df.drop(columns=["success"], errors="ignore")
+                    overlap = [c for c in extra_df.columns if c in seed_df.columns and c != join_key]
+                    if overlap:
+                        extra_df = extra_df.drop(columns=overlap, errors="ignore")
+                    seed_df = seed_df.merge(extra_df, on=join_key, how="inner")
+                dup_cols = [c for c in seed_df.columns if c.endswith("_x") or c.endswith("_y")]
+                if dup_cols:
+                    for col in dup_cols:
+                        base = col[:-2]
+                        if base in seed_df.columns:
+                            continue
+                        if col.endswith("_x"):
+                            seed_df[base] = seed_df[col]
+                    seed_df = seed_df.drop(columns=dup_cols, errors="ignore")
+                if "success" not in seed_df.columns:
+                    seed_df["success"] = seed_frames[0]["success"].values
+            else:
+                use_row_index = not seed_founder_ids or all(v is None for v in seed_founder_ids)
+                seed_df, _ = _generate_reasoning_fold_batches(
+                    experiments_list=seed_exp_list,
+                    output_dir=seed_tmp,
+                    meta_path=seed_meta,
+                    log_label="seed_reasoning",
+                    records_override=seed_records,
+                    labels_override=seed_labels,
+                    founder_ids_override=seed_founder_ids,
+                    fold_ids_override=seed_fold_ids,
+                )
+            _log_run(
+                f"Seed reasoning completed. Rows={len(seed_df)} cols={len(seed_df.columns)}"
             )
             seed_cols = [
                 c
                 for c in seed_df.columns
                 if c not in ("founder_uuid", "success", "row_index")
             ]
-            missing_cols = sorted(set(new_cols) - set(seed_cols))
-            extra_cols = sorted(set(seed_cols) - set(new_cols))
+            missing_cols = sorted(set(seed_cols_target) - set(seed_cols))
+            extra_cols = sorted(set(seed_cols) - set(seed_cols_target))
             if missing_cols or extra_cols:
                 _log_run(
                     "Seed reasoning column mismatch; aligning to pool columns. "
@@ -3333,16 +3624,29 @@ def main() -> None:
                 if extra_cols:
                     seed_df = seed_df.drop(columns=extra_cols, errors="ignore")
             # Align to pool column order (new columns only)
-            seed_df = seed_df[[c for c in (["founder_uuid", "success"] + new_cols) if c in seed_df.columns]]
-            seed_cols = list(new_cols)
+            keep_cols = ["founder_uuid", "success"]
+            if use_row_index and "row_index" in seed_df.columns:
+                keep_cols.append("row_index")
+            seed_df = seed_df[[c for c in (keep_cols + seed_cols_target) if c in seed_df.columns]]
+            seed_cols = list(seed_cols_target)
 
-            idx_map = {uid: idx for idx, uid in enumerate(all_founder_ids)}
-            for _, row in seed_df.iterrows():
-                uid = row.get("founder_uuid")
-                if uid not in idx_map:
-                    continue
-                if seed_cols:
-                    full_features.loc[idx_map[uid], seed_cols] = row[seed_cols].values
+            use_row_index = not all_founder_ids or all(v is None for v in all_founder_ids)
+            if use_row_index:
+                if "row_index" in seed_df.columns:
+                    seed_df = seed_df.sort_values("row_index").reset_index(drop=True)
+                for idx, row in seed_df.iterrows():
+                    if idx >= len(seed_idx):
+                        break
+                    if seed_cols:
+                        full_features.loc[seed_idx[idx], seed_cols] = row[seed_cols].values
+            else:
+                idx_map = {uid: idx for idx, uid in enumerate(all_founder_ids)}
+                for _, row in seed_df.iterrows():
+                    uid = row.get("founder_uuid")
+                    if uid not in idx_map:
+                        continue
+                    if seed_cols:
+                        full_features.loc[idx_map[uid], seed_cols] = row[seed_cols].values
 
             combined_df = pd.DataFrame(
                 {
@@ -3355,6 +3659,7 @@ def main() -> None:
 
             out_path = full_root / "llm_reasoning_full.parquet"
             combined_df.to_parquet(out_path, index=False)
+            _log_run(f"full_current parquet written: {out_path} (rows={len(combined_df)})")
 
             _, exp_to_keys = build_experiment_key_map(reasoning_experiments_path, exp_list)
             write_per_experiment_parquets(
@@ -3366,7 +3671,7 @@ def main() -> None:
             )
             manifest = {
                 "timestamp": datetime.now().isoformat(),
-                "experiments": seed_exp_list,
+                "experiments": sorted({c.split("_", 1)[0] for c in full_cols if "_" in c}),
                 "source": "seed_merge",
                 "pool_records": len(records),
                 "seed_records": len(seed_records),
@@ -3557,8 +3862,13 @@ def main() -> None:
     xgb_table_hq_rows: list[dict[str, Any]] = []
     full_lr_rows: list[dict[str, Any]] = []
     full_xgb_rows: list[dict[str, Any]] = []
+    reasoning_xgb_oof_hq_rows: list[dict[str, Any]] = []
+    reasoning_xgb_oof_mirror_rows: list[dict[str, Any]] = []
     reasoning_combo_cols: dict[str, list[str]] = {}
     reasoning_combo_frames: dict[str, pd.DataFrame] = {}
+    reasoning_df_part1: pd.DataFrame | None = None
+    reasoning_combo_cols_part1: dict[str, list[str]] = {}
+    reasoning_combo_frames_part1: dict[str, pd.DataFrame] = {}
 
     args_lr = copy.copy(args)
     args_lr.model_type = "logistic"
@@ -3575,7 +3885,7 @@ def main() -> None:
         stds: dict[str, float],
         *,
         variant: str = "",
-        tuning: str = "train",
+        tuning: str = "oof",
     ) -> None:
         target.append(
             {
@@ -3609,6 +3919,126 @@ def main() -> None:
         if not reasoning_combo_cols:
             _log("  WARNING: No reasoning combos found; check reasoning columns.")
 
+        if run_profile == "reasoning_xgb_oof":
+            exp_list_for_combo = ["A", "B", "C", "D", "E", "F"]
+            reasoning_full_df = _load_full_current_df(exp_list_for_combo)
+            if reasoning_full_df is None:
+                _log_run("Full reasoning cache missing; generating seed_100 reasoning for full dataset.")
+                reasoning_full_df = _build_full_current_df(exp_list_for_combo, seed_separate=True)
+            _validate_reasoning_full_df(reasoning_full_df, len(all_records))
+            for col in reasoning_full_df.columns:
+                if col not in ("founder_uuid", "success"):
+                    reasoning_full_df[col] = pd.to_numeric(reasoning_full_df[col], errors="ignore")
+            if args.reasoning_seed_only:
+                _log_run("reasoning_seed_only: full_current ready; exiting before evaluation.")
+                return
+            reasoning_full_combo_cols = _build_reasoning_combos(reasoning_full_df, exp_list_for_combo)
+            reasoning_full_combo_cols = _filter_reasoning_combos_no_f_with_ab(reasoning_full_combo_cols)
+            if not reasoning_full_combo_cols:
+                raise RuntimeError("No reasoning combos found after filtering F with A/B.")
+            reasoning_full_combo_frames = {
+                combo: reasoning_full_df[cols].copy() for combo, cols in reasoning_full_combo_cols.items()
+            }
+            _log_run(
+                f"reasoning_xgb_oof: total combos={len(reasoning_full_combo_cols)}"
+            )
+
+            hq_script_full = (
+                Path(__file__).parent.parent
+                / "High_Quality_human_features"
+                / "features"
+                / "extract_structured.py"
+            )
+            hq_df_full_all = _build_high_quality_features(all_records, hq_script_full)
+            missing_full = [f for f in HQ_FEATURES_BASE if f not in hq_df_full_all.columns]
+            if missing_full:
+                raise RuntimeError(
+                    "High-quality feature extraction missing columns (full): "
+                    + ", ".join(missing_full)
+                )
+            hq_full_no_gap_all = hq_df_full_all[HQ_FEATURES_BASE].copy()
+            rule_mask_full = (
+                hq_df_full_all["exit_count"].fillna(0.0).astype(float).values > 0
+            )
+
+            for combo, cols in reasoning_full_combo_cols.items():
+                combo_tag = combo.replace("+", "_")
+                combo_df_full = reasoning_full_combo_frames[combo]
+                combo_plus = pd.concat([hq_full_no_gap_all, combo_df_full], axis=1)
+                _log_run(f"reasoning_xgb_oof: combo {combo} start")
+
+                means, stds = _train_and_log_cv(
+                    HQ_FEATURES_BASE + cols,
+                    combo_plus,
+                    all_labels,
+                    args_xgb,
+                    input_csv,
+                    f"HQ + Reasoning {combo} (Full, XGB, oof)",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent
+                    / "training_logs"
+                    / "reasoning_xgb_oof"
+                    / "hq_plus"
+                    / combo_tag,
+                    cv_splits=cv_splits_full,
+                    threshold_tuning="oof",
+                )
+                _append_row(
+                    reasoning_xgb_oof_hq_rows,
+                    "Reasoning XGB OOF",
+                    "HQ + Reasoning",
+                    "",
+                    combo,
+                    means,
+                    stds,
+                    variant="full_hq_no_rule",
+                    tuning="oof",
+                )
+
+                means, stds = _train_and_log_cv(
+                    HQ_FEATURES_BASE + cols,
+                    combo_plus,
+                    all_labels,
+                    args_xgb,
+                    input_csv,
+                    f"Mirror HQ + Reasoning {combo} (Full, XGB, oof)",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent
+                    / "training_logs"
+                    / "reasoning_xgb_oof"
+                    / "mirror_plus"
+                    / combo_tag,
+                    cv_splits=cv_splits_full,
+                    rule_mask=rule_mask_full,
+                    threshold_tuning="oof",
+                )
+                _append_row(
+                    reasoning_xgb_oof_mirror_rows,
+                    "Reasoning XGB OOF",
+                    "Full Mirror + Reasoning",
+                    "",
+                    combo,
+                    means,
+                    stds,
+                    variant="full_mirror_rule",
+                    tuning="oof",
+                )
+                _log_run(f"reasoning_xgb_oof: combo {combo} done")
+
+            report_path = Path(__file__).parent / "docs" / "llm_reasoning_xgb_oof_report.md"
+            csv_path = Path(__file__).parent / "docs" / "llm_reasoning_xgb_oof_results.csv"
+            _write_reasoning_xgb_oof_report(
+                reasoning_xgb_oof_hq_rows,
+                reasoning_xgb_oof_mirror_rows,
+                report_path,
+                csv_path,
+                cv_folds,
+                len(all_labels),
+            )
+            _log(f"\nUpdated report: {report_path}")
+            _log(f"Full results CSV: {csv_path}")
+            return
+
         if run_profile != "xgb_mirror":
             # Baseline human features + reasoning (Logistic only).
             human_full = pd.concat([base_all_baseline, custom_all_baseline], axis=1)
@@ -3638,9 +4068,43 @@ def main() -> None:
             )
             _append_row(xgb_table1_rows, "Table 1", "Human Only", "", "", means, stds)
 
-            for combo, cols in reasoning_combo_cols.items():
+            def _combo_is_subset(combo_label: str, allowed: set[str]) -> bool:
+                parts = [p for p in combo_label.replace("_", "+").split("+") if p]
+                return bool(parts) and set(parts).issubset(allowed)
+
+            part1_exp_list = ["A", "B", "E"]
+            selected_part1 = _select_latest_valid_runs(part1_exp_list)
+            if len(selected_part1) == len(part1_exp_list):
+                _update_currently_in_use(part1_exp_list, selected_part1)
+            reasoning_df_part1 = _load_currently_in_use_df()
+            if reasoning_df_part1 is None:
+                raise RuntimeError("currently_in_use missing; cannot build Part 1 reasoning combos.")
+            reasoning_combo_cols_part1 = _build_reasoning_combos(
+                reasoning_df_part1, part1_exp_list
+            )
+            reasoning_combo_cols_part1 = {
+                combo: cols
+                for combo, cols in reasoning_combo_cols_part1.items()
+                if _combo_is_subset(combo, {"A", "B", "E"})
+            }
+            reasoning_combo_frames_part1 = {
+                combo: reasoning_df_part1[cols].copy()
+                for combo, cols in reasoning_combo_cols_part1.items()
+            }
+            _log_run(
+                "Part1 prefix counts: "
+                + ", ".join(
+                    f"{p}{sum(c.startswith(p) for c in reasoning_df_part1.columns)}"
+                    for p in ("A_", "B_", "E_")
+                )
+            )
+            _log_run(
+                f"Part1 combos: total={len(reasoning_combo_cols_part1)} "
+                f"examples={list(reasoning_combo_cols_part1.keys())[:10]}"
+            )
+            for combo, cols in reasoning_combo_cols_part1.items():
                 combo_tag = combo.replace("+", "_")
-                combo_df = reasoning_combo_frames[combo]
+                combo_df = reasoning_df_part1[cols].copy()
                 means, stds = _train_and_log_cv(
                     cols,
                     combo_df,
@@ -3746,9 +4210,30 @@ def main() -> None:
             )
             _append_row(xgb_table_hq_rows, "Table HQ", "HQ Only", "", "", means, stds)
 
-            for combo, cols in reasoning_combo_cols.items():
+            hq_exp_list_part1 = ["A", "B", "E", "F"]
+            selected_hq_part1 = _select_latest_valid_runs(hq_exp_list_part1)
+            if len(selected_hq_part1) == len(hq_exp_list_part1):
+                _update_currently_in_use(hq_exp_list_part1, selected_hq_part1)
+            hq_reasoning_df_part1 = _load_currently_in_use_df()
+            if hq_reasoning_df_part1 is None:
+                raise RuntimeError("currently_in_use missing; cannot build HQ Part 1 reasoning combos.")
+            hq_combo_cols_part1 = _build_reasoning_combos(
+                hq_reasoning_df_part1, hq_exp_list_part1
+            )
+            hq_combo_cols_part1 = {
+                combo: cols
+                for combo, cols in hq_combo_cols_part1.items()
+                if _combo_is_subset(combo, {"A", "B", "E", "F"})
+            }
+            hq_combo_frames_part1 = {
+                combo: hq_reasoning_df_part1[cols].copy()
+                for combo, cols in hq_combo_cols_part1.items()
+            }
+            if not hq_combo_cols_part1:
+                _log_run("HQ Part1: No A/B/E combos found in currently_in_use; skipping HQ+Reasoning combos.")
+            for combo, cols in hq_combo_cols_part1.items():
                 combo_tag = combo.replace("+", "_")
-                combo_df = reasoning_combo_frames[combo]
+                combo_df = hq_combo_frames_part1[combo]
                 combo_plus = pd.concat([hq_full_no_gap, combo_df], axis=1)
                 means, stds = _train_and_log_cv(
                     HQ_FEATURES_BASE + cols,
@@ -3778,8 +4263,23 @@ def main() -> None:
 
     # Run-family mode (multiple engineered feature sets + leaderboard)
     if llm_engineered_run_family and not skip_llm_engineered:
-        if not reasoning_combo_cols:
-            raise RuntimeError("Run-family mode requires reasoning combos to be available.")
+        # Run-family should only use A/B/E combos from currently_in_use.
+        run_family_df = _load_currently_in_use_df()
+        if run_family_df is None:
+            raise RuntimeError("Run-family mode requires currently_in_use reasoning data.")
+        run_family_combo_cols = _build_reasoning_combos(run_family_df, ["A", "B", "E"])
+        run_family_combo_cols = {
+            combo: cols
+            for combo, cols in run_family_combo_cols.items()
+            if _combo_is_subset(combo, {"A", "B", "E"})
+        }
+        if not run_family_combo_cols:
+            raise RuntimeError("Run-family mode found no A/B/E combos in currently_in_use.")
+        run_family_combo_frames = {combo: run_family_df[cols].copy() for combo, cols in run_family_combo_cols.items()}
+        _log_run(
+            f"Run-family combos (A/B/E only): total={len(run_family_combo_cols)} "
+            f"examples={list(run_family_combo_cols.keys())[:10]}"
+        )
         families_dir = cache_dir / "families"
         archives_dir = cache_dir / "archives"
         family_dir: Path | None = None
@@ -3832,6 +4332,8 @@ def main() -> None:
         )
 
         def _evaluate_family_set(set_id: str, features: list[str], set_all: pd.DataFrame) -> None:
+            _log_run(f"[Run-family] {set_id}: feature_count={len(features)} rows={len(set_all)}")
+            _log_run(f"[Run-family] {set_id}: start engineered-only (LR)")
             metrics_only_lr, stds_only_lr = _train_and_log_cv(
                 features,
                 set_all,
@@ -3849,7 +4351,9 @@ def main() -> None:
                 cv_splits=cv_splits,
             )
             _append_row(lr_table2_rows, "Table 2", "LLM Engineered Only", set_id, "", metrics_only_lr, stds_only_lr)
+            _log_run(f"[Run-family] {set_id}: done engineered-only (LR)")
 
+            _log_run(f"[Run-family] {set_id}: start engineered-only (XGB)")
             metrics_only_xgb, stds_only_xgb = _train_and_log_cv(
                 features,
                 set_all,
@@ -3867,11 +4371,13 @@ def main() -> None:
                 cv_splits=cv_splits,
             )
             _append_row(xgb_table2_rows, "Table 2", "LLM Engineered Only", set_id, "", metrics_only_xgb, stds_only_xgb)
+            _log_run(f"[Run-family] {set_id}: done engineered-only (XGB)")
 
-            for combo, cols in reasoning_combo_cols.items():
+            for combo, cols in run_family_combo_cols.items():
                 combo_tag = combo.replace("+", "_")
-                combo_df = reasoning_combo_frames[combo]
+                combo_df = run_family_combo_frames[combo]
                 set_plus_all = pd.concat([set_all, combo_df], axis=1)
+                _log_run(f"[Run-family] {set_id}: start engineered+reasoning {combo} (LR)")
                 metrics_plus_lr, stds_plus_lr = _train_and_log_cv(
                     features + cols,
                     set_plus_all,
@@ -3898,7 +4404,9 @@ def main() -> None:
                     metrics_plus_lr,
                     stds_plus_lr,
                 )
+                _log_run(f"[Run-family] {set_id}: done engineered+reasoning {combo} (LR)")
 
+                _log_run(f"[Run-family] {set_id}: start engineered+reasoning {combo} (XGB)")
                 metrics_plus_xgb, stds_plus_xgb = _train_and_log_cv(
                     features + cols,
                     set_plus_all,
@@ -3925,6 +4433,7 @@ def main() -> None:
                     metrics_plus_xgb,
                     stds_plus_xgb,
                 )
+                _log_run(f"[Run-family] {set_id}: done engineered+reasoning {combo} (XGB)")
 
         if llm_engineered_freeze and family_features_path.exists() and family_meta_path.exists():
             df = pd.read_parquet(family_features_path)
@@ -4087,14 +4596,20 @@ def main() -> None:
                 "skipped_sets": skipped_sets,
             }
             meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+            if lr_table2_rows:
+                leaderboard_path = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.md"
+                leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv"
+                _write_family_leaderboard(
+                    lr_table2_rows,
+                    leaderboard_path,
+                    leaderboard_csv,
+                    cv_folds,
+                    len(labels),
+                )
 
     # Full-dataset HQ + Reasoning (no rule layer) and Full Mirror + Reasoning (rule layer).
     if use_llm_reasoning and reasoning_feature_names:
-        exp_list_for_combo = [
-            e
-            for e in (cfg_llm_reasoning_sequential or cfg_llm_reasoning_experiments or [])
-            if isinstance(e, str)
-        ]
+        exp_list_for_combo = ["A", "B", "C", "D", "E", "F"]
         if exp_list_for_combo:
             reasoning_full_df = _load_full_current_df(exp_list_for_combo)
             if reasoning_full_df is None:
@@ -4129,7 +4644,7 @@ def main() -> None:
 
             if run_profile != "xgb_mirror":
                 # Full HQ + Reasoning (no rule layer).
-                for tuning in ("train", "val", "oof"):
+                for tuning in ("oof",):
                     means, stds = _train_and_log_cv(
                         HQ_FEATURES_BASE,
                         hq_full_no_gap_all,
@@ -4249,7 +4764,7 @@ def main() -> None:
                         )
 
             # Full mirror (rule layer).
-            for tuning in ("train", "val", "oof"):
+            for tuning in ("oof",):
                 if run_profile != "xgb_mirror":
                     means, stds = _train_and_log_cv(
                         HQ_FEATURES_BASE,
@@ -4512,7 +5027,14 @@ def _log_dir_for_mode(
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:  # pragma: no cover
+        try:
+            _log_exception(exc)
+        except Exception:
+            pass
+        raise
 
 
 

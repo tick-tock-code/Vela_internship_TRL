@@ -1,0 +1,445 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "The founder has held multiple roles with responsibility in various companies, indicating ownership and trajectory, but the short durations (<2 years) limit confidence in sustained leadership.",
+    "latent_risk": 3,
+    "latent_risk_justification": "The frequent role changes and short tenures suggest potential instability or risk, despite diverse experience.",
+    "signal_1": "Multiple leadership roles across different industries suggest adaptability and ownership.",
+    "signal_2": "Short durations in each role indicate potential instability or risk.",
+    "signal_3": "Progression from researcher to founder shows a trajectory of increasing responsibility."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "The founder has held multiple leadership roles over a span of 6-9 years, demonstrating ownership and a clear trajectory in business development.",
+    "latent_risk": 2,
+    "latent_risk_justification": "The long duration in a single role suggests stability, but the lack of detailed startup experience slightly increases risk.",
+    "signal_1": "Long-term leadership in multiple roles indicates ownership and trajectory.",
+    "signal_2": "Experience across different companies shows adaptability.",
+    "signal_3": "Duration of 6-9 years in a leadership role suggests stability."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 1,
+    "latent_strength": 1,
+    "latent_strength_justification": "Minimal information provided; only role as Founder & CFO without context or duration, making it impossible to assess ownership or trajectory.",
+    "latent_risk": 4,
+    "latent_risk_justification": "Lack of evidence and context increases uncertainty and potential risk.",
+    "signal_1": "Limited information available.",
+    "signal_2": "No duration or responsibility details provided.",
+    "signal_3": "Absence of evidence of ownership or leadership trajectory."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "The founder has held a role as Software Engineer for 2-3 years, indicating technical expertise and some responsibility in a sizable company, with a clear career progression.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Relatively short professional experience, but the role in a large company suggests stability and potential ownership.",
+    "signal_1": "Experience in a sizable company indicates responsibility.",
+    "signal_2": "Progression from engineer to founder shows increasing ownership.",
+    "signal_3": "Educational background in Computer Science supports technical strength."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 5,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple leadership roles over 6-9 years in various companies, with advanced degrees, demonstrate strong ownership and a clear trajectory.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Long tenure in leadership roles suggests stability, though diverse industries may introduce some risk.",
+    "signal_1": "Long-term leadership roles indicate ownership and trajectory.",
+    "signal_2": "Advanced degrees in relevant fields support expertise.",
+    "signal_3": "Diverse industry experience shows adaptability."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_strength_justification": "Extensive experience (>9 years) in high-responsibility roles, with advanced degrees and leadership in healthcare, strongly indicates ownership and trajectory.",
+    "latent_risk": 1,
+    "latent_risk_justification": "Long-term leadership in a specialized industry suggests stability and low risk.",
+    "signal_1": "Over 9 years in leadership roles indicates ownership.",
+    "signal_2": "Advanced degrees in relevant fields demonstrate expertise.",
+    "signal_3": "Long tenure in academia and healthcare shows trajectory."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple leadership roles over 4-9 years in software development, with advanced degrees, indicate ownership and a clear career trajectory.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Long tenure in senior roles suggests stability, but industry-specific risks remain.",
+    "signal_1": "Long-term leadership roles indicate ownership.",
+    "signal_2": "Advanced degrees support technical and strategic strength.",
+    "signal_3": "Progression through senior roles shows trajectory."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "Roles spanning 6-9 years in marketing and digital solutions show ownership and a trajectory in industry-specific leadership, but some roles are less senior.",
+    "latent_risk": 3,
+    "latent_risk_justification": "Varied roles and industries suggest adaptability but also some instability or risk.",
+    "signal_1": "Long tenure in marketing roles indicates ownership.",
+    "signal_2": "Diverse industry experience shows adaptability.",
+    "signal_3": "Progression from demand marketing to leadership roles shows trajectory."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "Experience as educator and lead teacher over 2-3 years indicates responsibility, but industry relevance and ownership are limited.",
+    "latent_risk": 4,
+    "latent_risk_justification": "Limited relevance to startup success and short durations increase risk.",
+    "signal_1": "Experience in education shows responsibility.",
+    "signal_2": "Short durations limit confidence in ownership.",
+    "signal_3": "Industry relevance to startup success is limited."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple advanced degrees and a role as Associate Software Engineer in a large company suggest strong technical ownership and trajectory.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Short duration in a single role indicates some risk, but overall stability is suggested by the large company experience.",
+    "signal_1": "Advanced degrees in computer science indicate expertise.",
+    "signal_2": "Experience in a large company shows stability.",
+    "signal_3": "Progression from engineer to leadership roles suggests ownership."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "Roles as SBIR Engineer over 6-9 years suggest ownership in a specialized field, but the lack of entrepreneurial roles limits startup success signals.",
+    "latent_risk": 3,
+    "latent_risk_justification": "Long experience in a niche field indicates stability, but limited entrepreneurial evidence increases risk.",
+    "signal_1": "Long tenure indicates ownership in a specialized area.",
+    "signal_2": "Consistent role suggests stability.",
+    "signal_3": "Limited evidence of startup or entrepreneurial experience."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "Multiple co-founder and CEO roles over 2-5 years show ownership and a clear trajectory in software development.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Relatively short durations but consistent leadership roles suggest stability and ownership.",
+    "signal_1": "Leadership roles as co-founder and CEO indicate ownership.",
+    "signal_2": "Progression across multiple startups shows trajectory.",
+    "signal_3": "Experience in software development industry supports technical strength."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 4,
+    "latent_risk_justification": "Leadership in a non-startup industry (publishing) with no startup experience or recent activity suggests high risk.",
+    "signal_1": "Leadership in publishing industry shows responsibility.",
+    "signal_2": "No recent entrepreneurial or startup experience.",
+    "signal_3": "Long tenure in a different industry limits relevance."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "Roles in retail and sports over several years show responsibility but limited relevance to startup success or ownership.",
+    "latent_risk": 4,
+    "latent_risk_justification": "Limited industry relevance and short durations increase risk.",
+    "signal_1": "Experience in retail and sports shows responsibility.",
+    "signal_2": "No evidence of entrepreneurial ownership.",
+    "signal_3": "Short durations and unrelated industries suggest higher risk."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple research and design roles over less than 2 years in high-profile institutions indicate ownership and trajectory in research and innovation.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Short durations but high-profile roles suggest stability and ownership in research.",
+    "signal_1": "Leadership in research roles indicates ownership.",
+    "signal_2": "Progression through various research roles shows trajectory.",
+    "signal_3": "Advanced degrees support expertise."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "Roles spanning 2-5 years in academia and research show ownership and a clear trajectory, with advanced degrees supporting expertise.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Short durations suggest some instability, but long-term academic roles indicate stability.",
+    "signal_1": "Long tenure in research roles indicates ownership.",
+    "signal_2": "Advanced degrees support expertise.",
+    "signal_3": "Progression in academia shows trajectory."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "Co-founder role for less than 2 years and a CMO role for 4-5 years suggest ownership and trajectory, but limited startup experience.",
+    "latent_risk": 3,
+    "latent_risk_justification": "Short co-founder tenure and industry switch pose some risk, but leadership in marketing shows adaptability.",
+    "signal_1": "Co-founder role indicates ownership.",
+    "signal_2": "Longer tenure as CMO shows leadership trajectory.",
+    "signal_3": "Experience in technology and retail industries shows adaptability."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Roles in cybersecurity and consulting over 2-3 years in large and specialized companies demonstrate ownership and a trajectory in security and tech.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Relatively short durations but high-responsibility roles in reputable companies suggest stability.",
+    "signal_1": "Leadership in cybersecurity roles indicates ownership.",
+    "signal_2": "Experience across different security sectors shows adaptability.",
+    "signal_3": "Roles in large companies suggest stability."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 1,
+    "latent_risk_justification": "Multiple high-level academic roles and advanced degrees in top-ranked institutions demonstrate strong ownership, trajectory, and stability.",
+    "signal_1": "Leadership in academia indicates ownership.",
+    "signal_2": "Multiple advanced degrees show expertise.",
+    "signal_3": "Long-term academic roles suggest stability."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "Roles as board member and VP over 4-9 years in large organizations suggest ownership and a trajectory in legal and biotech sectors.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Long tenure in senior roles indicates stability, but the industry-specific focus may limit startup success signals.",
+    "signal_1": "Long tenure in leadership roles indicates ownership.",
+    "signal_2": "Experience across legal and biotech sectors shows trajectory.",
+    "signal_3": "Board memberships suggest influence and ownership."
+  }
+]
+
+--- RETRY ---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has diverse roles across multiple startups, indicating ownership and responsibility, with experience in leadership roles in tech industries.",
+    "latent_risk_justification": "Short durations (<2 years) in each role suggest limited long-term commitment, which could pose a risk.",
+    "signal_1": "Multiple leadership roles across different startups",
+    "signal_2": "Experience in telecommunications and research industries",
+    "signal_3": "Responsibility as founder and president"
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Long-term leadership in multiple roles within the same startup indicates strong ownership and strategic responsibility.",
+    "latent_risk": "Lack of educational background details limits assessment of technical depth.",
+    "signal_1": "Leadership as founder and director over multiple years",
+    "signal_2": "Progression through various strategic roles",
+    "signal_3": "Experience in marketing and business development"
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 1,
+    "latent_strength": 1,
+    "latent_risk": 5,
+    "latent_strength_justification": "Minimal information provided; only a founder role with no details on responsibilities or experience.",
+    "latent_risk": "Very limited evidence of ownership or leadership responsibility.",
+    "signal_1": "Role as founder & CFO",
+    "signal_2": "No additional details",
+    "signal_3": "No measurable signals"
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has a solid technical education and relevant industry experience as a software engineer, indicating ownership of technical development.",
+    "latent_risk": "Short professional experience (<3 years) may limit depth of leadership responsibility.",
+    "signal_1": "Degree in Computer Science and Engineering",
+    "signal_2": "Experience as Software Engineer in relevant industry",
+    "signal_3": "Role in a mid-sized company"
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "latent_strength": 5,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple executive and leadership roles over 6-9 years demonstrate strong ownership and strategic responsibility.",
+    "latent_risk": "Diverse educational background with no direct technical degree may pose a risk for technical startups.",
+    "signal_1": "Leadership roles as CEO, CPO, Director, Founder",
+    "signal_2": "Long duration in leadership roles (6-9 years)",
+    "signal_3": "Experience across multiple industries"
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 2,
+    "latent_strength_justification": "Extensive academic credentials and long-term leadership in healthcare demonstrate ownership and responsibility.",
+    "latent_risk": "High academic achievement reduces risk, but industry-specific expertise may limit adaptability.",
+    "signal_1": "Multiple advanced degrees in medical fields",
+    "signal_2": "Over 9 years as Professor in Radiology",
+    "signal_3": "Leadership in healthcare research"
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple senior leadership roles over several years in software development indicate ownership and strategic responsibility.",
+    "latent_risk": "No direct entrepreneurial experience or founding roles, which could pose a risk.",
+    "signal_1": "Leadership roles in software industry over 4-9 years",
+    "signal_2": "Multiple senior director positions",
+    "signal_3": "Experience in digital strategy and pricing"
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Progression through multiple marketing and management roles over several years shows ownership and responsibility in the industry.",
+    "latent_risk": "Diverse roles in different industries may dilute focus, posing some risk.",
+    "signal_1": "Leadership in demand and lifecycle marketing",
+    "signal_2": "Multiple senior management roles over 6-9 years",
+    "signal_3": "Experience in B2B and digital marketing"
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Experience in early childhood education shows responsibility, but limited entrepreneurial or leadership roles in startups.",
+    "latent_risk": "Limited leadership responsibility and industry relevance for startup success.",
+    "signal_1": "Roles in education industry",
+    "signal_2": "Experience as educator and lead teacher",
+    "signal_3": "Industry experience in education"
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple advanced degrees in computer science and relevant industry experience indicate ownership and technical expertise.",
+    "latent_risk": "Short duration (<2 years) in each role suggests limited leadership depth.",
+    "signal_1": "Multiple degrees in computer science, including PhD",
+    "signal_2": "Leadership as Associate Software Engineer in a large company",
+    "signal_3": "Academic background in top-ranked institution"
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Experience as SBIR engineer over multiple years shows ownership in a niche industry, but limited entrepreneurial leadership.",
+    "latent_risk": "No direct startup or founding experience, and limited evidence of leadership responsibility.",
+    "signal_1": "Long-term SBIR engineering roles",
+    "signal_2": "Experience in venture-related industry",
+    "signal_3": "Focus on engineering roles"
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple co-founder and CEO roles over several years demonstrate ownership and leadership in software startups.",
+    "latent_risk": "Short durations (2-5 years) may limit long-term strategic influence.",
+    "signal_1": "Leadership as co-founder and CEO",
+    "signal_2": "Experience in multiple startup phases",
+    "signal_3": "Industry focus in software development"
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 2,
+    "latent_strength": 2,
+    "latent_risk": 4,
+    "latent_strength_justification": "Leadership as CEO in publishing industry shows responsibility but limited relevance to tech startup success.",
+    "latent_risk": "No technical or entrepreneurial experience in relevant industries.",
+    "signal_1": "CEO role in publishing",
+    "signal_2": "Long-term leadership in non-tech industry",
+    "signal_3": "No technical or startup experience"
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Experience in retail and sports shows diverse responsibility, but limited entrepreneurial or leadership roles in startups.",
+    "latent_risk": "Limited evidence of ownership or strategic responsibility.",
+    "signal_1": "Roles in retail and sports",
+    "signal_2": "Experience in operational roles",
+    "signal_3": "Educational background in culinary arts and English"
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple research and design leadership roles over several years indicate ownership and responsibility in research-focused startups.",
+    "latent_risk": "No direct entrepreneurial experience, but strong academic and research background.",
+    "signal_1": "Leadership in research and design roles",
+    "signal_2": "Long-term academic involvement",
+    "signal_3": "Experience in higher education research"
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple advanced research roles over several years demonstrate ownership and responsibility in academia and tech.",
+    "latent_risk": "Limited industry or entrepreneurial experience outside academia.",
+    "signal_1": "Research leadership in academia",
+    "signal_2": "Multiple advanced degrees in computer science",
+    "signal_3": "Roles in research and teaching"
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Experience as co-founder and CMO shows ownership, but limited leadership duration and scope.",
+    "latent_risk": "Short tenure and limited industry relevance may pose risks.",
+    "signal_1": "Co-founder and CMO roles",
+    "signal_2": "Experience in startup environment",
+    "signal_3": "Leadership in marketing"
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple senior roles in cybersecurity and consulting indicate ownership and responsibility in tech security.",
+    "latent_risk": "No founding or entrepreneurial experience, but strong technical background.",
+    "signal_1": "Roles in cybersecurity and consulting",
+    "signal_2": "Experience in large tech and defense industries",
+    "signal_3": "Technical expertise in security"
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 1,
+    "latent_strength_justification": "Extensive academic credentials and leadership in research roles demonstrate ownership and high technical expertise.",
+    "latent_risk": "High academic focus reduces practical entrepreneurial risk, but indicates strong ownership.",
+    "signal_1": "PhD and MPhil in computer science from top-ranked institutions",
+    "signal_2": "Multiple research and engineering roles in large companies",
+    "signal_3": "Leadership in research projects"
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 4,
+    "latent_strength_justification": "Leadership roles in legal and nonprofit sectors show responsibility but limited relevance to tech startup success.",
+    "latent_risk": "No entrepreneurial or technical experience, high industry-specific risk.",
+    "signal_1": "Board memberships and legal roles",
+    "signal_2": "Experience in nonprofit and legal sectors",
+    "signal_3": "Leadership responsibility in non-tech industries"
+  }
+]

@@ -1,0 +1,116 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has advanced degrees and early leadership roles in a high-growth industry, indicating potential for success, but limited evidence of ownership or rapid progression."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's role as CTO & CIO suggests leadership, but lack of additional evidence of ownership or progression limits the score."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across diverse industries and strong educational background support high potential, though not necessarily rapid progression."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in healthcare industry with an MBA indicate responsibility, but limited evidence of ownership or rapid growth."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Ownership in a large industry with some leadership experience, but no clear evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple leadership roles in various industries suggest responsibility, but limited evidence of rapid progression or ownership."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in a high-growth industry with a strong educational background supports high potential."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Ownership in a small startup and roles in creative design suggest some responsibility, but limited evidence of rapid progression."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in biotech research with relevant education indicates ownership, but limited evidence of rapid progression."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Minimal information provided; no evidence of ownership or progression."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in a high-growth industry with relevant education and diverse roles indicates strong potential."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership role as CEO for over 9 years suggests ownership, but limited context on industry growth or rapid progression."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Ownership in real estate with some leadership roles, but limited evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in financial services with diverse experience suggest responsibility, but limited evidence of rapid progression."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Ownership and leadership in education with diverse roles, but limited evidence of rapid progression or high-growth context."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "No specific information provided; minimal evidence to assess."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership in a high-growth financial industry with relevant education indicates strong potential."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in semiconductor industry with relevant education suggest ownership, but limited evidence of rapid progression."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in health and tech industries with ownership roles, but limited evidence of rapid progression or high-growth context."
+  }
+]

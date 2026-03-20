@@ -1,0 +1,249 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "The founder has relevant industry experience and leadership in healthcare-related education, indicating some ownership and trajectory, but limited entrepreneurial evidence.",
+    "latent_risk_justification": "The founder's background as a radiologic technologist suggests domain expertise but limited entrepreneurial responsibility or ownership evidence, posing moderate risk.",
+    "signal_1": "Leadership in healthcare education",
+    "signal_2": "Industry experience in clinical healthcare",
+    "signal_3": "Educational background in healthcare and business"
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple technical roles in relevant industries and leadership in a startup suggest strong ownership and trajectory, with diverse experience supporting success potential.",
+    "latent_risk_justification": "Short durations in roles and limited entrepreneurial responsibility indicate some risk, but overall experience mitigates this.",
+    "signal_1": "Leadership in multiple technical roles",
+    "signal_2": "Experience across diverse tech industries",
+    "signal_3": "Leadership in a startup environment"
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Experience in management and strategy roles in financial services indicates ownership, but limited entrepreneurial activity or startup leadership evidence.",
+    "latent_risk_justification": "Short-term roles and lack of founding experience suggest moderate risk, though relevant industry knowledge supports potential.",
+    "signal_1": "Leadership in financial management roles",
+    "signal_2": "Experience in strategy and consulting",
+    "signal_3": "Educational background in finance and entrepreneurship"
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 4,
+    "latent_strength_justification": "Roles are primarily technical and academic, with limited evidence of ownership or entrepreneurial responsibility.",
+    "latent_risk_justification": "Lack of startup leadership or ownership roles increases risk, despite technical expertise.",
+    "signal_1": "Technical roles in software development",
+    "signal_2": "Leadership as CTO in a small startup",
+    "signal_3": "Academic experience as professor"
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple leadership roles in organizational development and a long track record in relevant industries suggest strong ownership and trajectory.",
+    "latent_risk_justification": "High-level roles in large organizations reduce entrepreneurial risk but indicate ownership in a corporate context.",
+    "signal_1": "Leadership in organizational development",
+    "signal_2": "Long professional track record",
+    "signal_3": "Advanced degrees in psychology and social sciences"
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 4,
+    "latent_strength_justification": "Roles are primarily founder and partner in a startup, but limited evidence of operational responsibility or ownership depth.",
+    "latent_risk_justification": "Short tenure as founder and limited operational roles increase risk, with minimal evidence of ownership.",
+    "signal_1": "Founder and CEO roles",
+    "signal_2": "Leadership in startup context",
+    "signal_3": "Experience in industry-specific leadership"
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple leadership roles in nonprofit and corporate sectors, with consistent responsibility, indicate strong ownership and trajectory.",
+    "latent_risk_justification": "Diverse experience reduces risk, though some roles are in non-profit sectors, slightly increasing uncertainty.",
+    "signal_1": "Leadership in resource development and partnerships",
+    "signal_2": "Long-term roles in nonprofit and corporate sectors",
+    "signal_3": "Advanced degrees in marketing"
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 4,
+    "latent_strength_justification": "Roles are mainly in arts and entertainment, with limited evidence of ownership or startup leadership.",
+    "latent_risk_justification": "Lack of entrepreneurial responsibility and limited industry relevance increase risk.",
+    "signal_1": "Leadership as COO in sports industry",
+    "signal_2": "Experience as freelance musician",
+    "signal_3": "Long-term involvement in entertainment"
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership as president suggests ownership, but limited entrepreneurial activity and short tenure pose moderate risk.",
+    "latent_risk_justification": "Limited experience in startup leadership increases risk, despite relevant industry background.",
+    "signal_1": "Leadership as president",
+    "signal_2": "Industry experience in medical manufacturing",
+    "signal_3": "Educational background in business"
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "Multiple leadership roles in growth and marketing in relevant industries indicate strong ownership and trajectory.",
+    "latent_risk_justification": "Short durations in some roles and limited entrepreneurial responsibility pose some risk, but overall experience supports success potential.",
+    "signal_1": "Leadership in growth and marketing",
+    "signal_2": "Experience across multiple industries",
+    "signal_3": "Leadership in a startup environment"
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership as CEO and co-founder in relevant tech industries suggests ownership, but short tenure and limited startup experience pose moderate risk.",
+    "latent_risk_justification": "Limited duration in leadership roles increases risk, though industry experience supports potential.",
+    "signal_1": "Leadership as CEO and co-founder",
+    "signal_2": "Experience in technology startups",
+    "signal_3": "Leadership in relevant tech industries"
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 1,
+    "latent_strength_justification": "Academic leadership with a PhD from a top-ranked institution and extensive teaching experience indicates strong ownership and trajectory.",
+    "latent_risk_justification": "Academic career with long tenure and leadership roles suggests low entrepreneurial risk.",
+    "signal_1": "Leadership as professor and director",
+    "signal_2": "Top-ranked PhD in education",
+    "signal_3": "Long-term academic leadership"
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership roles in founding and senior positions in extractive industries suggest ownership, but limited entrepreneurial activity and short tenure increase risk.",
+    "latent_risk_justification": "Multiple roles in large organizations reduce entrepreneurial risk but lack of startup experience increases overall risk.",
+    "signal_1": "Leadership as founder and president",
+    "signal_2": "Experience in extractive industries",
+    "signal_3": "Educational background in engineering and law"
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership in research roles and a PhD from a top-ranked institution indicate strong ownership and academic trajectory.",
+    "latent_risk_justification": "Academic focus with limited entrepreneurial activity suggests low risk, but limited startup experience.",
+    "signal_1": "Leadership in research roles",
+    "signal_2": "Top-ranked PhD in science and engineering",
+    "signal_3": "Research experience in biotech"
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership as faculty founder and assistant professor indicates ownership and academic trajectory, with diverse experience supporting success.",
+    "latent_risk_justification": "Limited entrepreneurial responsibility but strong academic and leadership background reduces risk.",
+    "signal_1": "Leadership as faculty founder",
+    "signal_2": "Advanced degrees in management and design",
+    "signal_3": "Long-term academic roles"
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership as founder and COO in relevant industries indicates ownership and trajectory, with diverse leadership roles supporting success.",
+    "latent_risk_justification": "Roles in established industries and leadership in startups suggest moderate risk, but limited entrepreneurial track record.",
+    "signal_1": "Leadership as founder and COO",
+    "signal_2": "Experience in marketing and digital solutions",
+    "signal_3": "Leadership in multiple industries"
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership as CEO and experience in marketing and graphic arts suggest ownership, but limited startup responsibility and short tenure increase risk.",
+    "latent_risk_justification": "Limited entrepreneurial responsibility and short durations in roles increase risk, despite relevant experience.",
+    "signal_1": "Leadership as CEO",
+    "signal_2": "Experience in marketing and graphic arts",
+    "signal_3": "Leadership in hospitality and tourism"
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership as founder in real estate and leasing, with multiple founding roles, indicates ownership and trajectory, supported by relevant education.",
+    "latent_risk_justification": "Long-term founding experience reduces risk, though limited entrepreneurial activity outside real estate increases some uncertainty.",
+    "signal_1": "Multiple founding roles in real estate",
+    "signal_2": "Leadership in industry-specific startups",
+    "signal_3": "Educational background in finance and real estate"
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 4,
+    "latent_strength_justification": "Roles are mainly in design and sales, with limited evidence of ownership or startup leadership.",
+    "latent_risk_justification": "Lack of entrepreneurial responsibility and limited leadership roles increase risk.",
+    "signal_1": "Design roles in marketing and advertising",
+    "signal_2": "Experience in creative industries",
+    "signal_3": "Short-term roles in sales and design"
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 4,
+    "latent_strength_justification": "Roles are in sales within renewable energy, with limited evidence of ownership or entrepreneurial responsibility.",
+    "latent_risk_justification": "Limited leadership and entrepreneurial activity increase risk, despite industry relevance.",
+    "signal_1": "Sales leadership in renewable energy",
+    "signal_2": "Experience in industry-specific sales roles",
+    "signal_3": "Short tenure in sales management"
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has diverse experience in product management and leadership roles in large and mid-sized tech companies, demonstrating ownership and trajectory in the industry.",
+    "latent_risk_justification": "Limited duration as founder and leadership roles in large companies suggest some risk in startup experience and ownership level.",
+    "signal_1": "Leadership roles across different industries indicate adaptability and ownership.",
+    "signal_2": "Experience in both large corporations and startups shows a trajectory of increasing responsibility.",
+    "signal_3": "Educational background with an MBA in Business supports strategic and operational skills."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "latent_strength": 2,
+    "latent_risk": 4,
+    "latent_strength_justification": "The founder has held multiple creative roles in various industries, indicating some ownership and experience, but mostly in freelance and short-term positions.",
+    "latent_risk_justification": "Limited leadership roles and short durations in each position suggest less demonstrated ownership and higher risk in startup success.",
+    "signal_1": "Diverse industry experience shows adaptability but limited leadership scope.",
+    "signal_2": "Multiple short-term roles indicate a less clear trajectory of ownership.",
+    "signal_3": "Bachelor's degree in Graphic Design provides relevant creative skills but less strategic experience."
+  }
+]

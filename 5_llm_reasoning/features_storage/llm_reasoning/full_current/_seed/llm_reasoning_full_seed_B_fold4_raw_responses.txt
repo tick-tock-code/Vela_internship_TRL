@@ -1,0 +1,139 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder shows some leadership in healthcare and education, but limited evidence of rapid progression or ownership in ambiguous environments."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple roles in technical environments suggest technical competence, but limited evidence of early leadership or ownership in high-growth contexts."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership in a financial startup is present, but the experience appears slow and limited in scope for high-growth or technical environments."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Limited leadership roles and short durations suggest slow progression and limited ownership."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Extensive leadership in organizational development and responsibility in large firms indicate strong ownership and trajectory."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Leadership roles are mostly in founding and partner positions with limited evidence of rapid progression or high-growth responsibility."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Experience in nonprofit and community health roles shows responsibility, but limited evidence of early leadership or ownership."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Leadership in COO role in sports and freelance music shows limited startup ownership or high-growth trajectory."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership as President in a startup indicates ownership, but short duration and limited context reduce score."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple leadership roles in growth and marketing suggest ownership and some progression, but limited technical or high-growth context."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "CEO and co-founder roles indicate ownership, but short durations and limited context reduce strength of evidence."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 5,
+    "rubric_score": 4,
+    "rubric_score_justification": "Academic leadership in top-ranked institutions with long-term professorial roles strongly indicates high ownership and trajectory."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership roles in multiple executive positions in extractive industries show ownership, but durations are short."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Research roles in biotech and bioinformatics show some ownership, but limited leadership in startup or high-growth environments."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term academic leadership in top-ranked institutions indicates strong ownership and high trajectory."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership as founder and co-founder in marketing and digital solutions shows ownership, but durations are moderate."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Leadership roles are limited to CEO and marketing director with short durations, showing slow progression."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "rubric_score": 2,
+    "rubric_score_justification": "Multiple founding roles in real estate show ownership, but limited evidence of rapid progression or high-growth responsibility."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Design roles in established companies show limited ownership or leadership in startup or high-growth contexts."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "rubric_score": 1,
+    "rubric_score_justification": "Sales roles in renewable energy are limited in scope and duration, with minimal evidence of ownership or high-growth leadership."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "The founder demonstrates rapid progression through diverse roles in high-growth tech environments, including leadership as a founder and CEO within a short timeframe, indicating ownership and operating in a high-growth context."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "The founder's experience is primarily in creative roles with limited evidence of ownership or progression into high-growth or technical environments, suggesting a weaker profile relative to the rubric."
+  }
+]

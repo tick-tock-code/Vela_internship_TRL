@@ -1,0 +1,21 @@
+run_log started
+[2026-03-20T15:18:19.831466] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-20T15:18:20.219507] Loaded records: 4500 labels: 4500
+[2026-03-20T15:18:20.220059] Use LLM reasoning: True
+[2026-03-20T15:18:20.220346] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-20T15:18:20.220634] Human feature source: baseline
+[2026-03-20T15:18:20.220902] Model type: logistic
+[2026-03-20T15:18:20.221319] Run profile: reasoning_xgb_oof
+[2026-03-20T15:18:20.224467] Seed size=100 pool size=4400
+[2026-03-20T15:18:20.224926] OPENAI_API_KEY set: True
+[2026-03-20T15:18:20.229063] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-20T15:18:20.229420] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-20T15:18:26.306705] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-20T15:18:26.507048] Full reasoning cache missing; generating seed_100 reasoning for full dataset.
+[2026-03-20T15:18:26.574718] Seed reasoning generation for full_current (separate). new_cols=0 seed_exp_list=['A', 'B', 'C', 'D', 'E', 'F'] seed_cols_target=42
+[2026-03-20T15:18:26.576191] [seed_A] Starting fold-batched reasoning. experiments=['A'] folds=5 records=100
+[2026-03-20T15:18:26.576516] [seed_A] Fold 0: start (records=19 target_batches=0)
+[2026-03-20T15:19:05.055417] [seed_A] Fold 0: completed (19 rows).
+[2026-03-20T15:19:05.057922] [seed_A] Fold 1: start (records=20 target_batches=0)
+[2026-03-20T15:19:35.635560] [seed_A] Fold 1: completed (20 rows).
+[2026-03-20T15:19:35.637280] [seed_A] Fold 2: start (records=16 target_batches=0)

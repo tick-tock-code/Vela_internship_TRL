@@ -1,0 +1,474 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "The founder has long-term ownership (6-9 years) and leadership roles in a small startup, indicating some ownership experience, but limited evidence of scalable impact.",
+    "latent_risk": 3,
+    "latent_risk_justification": "The small company size and limited industry scope suggest moderate risk, with potential vulnerability due to limited team and resources.",
+    "signal_1": "Long-term ownership in a small startup",
+    "signal_2": "Leadership roles in a niche industry",
+    "signal_3": "Limited evidence of scalable impact"
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple leadership roles over more than 9 years in healthcare and venture capital, with a high QS-ranked education, suggest strong ownership and influence.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Diverse roles and long tenure reduce risk, though some risk remains due to the lack of specific startup success indicators.",
+    "signal_1": "Long-term leadership in healthcare and VC",
+    "signal_2": "Multiple high-responsibility roles",
+    "signal_3": "High QS-ranked education"
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "Experience as a digital media manager and supervisor in large companies indicates some responsibility, but limited entrepreneurial ownership evidence.",
+    "latent_risk": 3,
+    "latent_risk_justification": "Large company experience suggests moderate risk, but lack of startup ownership reduces confidence in entrepreneurial strength.",
+    "signal_1": "Experience in large retail and marketing firms",
+    "signal_2": "Leadership in marketing roles",
+    "signal_3": "Limited evidence of startup ownership"
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple founder roles spanning over 9 years in tech, with leadership in diverse startups, indicating strong ownership and entrepreneurial experience.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Long-term founder experience reduces risk, though the absence of detailed startup success metrics introduces some uncertainty.",
+    "signal_1": "Multiple founder roles over >9 years",
+    "signal_2": "Leadership in tech startups",
+    "signal_3": "Diverse entrepreneurial experience"
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_strength_justification": "Limited professional experience in a single role for less than 2 years, with no evidence of ownership or leadership in startups.",
+    "latent_risk": 4,
+    "latent_risk_justification": "Short tenure and minimal leadership evidence suggest high risk and limited entrepreneurial strength.",
+    "signal_1": "Short professional tenure",
+    "signal_2": "Limited leadership roles",
+    "signal_3": "Minimal ownership evidence"
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "latent_strength": 3,
+    "latent_strength_justification": "Long-term leadership in a nonprofit with diverse roles indicates ownership, but primarily in non-profit sector, which may limit startup success signals.",
+    "latent_risk": 3,
+    "latent_risk_justification": "Diverse experience reduces risk, but sector-specific factors and lack of startup success data moderate confidence.",
+    "signal_1": "Long-term leadership in nonprofit",
+    "signal_2": "Diverse roles across industries",
+    "signal_3": "Ownership in non-profit sector"
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_strength_justification": "Short tenure as founder and leadership in a small startup suggest some ownership, but limited evidence of scaling or impact.",
+    "latent_risk": 4,
+    "latent_risk_justification": "Small company size and brief founder tenure imply higher risk, with limited evidence of success.",
+    "signal_1": "Founder for less than 2 years",
+    "signal_2": "Leadership in a small startup",
+    "signal_3": "Limited impact evidence"
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Long-term leadership roles in manufacturing and management indicate strong ownership and operational experience.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Stable leadership reduces risk, though sector-specific risks remain moderate.",
+    "signal_1": "Long-term leadership roles",
+    "signal_2": "Management in manufacturing",
+    "signal_3": "Operational experience"
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_strength_justification": "Multiple long-term roles in finance and management, with leadership in a large company, suggest strong ownership and influence.",
+    "latent_risk": 2,
+    "latent_risk_justification": "Long tenure and leadership roles reduce risk, though sector-specific factors could influence success.",
+    "signal_1": "Long-term leadership in finance",
+    "signal_2": "Multiple senior roles",
+    "signal_3": "Leadership in large organization"
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_risk_justification": "Long-term leadership in apparel with high-level roles indicates ownership, with low risk due to extensive experience.",
+    "signal_1": "Long-term CEO/President roles",
+    "signal_2": "Leadership in apparel industry",
+    "signal_3": "High-level executive experience"
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_risk_justification": "Multiple leadership roles over many years in medical and manufacturing sectors suggest strong ownership and influence, with low risk.",
+    "signal_1": "Long-term leadership in medical industry",
+    "signal_2": "Multiple senior roles",
+    "signal_3": "Ownership in medical device sector"
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 1,
+    "latent_risk_justification": "Extensive leadership, board memberships, and successful IPO experience demonstrate very strong ownership and low risk.",
+    "signal_1": "Multiple board memberships over years",
+    "signal_2": "Leadership in multiple startups",
+    "signal_3": "Successful IPO and acquisitions"
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_risk_justification": "Leadership as co-founder and CEO in a small startup indicates some ownership, but limited evidence of impact or scale.",
+    "signal_1": "Co-founder and CEO roles",
+    "signal_2": "Small startup leadership",
+    "signal_3": "Limited impact evidence"
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_risk_justification": "Experience as a petroleum engineer in a large industry suggests some technical ownership, but limited entrepreneurial evidence.",
+    "signal_1": "Technical background in petroleum",
+    "signal_2": "Industry experience in extractive sector",
+    "signal_3": "Limited startup ownership"
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_risk_justification": "Long-term software developer roles in reputable companies suggest strong technical ownership and low risk.",
+    "signal_1": "Long-term software development roles",
+    "signal_2": "Leadership in tech industry",
+    "signal_3": "Reputable company experience"
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_risk_justification": "Leadership as a marketing manager in a mid-sized company indicates some ownership, but limited entrepreneurial impact evidence.",
+    "signal_1": "Management in apparel industry",
+    "signal_2": "Mid-sized company experience",
+    "signal_3": "Limited startup impact"
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_risk_justification": "Long-term leadership in orthopaedics and academic roles suggest strong ownership and influence, with low risk.",
+    "signal_1": "Leadership in academic medicine",
+    "signal_2": "Long-term clinical roles",
+    "signal_3": "Ownership in healthcare"
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_risk_justification": "Extensive leadership in hospitality and sales roles over many years indicates strong ownership and low risk.",
+    "signal_1": "Long-term leadership in hospitality",
+    "signal_2": "Diverse sales and business development roles",
+    "signal_3": "Ownership in service industry"
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_risk_justification": "Moderate experience in renewable energy and community management suggests some ownership, but limited startup impact evidence.",
+    "signal_1": "Experience in renewable energy",
+    "signal_2": "Community management roles",
+    "signal_3": "Limited entrepreneurial impact"
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_risk_justification": "Long-term ownership as owner and leadership in education, with diverse roles, indicates strong influence and low risk.",
+    "signal_1": "Long-term owner in education",
+    "signal_2": "Leadership in multiple roles",
+    "signal_3": "Diverse sector experience"
+  }
+]
+
+--- RETRY ---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has long-term ownership roles and leadership in a small startup, indicating ownership and responsibility, but limited evidence of innovative trajectory.",
+    "latent_risk_justification": "The small team size and moderate experience duration suggest manageable risk, but limited evidence of high growth potential or unique ownership signals.",
+    "signal_1": "Long-term ownership role in a small startup",
+    "signal_2": "Leadership responsibility as Co-Owner",
+    "signal_3": "Experience in a niche industry (Animation and Video Graphics)"
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Multiple leadership roles over many years in healthcare and venture capital suggest strong ownership, trajectory, and influence, with evidence of ownership and responsibility.",
+    "latent_risk_justification": "Diverse roles and industry focus imply some risk, but extensive experience reduces uncertainty about founder capability.",
+    "signal_1": "Over 9 years as Co-Founder and Director",
+    "signal_2": "Leadership in healthcare and venture capital",
+    "signal_3": "Multiple senior roles across industries"
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "Experience in a large retail company and leadership in a startup indicates ownership and responsibility, but limited evidence of innovative trajectory.",
+    "latent_risk_justification": "The role in a large company and small startup suggests manageable risk, but limited evidence of ownership beyond employment.",
+    "signal_1": "Leadership role in a startup",
+    "signal_2": "Experience in marketing management",
+    "signal_3": "Industry focus on marketing and advertising"
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 4,
+    "latent_strength_justification": "Multiple founder roles over many years in tech and food industries suggest strong ownership, trajectory, and influence, with evidence of ownership and responsibility.",
+    "latent_risk_justification": "Diverse industries and founder roles imply some risk, but extensive experience and leadership reduce uncertainty.",
+    "signal_1": "Founder for over 9 years",
+    "signal_2": "Leadership in multiple startups",
+    "signal_3": "Experience across tech and food industries"
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 2,
+    "latent_strength_justification": "Limited professional experience in a short tenure in a research-related role; minimal evidence of ownership or trajectory.",
+    "latent_risk_justification": "Short experience and limited industry impact suggest low ownership signals and some risk.",
+    "signal_1": "Short tenure in research industry",
+    "signal_2": "Role as Engineer/Designer",
+    "signal_3": "Limited leadership responsibility"
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Long-term leadership in a nonprofit and multiple roles across industries suggest ownership, responsibility, and influence, with evidence of trajectory.",
+    "latent_risk_justification": "Diverse roles and nonprofit focus imply some risk, but extensive experience reduces uncertainty.",
+    "signal_1": "Over 9 years as Owner",
+    "signal_2": "Leadership in multiple industries",
+    "signal_3": "Long-term ownership role"
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "Ownership as founder and leadership in a small startup indicates responsibility, but limited evidence of trajectory or ownership beyond initial roles.",
+    "latent_risk_justification": "Small team size and short tenure suggest manageable risk, but limited evidence of growth or ownership depth.",
+    "signal_1": "Founder and CEO for less than 2 years",
+    "signal_2": "Leadership in a small startup",
+    "signal_3": "Industry focus on motor vehicle"
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Long-term leadership roles in manufacturing and management suggest ownership, responsibility, and trajectory, with evidence of influence.",
+    "latent_risk_justification": "Leadership in established industries reduces risk, but limited startup-specific evidence.",
+    "signal_1": "Leadership roles over 6-9 years",
+    "signal_2": "Management in manufacturing",
+    "signal_3": "Ownership in leadership roles"
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Multiple long-term senior roles in finance and sales indicate ownership, responsibility, and trajectory, with influence in large organizations.",
+    "latent_risk_justification": "Extensive experience in large companies suggests manageable risk, but limited startup ownership evidence.",
+    "signal_1": "Leadership roles over 6-9 years",
+    "signal_2": "Senior finance and sales positions",
+    "signal_3": "Ownership in senior roles"
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 4,
+    "latent_strength_justification": "Long-term leadership in apparel and marketing indicates ownership, responsibility, and trajectory, with influence in large organizations.",
+    "latent_risk_justification": "Extensive experience reduces risk, but limited evidence of startup ownership or innovative trajectory.",
+    "signal_1": "CEO/President roles over 6-9 years",
+    "signal_2": "Leadership in apparel industry",
+    "signal_3": "Ownership in senior leadership"
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 4,
+    "latent_strength_justification": "Multiple leadership roles over many years in medical and manufacturing industries suggest ownership, responsibility, and influence, with evidence of trajectory.",
+    "latent_risk_justification": "Diverse roles and extensive experience imply manageable risk, but limited startup-specific signals.",
+    "signal_1": "Leadership over 4-5 years in multiple roles",
+    "signal_2": "Experience in medical and manufacturing industries",
+    "signal_3": "Ownership in senior roles"
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 5,
+    "latent_strength": 5,
+    "latent_risk": 4,
+    "latent_strength_justification": "Long-term founder with multiple leadership roles, IPO experience, and industry influence strongly indicate ownership, trajectory, and high influence.",
+    "latent_risk_justification": "High experience and successful IPO reduce risk, though diverse roles imply some complexity.",
+    "signal_1": "Founder for over 9 years",
+    "signal_2": "Led IPO valued over $500M",
+    "signal_3": "Multiple board memberships and leadership roles"
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership as co-founder and CEO in a small startup indicates ownership, but limited evidence of trajectory or influence beyond initial roles.",
+    "latent_risk_justification": "Small team and short tenure suggest manageable risk, but limited evidence of growth or ownership depth.",
+    "signal_1": "Founder and CEO for less than 2 years",
+    "signal_2": "Leadership in a small tech startup",
+    "signal_3": "Industry focus on technology platforms"
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 2,
+    "latent_strength": 1,
+    "latent_risk": 2,
+    "latent_strength_justification": "Limited professional experience in a short tenure in petroleum engineering; minimal evidence of ownership or trajectory.",
+    "latent_risk_justification": "Short industry tenure and limited leadership suggest low ownership signals and some risk.",
+    "signal_1": "2-3 years as petroleum engineer",
+    "signal_2": "Industry in extractive industries",
+    "signal_3": "No evidence of ownership or leadership roles"
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "Experience as a software developer over 4-5 years indicates some ownership and trajectory, but limited evidence of leadership or ownership beyond employment.",
+    "latent_risk_justification": "Moderate experience suggests manageable risk, but limited ownership signals.",
+    "signal_1": "Software developer for 4-5 years",
+    "signal_2": "Experience in tech industry",
+    "signal_3": "Role in software development"
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "Leadership as marketing manager in a mid-sized company indicates responsibility, but limited evidence of ownership or trajectory in startups.",
+    "latent_risk_justification": "Moderate experience and role suggest manageable risk, but limited ownership signals.",
+    "signal_1": "Marketing manager for 4-5 years",
+    "signal_2": "Industry focus on apparel",
+    "signal_3": "Leadership in marketing"
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Long-term leadership in academia and healthcare indicates ownership, responsibility, and influence, with evidence of trajectory.",
+    "latent_risk_justification": "Academic and medical roles reduce startup risk, but limited entrepreneurial signals.",
+    "signal_1": "Chairman for 4-5 years",
+    "signal_2": "Leadership in healthcare academia",
+    "signal_3": "Ownership in academic leadership"
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Leadership roles in multiple industries over many years suggest ownership, responsibility, and influence, with evidence of trajectory.",
+    "latent_risk_justification": "Diverse experience and leadership reduce risk, but limited startup-specific signals.",
+    "signal_1": "Leadership over 6-9 years",
+    "signal_2": "Multiple industry leadership roles",
+    "signal_3": "Ownership in senior roles"
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "latent_strength": 2,
+    "latent_risk": 2,
+    "latent_strength_justification": "Experience in industry roles over less than 2 years indicates some ownership and responsibility, but limited evidence of trajectory or influence.",
+    "latent_risk_justification": "Short tenure and small team size suggest manageable risk, but limited ownership signals.",
+    "signal_1": "Industry roles less than 2 years",
+    "signal_2": "Focus on renewable energy",
+    "signal_3": "Responsibility in industry roles"
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 3,
+    "latent_strength_justification": "Long-term ownership as founder and leadership in education and training indicates ownership, responsibility, and trajectory, with influence in multiple roles.",
+    "latent_risk_justification": "Extensive experience and leadership reduce risk, but limited startup-specific signals.",
+    "signal_1": "Owner for over 9 years",
+    "signal_2": "Leadership in education & training",
+    "signal_3": "Ownership in multiple roles"
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "latent_strength": 3,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has diverse industry experience and leadership roles, indicating ownership and responsibility, but limited evidence of entrepreneurial success or innovative impact.",
+    "latent_risk_justification": "The founder's background includes military and corporate roles with moderate duration, which may suggest stability but limited entrepreneurial track record.",
+    "signal_1": "Multiple leadership roles across different industries demonstrate adaptability and ownership.",
+    "signal_2": "Experience in both military and corporate sectors suggests discipline and responsibility.",
+    "signal_3": "Educational background in business management from a QS-ranked institution indicates foundational knowledge."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "latent_strength": 2,
+    "latent_risk": 3,
+    "latent_strength_justification": "The founder has relevant education and some leadership experience in sustainability, but limited entrepreneurial activity and short durations in roles reduce confidence in strength.",
+    "latent_risk_justification": "Short tenure in key roles and lack of clear startup success signals increase potential risk, despite relevant education.",
+    "signal_1": "Educational background in environmental science and policy aligns with industry focus.",
+    "signal_2": "Experience in sustainability and project management shows responsibility and ownership.",
+    "signal_3": "Leadership in a startup environment, albeit short, indicates initiative."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "latent_strength": 4,
+    "latent_risk": 2,
+    "latent_strength_justification": "The founder has extensive technical experience and multiple co-founder roles, indicating strong ownership and technical leadership, with a QS-ranked degree supporting credibility.",
+    "latent_risk_justification": "Relatively short durations in roles and lack of evidence of scaling or entrepreneurial success pose some risk, but technical expertise is strong.",
+    "signal_1": "Multiple co-founder and leadership roles demonstrate ownership and technical responsibility.",
+    "signal_2": "Degree in a highly ranked program indicates solid foundational knowledge.",
+    "signal_3": "Diverse engineering roles suggest technical strength and industry experience."
+  }
+]

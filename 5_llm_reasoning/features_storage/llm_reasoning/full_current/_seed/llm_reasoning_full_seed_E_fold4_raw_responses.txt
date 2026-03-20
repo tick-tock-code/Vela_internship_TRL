@@ -1,0 +1,205 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "The founder's healthcare background and leadership in a new industry suggest potential for innovative approaches that are not captured by traditional metrics.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited direct entrepreneurial experience and a background primarily in healthcare roles may pose challenges in startup scaling and business development.",
+    "underrated_aspects": "The interdisciplinary healthcare and business education combined with healthcare industry experience could enable unique insights and innovation in e-learning for healthcare."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Diverse technical roles across multiple industries indicate broad technical expertise and adaptability, which are valuable for startup success.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Relatively short durations in each role may suggest limited depth of experience in leadership or product development.",
+    "underrated_aspects": "The founder's experience across different tech sectors and roles suggests a versatile skill set that can adapt to various startup challenges."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Academic background in finance and entrepreneurship combined with early startup experience indicates potential for strategic insight and industry knowledge.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited professional experience in the startup environment and leadership roles may limit operational expertise.",
+    "underrated_aspects": "The combination of finance and entrepreneurship education with startup founding experience suggests a strong foundation for navigating financial and strategic challenges."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Diverse technical roles in software development and academia suggest a broad skill set, but lack of leadership or startup-specific experience limits insight into success factors.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Limited industry experience and no clear entrepreneurial track record increase uncertainty about startup success potential.",
+    "underrated_aspects": "Technical expertise and academic experience may enable innovative product development, which is often undervalued in traditional assessments."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Extensive leadership roles in large organizations indicate strong management skills and industry knowledge, which can be leveraged in startups.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Long tenure in corporate roles may not directly translate to startup agility and risk-taking ability.",
+    "underrated_aspects": "Deep experience in leadership development and organizational effectiveness could provide a competitive advantage in building strong teams and cultures."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Long-term entrepreneurial activity in marketing and advertising shows commitment, but lack of detailed startup success evidence limits confidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Limited information on startup outcomes and industry impact increases uncertainty about success potential.",
+    "underrated_aspects": "Leadership in marketing and advertising may offer creative and strategic advantages that are not immediately apparent."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Diverse roles in nonprofit and corporate sectors suggest strong organizational and resource development skills.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Experience primarily in nonprofit and administrative roles may limit entrepreneurial and product-market fit experience.",
+    "underrated_aspects": "Experience in resource development and partnerships could be valuable for scaling and funding a health-related startup."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership in a COO role in sports and freelance music experience suggest diverse skills, but lack of startup or industry-specific success evidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Limited industry relevance and no entrepreneurial track record increase uncertainty about success.",
+    "underrated_aspects": "Creative and leadership skills from arts and sports may provide unique perspectives in startup management."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership as President indicates executive potential, but short tenure and limited industry-specific experience may limit impact.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited professional history and industry-specific leadership experience pose moderate risks.",
+    "underrated_aspects": "Educational background in business and management provides a solid foundation for startup leadership."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Progressive leadership roles in growth and marketing across multiple industries suggest adaptability and strategic insight.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Short durations in each role may indicate limited depth in any single industry or function.",
+    "underrated_aspects": "Diverse industry experience and leadership roles could enable innovative cross-sector solutions."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership as CEO and co-founder in a tech startup suggests entrepreneurial potential, but limited duration and industry-specific success data.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Short leadership tenure and lack of detailed startup achievements increase uncertainty.",
+    "underrated_aspects": "Founder's leadership roles in multiple startups indicate resilience and adaptability."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 5,
+    "hidden_upside": 5,
+    "hidden_upside_justification": "Exceptional academic credentials and extensive academic leadership experience suggest high potential for innovative research and impact in higher education.",
+    "hidden_risk": 1,
+    "hidden_risk_justification": "Academic success and leadership in a top-ranked institution imply strong foundation, with minimal immediate risk.",
+    "underrated_aspects": "Deep research expertise and leadership in equity initiatives are often undervalued in traditional startup success metrics."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership roles in extractive industries and legal education suggest strategic and legal expertise, but limited entrepreneurial experience.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Multiple leadership roles without clear startup success or industry innovation history increase uncertainty.",
+    "underrated_aspects": "Legal and engineering background combined with leadership in extractive industries could enable innovative solutions in resource management."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Academic credentials in top-ranked programs and research roles suggest strong analytical and research skills.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited entrepreneurial or industry leadership experience may limit practical startup success potential.",
+    "underrated_aspects": "Research expertise in biotech and nanotech fields can lead to breakthrough innovations often undervalued in traditional metrics."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "High-level academic credentials and faculty leadership indicate strong expertise and potential for innovative educational solutions.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Academic and faculty roles may lack direct entrepreneurial experience, but suggest strong domain knowledge.",
+    "underrated_aspects": "Interdisciplinary academic background and leadership in education could foster innovative approaches in edtech."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Leadership roles in marketing and organizational management demonstrate strategic and operational skills valuable for startups.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Long-term leadership in marketing may lack direct startup experience, but skills are transferable.",
+    "underrated_aspects": "Strong educational background in leadership and management combined with diverse industry experience enhances adaptability."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership as CEO and experience in marketing and graphic arts suggest creative and strategic skills, but limited startup success evidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Short leadership tenure and lack of industry-specific startup success increase uncertainty.",
+    "underrated_aspects": "Creative background and leadership in marketing may provide unique branding and strategic advantages."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Founder's long-term activity in real estate indicates industry knowledge, but limited entrepreneurial success data.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Multiple founding roles in real estate suggest experience, but lack of clear startup scaling success.",
+    "underrated_aspects": "Deep industry experience in real estate can enable innovative property tech solutions often undervalued."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Design experience in marketing and art suggests creative skills, but limited leadership or startup success evidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Limited industry and entrepreneurial experience increase uncertainty about startup potential.",
+    "underrated_aspects": "Design and artistic skills can be critical in branding and user experience, often undervalued in traditional metrics."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Roles in sales management in renewable energy indicate industry experience, but lack of entrepreneurial or startup success data.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Limited leadership in startups or product development increases uncertainty about success potential.",
+    "underrated_aspects": "Sales expertise in climate tech can be a strong asset for market entry and growth, often undervalued."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "The founder's diverse experience across large corporations and leadership roles in a startup suggests potential for strategic insight and adaptability, which are often underrated in traditional metrics.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited duration in each role and relatively recent startup founding may indicate a lack of deep industry expertise or operational experience, which could pose risks.",
+    "underrated_aspects": "The founder's experience in aerospace and defense, combined with leadership in tech, may provide unique problem-solving skills and resilience that are not captured by standard startup metrics."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "The founder's extensive experience in creative roles and leadership in media and design suggests strong creative and branding skills, which are often undervalued in traditional startup success metrics.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The founder's background is primarily in creative industries with limited evidence of entrepreneurial or operational experience, which could increase the risk of startup execution challenges.",
+    "underrated_aspects": "The founder's diverse creative background and leadership in multiple media industries may foster innovative approaches and strong industry networks that are not reflected in conventional metrics."
+  }
+]

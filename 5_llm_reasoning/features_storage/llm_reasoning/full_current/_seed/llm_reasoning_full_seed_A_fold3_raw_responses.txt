@@ -1,0 +1,283 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "The founder has held roles over several years, but the roles are limited in scope and industry-specific progression is unclear.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Long-term co-ownership suggests some ownership, but limited evidence of active ownership or responsibility.",
+    "career_coherence": 2,
+    "career_coherence_justification": "The roles are somewhat related but lack clear progression or focus on a specific career trajectory.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Experience in small team roles indicates some resourcefulness, but limited entrepreneurial evidence."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Multiple leadership roles across different industries over several years show a strong, consistent trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Multiple senior roles and long-term leadership indicate strong ownership signals.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Diverse roles in healthcare and venture capital show a coherent focus on healthcare and investment.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Leadership in various roles suggests resourcefulness, but entrepreneurial activity is not explicitly demonstrated."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "Roles are limited in scope and duration, with no clear upward or industry-specific progression.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Limited evidence of ownership or responsibility in roles held.",
+    "career_coherence": 2,
+    "career_coherence_justification": "Roles are in different industries with no clear career focus or progression.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Experience in large organizations suggests resourcefulness but limited entrepreneurial evidence."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Multiple founder roles over many years in the tech industry show a strong entrepreneurial trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Multiple founder roles indicate high ownership and responsibility.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Consistent leadership in tech startups demonstrates a coherent career path.",
+    "scrappiness": 4,
+    "scrappiness_justification": "Leading multiple startups over many years indicates resourcefulness and resilience."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "trajectory_strength": 1,
+    "trajectory_strength_justification": "Limited professional experience and short tenure in the industry suggest weak trajectory signals.",
+    "ownership_signal": 1,
+    "ownership_signal_justification": "Limited evidence of ownership or leadership roles.",
+    "career_coherence": 1,
+    "career_coherence_justification": "Experience in a single role with no clear progression or entrepreneurial activity.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Limited experience suggests limited resourcefulness or entrepreneurial activity."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 3,
+    "trajectory_strength_justification": "Multiple roles across different industries over several years show some career development.",
+    "ownership_signal": 3,
+    "ownership_signal_justification": "Roles indicate responsibility but limited evidence of active ownership.",
+    "career_coherence": 3,
+    "career_coherence_justification": "Diverse roles suggest adaptability but lack a clear, focused career path.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Experience in various roles indicates resourcefulness, but entrepreneurial activity is not explicit."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "Roles are recent and limited in scope, with some industry diversity.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Limited evidence of ownership or leadership roles.",
+    "career_coherence": 2,
+    "career_coherence_justification": "Roles are in different industries with no clear focus.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Experience in small startups suggests resourcefulness but limited entrepreneurial evidence."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 3,
+    "trajectory_strength_justification": "Leadership roles over several years in manufacturing and management show some career development.",
+    "ownership_signal": 3,
+    "ownership_signal_justification": "Roles suggest responsibility but limited evidence of active ownership.",
+    "career_coherence": 3,
+    "career_coherence_justification": "Roles are related to management and leadership in manufacturing, showing some coherence.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Leadership in multiple roles indicates resourcefulness, but entrepreneurial activity is not explicit."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Long-term leadership roles in finance and sales indicate a strong, consistent career trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Roles in senior management and leadership suggest strong ownership signals.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Roles are within related industries, showing a coherent career path.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Experience in large organizations suggests resourcefulness, but entrepreneurial activity is not explicitly demonstrated."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Long-term leadership roles in fashion and digital solutions show a clear, strong trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Roles as CEO and President over many years indicate high ownership signals.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Consistent leadership in related industries demonstrates coherence.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Leadership in large organizations suggests resourcefulness, but entrepreneurial activity is not explicitly shown."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Multiple senior roles in medical and sales over many years show a strong, consistent trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Roles as partner and senior director suggest ownership and responsibility.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Roles are within medical and sales industries, showing coherence.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Experience in medical and sales roles indicates resourcefulness, but entrepreneurial activity is limited."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 5,
+    "trajectory_strength": 5,
+    "trajectory_strength_justification": "Multiple co-founder and board roles over many years, including IPO and acquisitions, demonstrate a very strong entrepreneurial trajectory.",
+    "ownership_signal": 5,
+    "ownership_signal_justification": "Long-term founder and board member roles with significant company milestones indicate very high ownership signals.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Diverse roles in media, investment, and leadership show a broad but coherent entrepreneurial career.",
+    "scrappiness": 5,
+    "scrappiness_justification": "Leading multiple startups, navigating IPOs and acquisitions, demonstrates exceptional resourcefulness and resilience."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "Limited roles in a small startup, with no clear progression or industry diversity.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Limited evidence of ownership or leadership roles.",
+    "career_coherence": 2,
+    "career_coherence_justification": "Roles are in the same industry but lack clear progression or focus.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Limited entrepreneurial activity or resourcefulness evidence."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 2,
+    "trajectory_strength": 1,
+    "trajectory_strength_justification": "Limited to a single industry and role, with no clear career progression.",
+    "ownership_signal": 1,
+    "ownership_signal_justification": "No evidence of ownership or leadership roles.",
+    "career_coherence": 1,
+    "career_coherence_justification": "Single role in a different industry, no clear career trajectory.",
+    "scrappiness": 1,
+    "scrappiness_justification": "Limited entrepreneurial or resourcefulness signals."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 3,
+    "trajectory_strength_justification": "Roles in software development over several years show some career development.",
+    "ownership_signal": 3,
+    "ownership_signal_justification": "Roles as developer and engineer suggest responsibility but limited ownership evidence.",
+    "career_coherence": 3,
+    "career_coherence_justification": "Roles are within the same industry, showing some coherence.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Experience in multiple companies indicates resourcefulness, but entrepreneurial activity is not explicit."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "Role as marketing manager over a few years shows some career stability but limited progression.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Limited evidence of ownership or leadership roles.",
+    "career_coherence": 2,
+    "career_coherence_justification": "Single role in a related industry, but no clear trajectory.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Experience suggests resourcefulness but limited entrepreneurial activity."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Long-term leadership roles in academia and healthcare indicate a strong, consistent trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Roles as chairman and surgeon suggest high ownership and responsibility.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Roles are within healthcare and academia, showing coherence.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Leadership roles in complex environments suggest resourcefulness, but entrepreneurial activity is not explicit."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "Roles are recent and limited in scope, with some industry diversity.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Limited evidence of ownership or leadership roles.",
+    "career_coherence": 2,
+    "career_coherence_justification": "Roles are in different industries with no clear focus.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Experience in various roles suggests resourcefulness, but entrepreneurial activity is not explicit."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "Roles are recent and limited in scope, with some industry diversity.",
+    "ownership_signal": 2,
+    "ownership_signal_justification": "Limited evidence of ownership or leadership roles.",
+    "career_coherence": 2,
+    "career_coherence_justification": "Roles are in different industries with no clear focus.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Experience suggests resourcefulness but limited entrepreneurial activity."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Long-term leadership roles in education and training show a strong, consistent trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Roles as owner and director indicate high ownership signals.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Roles are within education and training, demonstrating coherence.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Leadership roles suggest resourcefulness, but entrepreneurial activity is not explicitly demonstrated."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 3,
+    "trajectory_strength_justification": "The founder has diverse roles across multiple industries over several years, indicating varied experience but limited evidence of a clear, focused trajectory towards startup success.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Multiple leadership roles, including founder and VP, suggest a strong ownership signal, though some roles are in larger organizations which may dilute ownership perception.",
+    "career_coherence": 3,
+    "career_coherence_justification": "The career path shows movement across different industries and roles, which may indicate a lack of a singular, coherent focus but also broad experience.",
+    "scrappiness": 3,
+    "scrappiness_justification": "Experience in various roles and industries suggests adaptability, but limited evidence of scrappy, resourceful startup-building behavior."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "trajectory_strength": 2,
+    "trajectory_strength_justification": "The founder's roles are relatively short-term and in different sectors, with limited evidence of a clear, upward or focused trajectory.",
+    "ownership_signal": 3,
+    "ownership_signal_justification": "Leadership as Director and Project Manager indicates some ownership, but the short durations and varied roles suggest moderate signals.",
+    "career_coherence": 2,
+    "career_coherence_justification": "The career spans different fields with no clear focus, indicating low coherence.",
+    "scrappiness": 2,
+    "scrappiness_justification": "Limited evidence of scrappy startup experience; roles seem more aligned with project or organizational management."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "trajectory_strength": 4,
+    "trajectory_strength_justification": "Multiple co-founder roles and engineering positions in relevant industries demonstrate a strong, focused technical and entrepreneurial trajectory.",
+    "ownership_signal": 4,
+    "ownership_signal_justification": "Leading multiple startup roles and technical leadership indicate strong ownership signals.",
+    "career_coherence": 4,
+    "career_coherence_justification": "Consistent focus on IT and engineering roles, with progression into founding positions, shows clear coherence.",
+    "scrappiness": 4,
+    "scrappiness_justification": "Multiple founding roles and technical leadership suggest resourcefulness and scrappy startup-building experience."
+  }
+]

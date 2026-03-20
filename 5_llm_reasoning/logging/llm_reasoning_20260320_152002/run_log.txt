@@ -1,0 +1,53 @@
+run_log started
+[2026-03-20T15:20:02.262264] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-20T15:20:02.644802] Loaded records: 4500 labels: 4500
+[2026-03-20T15:20:02.645373] Use LLM reasoning: True
+[2026-03-20T15:20:02.645789] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-20T15:20:02.646197] Human feature source: baseline
+[2026-03-20T15:20:02.646496] Model type: logistic
+[2026-03-20T15:20:02.646818] Run profile: reasoning_xgb_oof
+[2026-03-20T15:20:02.649653] Seed size=100 pool size=4400
+[2026-03-20T15:20:02.649957] OPENAI_API_KEY set: True
+[2026-03-20T15:20:02.675409] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-20T15:20:02.675761] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-20T15:20:09.103267] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-20T15:20:09.348250] Full reasoning cache missing; generating seed_100 reasoning for full dataset.
+[2026-03-20T15:20:09.420975] Seed reasoning generation for full_current (separate). new_cols=0 seed_exp_list=['A', 'B', 'C', 'D', 'E', 'F'] seed_cols_target=42
+[2026-03-20T15:20:09.422641] [seed_A] Starting fold-batched reasoning. experiments=['A'] folds=5 records=100
+[2026-03-20T15:20:09.423139] [seed_A] Fold 0: start (records=19 target_batches=0)
+[2026-03-20T15:20:46.661705] [seed_A] Fold 0: completed (19 rows).
+[2026-03-20T15:20:46.664136] [seed_A] Fold 1: start (records=20 target_batches=0)
+[2026-03-20T15:21:52.340412] [seed_A] Fold 1: completed (20 rows).
+[2026-03-20T15:21:52.342672] [seed_A] Fold 2: start (records=16 target_batches=0)
+[2026-03-20T15:22:24.043687] [seed_A] Fold 2: completed (16 rows).
+[2026-03-20T15:22:24.045790] [seed_A] Fold 3: start (records=23 target_batches=0)
+[2026-03-20T15:22:50.394789] [seed_A] Fold 3: completed (23 rows).
+[2026-03-20T15:22:50.396575] [seed_A] Fold 4: start (records=22 target_batches=0)
+[2026-03-20T15:23:12.156806] [seed_A] Fold 4: completed (22 rows).
+[2026-03-20T15:23:12.165985] [seed_A] Combined parquet saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\llm_reasoning\full_current\_seed\A\llm_reasoning_full.parquet (rows=100)
+[2026-03-20T15:23:12.176733] [seed_B] Starting fold-batched reasoning. experiments=['B'] folds=5 records=100
+[2026-03-20T15:23:12.177165] [seed_B] Fold 0: start (records=19 target_batches=0)
+[2026-03-20T15:23:22.029780] [seed_B] Fold 0: completed (19 rows).
+[2026-03-20T15:23:22.032830] [seed_B] Fold 1: start (records=20 target_batches=0)
+[2026-03-20T15:23:32.436822] [seed_B] Fold 1: completed (20 rows).
+[2026-03-20T15:23:32.438445] [seed_B] Fold 2: start (records=16 target_batches=0)
+[2026-03-20T15:23:43.311372] [seed_B] Fold 2: completed (16 rows).
+[2026-03-20T15:23:43.312942] [seed_B] Fold 3: start (records=23 target_batches=0)
+[2026-03-20T15:23:56.151303] [seed_B] Fold 3: completed (23 rows).
+[2026-03-20T15:23:56.152953] [seed_B] Fold 4: start (records=22 target_batches=0)
+[2026-03-20T15:24:11.172536] [seed_B] Fold 4: completed (22 rows).
+[2026-03-20T15:24:11.178665] [seed_B] Combined parquet saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\llm_reasoning\full_current\_seed\B\llm_reasoning_full.parquet (rows=100)
+[2026-03-20T15:24:11.185479] [seed_C] Starting fold-batched reasoning. experiments=['C'] folds=5 records=100
+[2026-03-20T15:24:11.185862] [seed_C] Fold 0: start (records=19 target_batches=0)
+[2026-03-20T15:24:38.213141] [seed_C] Fold 0: completed (19 rows).
+[2026-03-20T15:24:38.216418] [seed_C] Fold 1: start (records=20 target_batches=0)
+[2026-03-20T15:25:52.307365] [seed_C] Fold 1: completed (20 rows).
+[2026-03-20T15:25:52.308900] [seed_C] Fold 2: start (records=16 target_batches=0)
+[2026-03-20T15:26:21.571874] [seed_C] Fold 2: completed (16 rows).
+[2026-03-20T15:26:21.573444] [seed_C] Fold 3: start (records=23 target_batches=0)
+[2026-03-20T15:26:49.754706] [seed_C] Fold 3: completed (23 rows).
+[2026-03-20T15:26:49.756496] [seed_C] Fold 4: start (records=22 target_batches=0)
+[2026-03-20T15:27:14.422654] [seed_C] Fold 4: completed (22 rows).
+[2026-03-20T15:27:14.432331] [seed_C] Combined parquet saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\llm_reasoning\full_current\_seed\C\llm_reasoning_full.parquet (rows=100)
+[2026-03-20T15:27:14.442609] [seed_D] Starting fold-batched reasoning. experiments=['D'] folds=5 records=100
+[2026-03-20T15:27:14.443191] [seed_D] Fold 0: start (records=19 target_batches=0)

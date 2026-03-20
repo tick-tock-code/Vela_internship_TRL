@@ -1,0 +1,98 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "The founder has diverse roles and leadership experience in a high-growth industry, with a long tenure as a sergeant indicating ownership and responsibility."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 1,
+    "rubric_score": 1,
+    "rubric_score_justification": "Lack of detailed evidence on progression, ownership, or high-growth context; minimal observable signals."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term leadership as principal and founder in a professional services startup suggests ownership and trajectory in a high-growth environment."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Early roles in software development with a top-ranked education in symbolic systems; leadership in a startup indicates ownership, but experience duration is limited."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles across different companies and industries, with consistent progression in product management, indicating ownership and high-growth context."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term president role and diverse technical experience in biotech and engineering suggest ownership and trajectory in high-growth sectors."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Diverse roles in media and health, but limited evidence of ownership or rapid progression in a high-growth startup context."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "rubric_score": 2,
+    "rubric_score_justification": "Leadership roles as CEO with moderate duration; limited evidence of ownership in ambiguous environments or high-growth context."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term president and board experience in wholesale industry indicate ownership and responsibility in a high-growth environment."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Leadership in marketing and management roles in a large company suggest some ownership, but limited startup or high-growth signals."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "rubric_score": 3,
+    "rubric_score_justification": "Multiple technical roles in a large organization, with leadership in product direction, indicating ownership but limited startup experience."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Advanced degrees and leadership roles in a large tech startup suggest ownership and trajectory in a high-growth industry."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple leadership roles in government policy and digital solutions, with long tenure, indicating ownership and responsibility."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term technical leadership in a large IT company and advanced education suggest ownership and operating in a high-growth sector."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Multiple technical and advisory roles in a large organization, with leadership in solutions architecture, indicating ownership and trajectory."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "rubric_score": 4,
+    "rubric_score_justification": "Long-term technical leadership and ownership roles in a large manufacturing company suggest responsibility and operating in a high-growth environment."
+  }
+]

@@ -1,0 +1,305 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Strong academic background, technical expertise, industry-specific experience",
+    "top_3_weaknesses": "Limited professional experience duration, no evidence of entrepreneurial success, small leadership roles",
+    "overall_founder_quality_justification": "The founder's strong academic credentials and relevant technical experience support a high potential, but limited leadership and entrepreneurial evidence reduce the score."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "overall_founder_quality": 2,
+    "top_3_strengths": "Leadership role as CTO & CIO, industry experience in IT services",
+    "top_3_weaknesses": "Lack of educational background details, no evidence of startup success, limited entrepreneurial activity",
+    "overall_founder_quality_justification": "While the founder has leadership experience in a relevant industry, the absence of educational details and startup success evidence lowers confidence."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Diverse industry experience, advanced degrees, leadership roles in corporate development",
+    "top_3_weaknesses": "No direct startup experience, leadership roles mostly in large companies, limited entrepreneurial evidence",
+    "overall_founder_quality_justification": "The founder's extensive industry and academic background suggest strong potential, but lack of startup-specific experience limits the score."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership roles in healthcare, relevant education in finance",
+    "top_3_weaknesses": "Limited entrepreneurial activity, no evidence of startup success, small leadership scope",
+    "overall_founder_quality_justification": "The founder's healthcare leadership and finance education are strengths, but limited entrepreneurial evidence reduces overall score."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Multiple leadership roles, diverse industry experience, educational background",
+    "top_3_weaknesses": "No clear startup experience, leadership roles in unrelated industries, limited evidence of entrepreneurial success",
+    "overall_founder_quality_justification": "The founder's varied experience and leadership are positives, but lack of startup-specific evidence limits the score."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "overall_founder_quality": 2,
+    "overall_founder_quality_justification": "Leadership roles in multiple industries suggest versatility, but absence of educational background and startup experience lowers confidence."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Strong technical education, extensive industry experience, leadership in technology",
+    "top_3_weaknesses": "No evidence of entrepreneurial activity, limited startup leadership, no direct startup success shown",
+    "overall_founder_quality_justification": "The founder's technical expertise and leadership in established companies support high potential, but lack of startup experience limits the score."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Design expertise, creative background, leadership in design roles",
+    "top_3_weaknesses": "No entrepreneurial experience, small or solo ventures, limited industry scope",
+    "overall_founder_quality_justification": "Design skills and leadership are strengths, but absence of startup or entrepreneurial evidence results in a moderate score."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Diverse industry experience, leadership in logistics and manufacturing, relevant education",
+    "top_3_weaknesses": "Limited entrepreneurial activity, no evidence of startup success, primarily operational roles",
+    "overall_founder_quality_justification": "The founder's broad experience and operational leadership support potential, but lack of entrepreneurial success evidence limits the score."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 1,
+    "overall_founder_quality": 1,
+    "overall_founder_quality_justification": "Minimal information and no evidence of entrepreneurial activity or leadership reduce confidence significantly."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Extensive industry experience, leadership in engineering, relevant education",
+    "top_3_weaknesses": "No evidence of entrepreneurial success, limited startup leadership, no direct startup experience",
+    "overall_founder_quality_justification": "Strong technical and leadership background supports high potential, but lack of startup success evidence limits the score."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Long-term leadership as CEO, relevant education, industry experience",
+    "top_3_weaknesses": "No direct startup experience, limited evidence of entrepreneurial success, leadership mainly in healthcare",
+    "overall_founder_quality_justification": "The founder's leadership and industry experience support high potential, but absence of startup success evidence limits the score."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership in real estate, entrepreneurial experience as owner",
+    "top_3_weaknesses": "Limited industry scope, no evidence of scalable startup success, small team leadership",
+    "overall_founder_quality_justification": "Real estate leadership and entrepreneurial activity are positives, but limited scope and success evidence moderate the score."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership in data analytics, diverse industry experience, relevant education",
+    "top_3_weaknesses": "No evidence of startup success, limited entrepreneurial activity, leadership roles mainly in corporate settings",
+    "overall_founder_quality_justification": "The founder's leadership in analytics and industry experience are strengths, but lack of startup success evidence limits the score."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Multiple leadership roles, diverse industry experience, academic background",
+    "top_3_weaknesses": "No clear startup experience, limited entrepreneurial success evidence, leadership mainly in research roles",
+    "overall_founder_quality_justification": "The founder's academic and leadership background support potential, but lack of startup success evidence limits the score."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 1,
+    "overall_founder_quality": 1,
+    "overall_founder_quality_justification": "Minimal information and no evidence of entrepreneurial activity or leadership reduce confidence significantly."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Strong finance background, diverse industry experience, leadership roles in investment",
+    "top_3_weaknesses": "No evidence of startup success, limited entrepreneurial activity, leadership mainly in established firms",
+    "overall_founder_quality_justification": "The founder's finance expertise and leadership in investment support high potential, but lack of startup success evidence limits the score."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Technical education, leadership in design, industry experience",
+    "top_3_weaknesses": "No entrepreneurial activity, limited startup leadership, no evidence of success",
+    "overall_founder_quality_justification": "Design expertise and industry experience are strengths, but absence of startup success evidence results in a moderate score."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Technical education, leadership roles in health and tech, diverse experience",
+    "top_3_weaknesses": "Limited evidence of entrepreneurial success, leadership mainly in small or corporate roles, no startup track record",
+    "overall_founder_quality_justification": "The founder's technical and leadership background support high potential, but lack of startup success evidence limits the score."
+  }
+]
+
+--- RETRY ---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Strong technical education, diverse engineering background, leadership in a technical industry",
+    "top_3_weaknesses": "Limited professional experience duration, narrow industry focus, lack of entrepreneurial track record",
+    "overall_founder_quality_justification": "The founder's strong technical background and leadership in engineering suggest potential, but limited experience and industry focus reduce overall strength."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "overall_founder_quality": 2,
+    "top_3_strengths": "Leadership role as CTO & CIO, clear industry focus",
+    "top_3_weaknesses": "No educational background provided, limited professional experience details, no evidence of entrepreneurial activity",
+    "overall_founder_quality_justification": "While leadership roles indicate capability, the lack of educational and broader experience details limits confidence in overall founder quality."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Strong educational background, diverse senior roles across industries, leadership in multiple companies",
+    "top_3_weaknesses": "No specific entrepreneurial experience, broad industry shifts, limited evidence of startup success",
+    "overall_founder_quality_justification": "The founder's extensive education and leadership across industries support high potential, though entrepreneurial track record is unclear."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership in healthcare, relevant MBA, industry experience",
+    "top_3_weaknesses": "Limited duration in roles, no technical or entrepreneurial background, industry-specific experience only",
+    "overall_founder_quality_justification": "Healthcare leadership and MBA provide a solid foundation, but limited experience duration and scope reduce overall strength."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Multiple leadership roles, diverse industry experience, educational background in education",
+    "top_3_weaknesses": "No technical or entrepreneurial experience, limited duration in roles, industry focus on services",
+    "overall_founder_quality_justification": "Leadership and diverse experience support potential, but lack of technical or entrepreneurial evidence limits score."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "overall_founder_quality": 2,
+    "top_3_strengths": "Leadership roles in multiple startups, experience in product development",
+    "top_3_weaknesses": "No formal education details, small startup size, limited industry scope",
+    "overall_founder_quality_justification": "Leadership in startups is promising, but limited formal education and narrow industry scope reduce confidence."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Strong educational background, long-term industry experience, leadership roles",
+    "top_3_weaknesses": "No entrepreneurial experience, focus on corporate roles, limited startup evidence",
+    "overall_founder_quality_justification": "Educational and leadership background support high potential, but lack of entrepreneurial activity limits score."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Design expertise, leadership in creative industry, multiple roles",
+    "top_3_weaknesses": "No formal education, small startup size, limited industry scope",
+    "overall_founder_quality_justification": "Design skills and leadership are strengths, but lack of formal education and broader experience reduce score."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Diverse scientific experience, leadership in biotech, relevant education",
+    "top_3_weaknesses": "Limited duration in roles, no entrepreneurial evidence, narrow focus",
+    "overall_founder_quality_justification": "Strong scientific and leadership background, but limited entrepreneurial evidence and role durations moderate score."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 1,
+    "overall_founder_quality": 1,
+    "top_3_strengths": "Leadership roles as CEO and founder",
+    "top_3_weaknesses": "No educational background, minimal professional detail, no evidence of industry success",
+    "overall_founder_quality_justification": "Lack of educational and professional evidence significantly limits perceived founder quality."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Extensive engineering experience, leadership in medical manufacturing, diverse roles",
+    "top_3_weaknesses": "No formal education details, limited entrepreneurial activity, industry-specific focus",
+    "overall_founder_quality_justification": "Strong technical and leadership background supports high potential, but lack of entrepreneurial evidence limits maximum score."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Long-term leadership, diverse healthcare and research experience, high education level",
+    "top_3_weaknesses": "No entrepreneurial activity, no startup-specific experience, limited industry scope",
+    "overall_founder_quality_justification": "Leadership and education support high potential, but absence of entrepreneurial track reduces score."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Experience in real estate, leadership as owner",
+    "top_3_weaknesses": "No formal education, limited industry scope, no evidence of innovation",
+    "overall_founder_quality_justification": "Real estate leadership is solid, but limited education and innovation evidence moderate score."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership in data analytics, diverse roles, relevant education",
+    "top_3_weaknesses": "No entrepreneurial experience, limited industry scope, role durations",
+    "overall_founder_quality_justification": "Leadership and education support potential, but lack of entrepreneurial activity and role durations moderate score."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership in multiple roles, diverse experience, entrepreneurial background",
+    "top_3_weaknesses": "Limited formal education details, small startup size, narrow industry focus",
+    "overall_founder_quality_justification": "Leadership and entrepreneurial experience support potential, but limited formal education and scope reduce score."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 1,
+    "overall_founder_quality": 1,
+    "top_3_strengths": "Leadership role as management consultant",
+    "top_3_weaknesses": "No educational background, no entrepreneurial or industry-specific evidence, minimal detail",
+    "overall_founder_quality_justification": "Lack of educational and professional evidence results in very low confidence in founder quality."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "overall_founder_quality": 4,
+    "top_3_strengths": "Strong educational background, extensive industry experience, leadership roles",
+    "top_3_weaknesses": "No entrepreneurial activity, narrow focus on finance, limited startup evidence",
+    "overall_founder_quality_justification": "Educational and leadership strengths support high potential, though lack of entrepreneurial track limits maximum score."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Design expertise, leadership in semiconductor industry, technical background",
+    "top_3_weaknesses": "No formal education details, limited entrepreneurial evidence, narrow industry focus",
+    "overall_founder_quality_justification": "Technical skills and industry leadership support potential, but lack of formal education and entrepreneurial evidence moderate score."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "overall_founder_quality": 3,
+    "top_3_strengths": "Leadership as CEO, diverse roles in health and tech, relevant education",
+    "top_3_weaknesses": "Limited entrepreneurial activity, no startup success evidence, narrow industry focus",
+    "overall_founder_quality_justification": "Leadership and education support potential, but limited entrepreneurial evidence and narrow focus moderate score."
+  }
+]

@@ -1,0 +1,4 @@
+{"index": -1, "stage": "start_run", "experiment": "C+D+F", "processed": 0, "total": 19, "batch_size": 20, "n_batches": 1, "timestamp": 1774019159.1970687}
+{"index": 0, "stage": "start_call", "experiment": "C+D+F", "processed": 0, "total": 19, "batch_index": 0, "batch_start": 0, "batch_end": 18, "batch_size": 19, "timestamp": 1774019159.2071488}
+{"index": 0, "stage": "window_start", "experiment": "C+D+F", "window": 0, "concurrency": 10, "batch_ids": [0], "timestamp": 1774019159.2079365}
+{"index": 0, "stage": "repair_done", "experiment": "C+D+F", "processed": 19, "total": 19, "batch_index": 0, "batch_start": 0, "batch_end": 18, "batch_size": 19, "timestamp": 1774019232.3777516}

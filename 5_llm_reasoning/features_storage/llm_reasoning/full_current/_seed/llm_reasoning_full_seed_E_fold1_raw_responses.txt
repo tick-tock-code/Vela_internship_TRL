@@ -1,0 +1,182 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "The founder's diverse research and leadership roles across multiple industries suggest a broad skill set and adaptability that may be underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The short durations in each role and limited company size could indicate a lack of deep industry experience or stability, which is often overlooked.",
+    "underrated_aspects": "The founder's extensive research background and multiple industry exposures could provide unique insights and innovative approaches not captured by traditional metrics."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "The founder's long-term leadership in various roles within the same industry indicates strong domain expertise and entrepreneurial persistence.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The lack of educational background and the short durations in roles may suggest limited formal training or experience in leadership at scale.",
+    "underrated_aspects": "The founder's extensive experience in marketing and business development within the same industry could translate into a strong market understanding and network."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 1,
+    "hidden_upside": 1,
+    "hidden_upside_justification": "Minimal information and no educational or professional background provided, making it difficult to assess potential upside.",
+    "hidden_risk": 5,
+    "hidden_risk_justification": "Lack of any detail on experience or education suggests very limited evidence of capability or industry knowledge.",
+    "underrated_aspects": "No evidence available; traditional metrics would likely underestimate potential due to lack of data."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "The founder's technical background and experience as a software engineer in a sizable company suggest solid technical skills and industry familiarity.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Relatively short professional experience may limit leadership depth, but the technical expertise is a strong foundation.",
+    "underrated_aspects": "The founder's technical education and experience in a large company could enable rapid product development and innovation."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple advanced degrees and leadership roles across different companies and industries indicate high versatility and strategic insight.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The broad educational background might mask a lack of deep operational experience in a single domain.",
+    "underrated_aspects": "The founder's diverse academic and leadership experience could foster innovative cross-disciplinary solutions."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Extensive academic credentials and long-term leadership in healthcare suggest deep expertise and credibility in the field.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The focus on academic roles and specialized training may overlook entrepreneurial agility or business scaling experience.",
+    "underrated_aspects": "The founder's academic and clinical background could provide unique insights into healthcare innovation and research."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple high-level roles in a large company demonstrate strategic leadership and operational experience in software development.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Long tenure in corporate roles might limit entrepreneurial risk-taking or startup-specific experience.",
+    "underrated_aspects": "The founder's leadership in strategic areas could translate into effective scaling and innovation in a startup environment."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Diverse marketing and management roles across large and small companies suggest a broad skill set and adaptability.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The short durations and varied roles may indicate a lack of deep specialization or long-term focus in one area.",
+    "underrated_aspects": "The founder's varied experience could enable innovative marketing strategies and cross-industry insights."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Experience in early childhood education and management roles suggests some leadership and educational skills, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The background in education and training may not directly translate to startup success in manufacturing or tech sectors.",
+    "underrated_aspects": "The founder's educational background in management and education could offer unique perspectives on training and organizational development."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple advanced degrees in computer science and leadership roles in a large tech company indicate strong technical and managerial expertise.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited entrepreneurial or startup experience may pose a challenge in scaling or navigating early-stage risks.",
+    "underrated_aspects": "The founder's high-level academic credentials and leadership in a large organization suggest potential for innovative tech development."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Long-term education in civil engineering and experience as SBIR engineer suggest technical expertise and potential for innovation.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The focus on engineering roles and limited entrepreneurial activity could limit business scaling experience.",
+    "underrated_aspects": "The founder's engineering background and project experience may enable technical breakthroughs in venture capital-related startups."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple leadership roles as co-founder and CEO in different stages demonstrate entrepreneurial resilience and growth capability.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Short durations in each role may suggest a lack of long-term stability or deep industry immersion.",
+    "underrated_aspects": "The founder's repeated leadership roles indicate strong entrepreneurial drive and adaptability."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 2,
+    "hidden_upside": 1,
+    "hidden_upside_justification": "Limited information on professional background and no educational details, making potential upside hard to assess.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Lack of experience in relevant industries or leadership roles suggests high uncertainty and risk.",
+    "underrated_aspects": "Insufficient data; traditional metrics would likely underestimate potential due to lack of evidence."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Diverse roles in retail, sports, and education suggest versatility and a broad skill set.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The varied and unrelated professional background may indicate a lack of focus or deep expertise in a single domain.",
+    "underrated_aspects": "The founder's diverse experience could foster innovative approaches in customer engagement and team management."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple advanced degrees and leadership roles in research and design indicate strong interdisciplinary expertise and innovative potential.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Primarily academic roles with limited entrepreneurial or startup experience may pose a challenge in commercial scaling.",
+    "underrated_aspects": "The founder's academic and research background could lead to breakthrough innovations in technology or user experience."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple high-level research and academic roles in prestigious institutions suggest deep expertise and potential for innovation.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The focus on academic research roles may lack direct entrepreneurial or product-market experience.",
+    "underrated_aspects": "The founder's extensive research background could enable cutting-edge technological developments."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership as co-founder and CMO in a small startup indicates entrepreneurial initiative and marketing skills.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited experience in larger organizations or in scaling startups could be a concern.",
+    "underrated_aspects": "The founder's experience in both startup and corporate environments may provide a balanced perspective for growth."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Diverse cybersecurity roles across multiple high-profile sectors suggest strong technical expertise and adaptability.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The short durations and focus on technical roles may limit broader entrepreneurial or leadership experience.",
+    "underrated_aspects": "The founder's broad cybersecurity experience across industries could enable innovative security solutions."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 5,
+    "hidden_upside": 5,
+    "hidden_upside_justification": "Exceptional academic credentials and leadership roles in top-tier research institutions indicate outstanding expertise and potential for groundbreaking innovation.",
+    "hidden_risk": 1,
+    "hidden_risk_justification": "The extensive academic and research background suggests a high likelihood of success in research-driven startup ventures.",
+    "underrated_aspects": "The founder's deep academic and research credentials are often underestimated in terms of their impact on technological breakthroughs."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership roles in legal and nonprofit sectors suggest strong strategic and legal expertise, which can be valuable in biotech startups.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Lack of direct scientific or biotech industry experience may pose challenges in a highly specialized field.",
+    "underrated_aspects": "The founder's legal and policy background could provide unique advantages in regulatory navigation and compliance."
+  }
+]

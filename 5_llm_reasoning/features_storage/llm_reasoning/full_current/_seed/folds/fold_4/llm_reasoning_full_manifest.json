@@ -8,12 +8,12 @@
   },
   "google_model": "gemini-2.0-flash",
   "experiments": [
-    "A",
-    "B",
-    "E"
+    "C",
+    "D",
+    "F"
   ],
   "core_prompt_hash": "3e23f2a4b6bc1e8c1b170b1ad4c302e9a6cb92f1605137dc48e480611d865cb4",
-  "experiments_hash": "b488e0c9a49304c0157d2564288d555d900214307115034c5ffe42f9eec8399d",
+  "experiments_hash": "8b828898f862122935d57b3ef6a6af11d2d5fe02da25e642af49e2d13c6fd1e5",
   "global_numeric_keys": [
     "evidence_support_rating"
   ],

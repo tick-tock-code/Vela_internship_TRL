@@ -9,3 +9,11 @@ Use more complex models for prompt mutation,
 Workshop at the start of May - 6 weeks 
 
 Focus on interpretability - which features are driving things
+
+
+
+
+Make the project as understandable
+
+
+benchmark@vela.partners

@@ -1,0 +1,214 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "The founder's long-term leadership in a small startup suggests deep ownership but may overlook scalability potential.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited team size and experience in a niche industry could pose operational risks.",
+    "underrated_aspects": "The founder's experience in animation and interactive tech may provide unique creative insights not captured by traditional metrics."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Extensive leadership roles across multiple industries indicate broad expertise and network, which are often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's diverse roles may dilute focus, and the industry-specific experience is limited.",
+    "underrated_aspects": "Their long tenure as co-founder and leadership in healthcare startups suggests resilience and deep industry knowledge."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Experience in marketing and advertising at high levels indicates industry knowledge, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Lack of technical or startup-specific experience could hinder execution.",
+    "underrated_aspects": "Their education from a QS 99 institution in advertising and psychology may provide strong creative and consumer insights."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Multiple founder roles over a long period suggest commitment, but limited industry-specific evidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "No formal education or industry experience provided, which could be a risk for startup success.",
+    "underrated_aspects": "The founder's extensive experience as a founder over >9 years indicates resilience and deep entrepreneurial commitment."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Experience in research and design suggests creative skills, but limited leadership or entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited professional experience in the startup or leadership roles may pose risks.",
+    "underrated_aspects": "Their education from a QS 43 institution in a relevant field indicates strong foundational knowledge."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 3,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Diverse roles across industries and long-term leadership in a nonprofit suggest broad skills and resilience.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's experience is mostly in non-profit and administrative roles, which may limit startup operational expertise.",
+    "underrated_aspects": "Their multiple degrees and varied roles indicate adaptability and a broad network, often undervalued."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in a small startup and diverse marketing roles suggest entrepreneurial spirit, but limited scale experience.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Short tenure as founder and small team size could indicate limited operational track record.",
+    "underrated_aspects": "Their BCom in marketing from a QS 200+ institution suggests solid foundational knowledge."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership roles in manufacturing and management indicate operational experience, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Long tenure in management roles may not directly translate to startup agility and risk-taking.",
+    "underrated_aspects": "Their QS 101 degree in business administration provides a strong academic foundation."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in finance and management roles in a large company suggests stability and expertise.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Lack of direct entrepreneurial or startup experience could be a potential risk.",
+    "underrated_aspects": "Their extensive experience in finance roles at a large scale indicates strong operational and strategic skills."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term leadership in a large industry and multiple executive roles suggest resilience and strategic insight.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "High-level executive experience may lack direct startup operational experience, posing some risk.",
+    "underrated_aspects": "Their advanced degrees in business and management from QS 200+ institutions add depth to their leadership profile."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Diverse roles in medical and marketing fields suggest broad expertise, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited recent leadership roles in startups or small teams could pose operational risks.",
+    "underrated_aspects": "Their dual degrees in biology and biomedical engineering from QS 200+ institutions suggest strong technical foundation."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Extensive board memberships, IPO experience, and long-term leadership indicate deep industry and strategic expertise.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's broad experience may mask a lack of recent hands-on startup operational experience.",
+    "underrated_aspects": "Their diverse roles across industries and long tenure as a founder highlight resilience and adaptability."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Experience as a co-founder and CEO in a small startup suggests entrepreneurial drive, but limited industry-specific evidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Very limited professional experience outside of startup roles increases operational and market risks.",
+    "underrated_aspects": "Their leadership in a tech startup over >9 years indicates perseverance and potential for growth."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Experience as a petroleum engineer in a large company suggests technical skills, but limited entrepreneurial evidence.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Lack of entrepreneurial or startup leadership experience increases risk of execution failure.",
+    "underrated_aspects": "Their advanced degrees in finance and petroleum engineering from QS 150+ and 200+ institutions suggest strong technical and analytical skills."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Experience as a software developer in multiple large companies indicates technical competence, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited leadership roles in startups or small teams could pose operational risks.",
+    "underrated_aspects": "Their master's in computer science from QS 101 indicates strong technical expertise."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in a mid-sized apparel company suggests industry experience, but limited entrepreneurial track record.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The role as a manager rather than founder may limit insight into startup scaling and risk management.",
+    "underrated_aspects": "Their QS 130 degree in business from a reputable institution provides a solid academic background."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Leadership in academic medicine and extensive clinical experience suggest high expertise and resilience.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited entrepreneurial or startup experience could pose operational risks.",
+    "underrated_aspects": "Their dual degrees from QS 200+ institutions in medicine and engineering indicate a strong interdisciplinary background."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term leadership roles across multiple industries and IPO experience suggest strategic depth and resilience.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Most experience is in corporate roles, which may not fully translate to startup agility.",
+    "underrated_aspects": "Their diverse educational background and extensive board memberships highlight broad strategic insight."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Experience in renewable energy and community management indicates sector knowledge, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited leadership roles in startups or small teams could pose operational risks.",
+    "underrated_aspects": "Their degree from a QS 200+ institution in environmental science suggests solid technical grounding."
+  },
+  {
+    "index": 19,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term ownership and leadership in education, with multiple roles, suggest resilience and deep sector knowledge.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Lack of recent startup-specific leadership roles could limit operational agility.",
+    "underrated_aspects": "Their dual degrees from QS 200+ institutions in MBA and art history indicate a well-rounded, strategic mindset."
+  }
+]
+
+---
+
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "The founder's diverse experience across multiple industries and leadership roles suggests potential for cross-disciplinary innovation and adaptability, which are often underrated in traditional metrics.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's extensive experience in large organizations and military service may lead to overconfidence or a lack of startup-specific agility, which is not immediately apparent from their resume.",
+    "underrated_aspects": "Their background in military and large corporate environments may provide unique discipline and operational skills that are undervalued in typical startup assessments."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "The founder's academic background in environmental science and policy, combined with leadership in a sustainable enterprise, indicates a strong potential for impactful innovation in environmental sectors, often overlooked by traditional success metrics.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited professional experience in the industry and short tenure in leadership roles may suggest a nascent understanding of the market and operational challenges, which is not fully captured by their academic credentials.",
+    "underrated_aspects": "Their interdisciplinary education and early leadership roles in sustainability could enable them to identify niche opportunities and innovative solutions that are undervalued in conventional evaluations."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "The founder's technical expertise and leadership in multiple engineering and development roles within the IT industry suggest a strong technical foundation and entrepreneurial drive that are often underestimated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The relatively short duration in each role and the focus on technical positions may indicate limited experience in business management or scaling, which could pose risks not immediately evident from their technical background.",
+    "underrated_aspects": "Their deep technical expertise and early co-founder experience may allow for rapid product development and innovation, which are often undervalued compared to purely business-oriented metrics."
+  }
+]

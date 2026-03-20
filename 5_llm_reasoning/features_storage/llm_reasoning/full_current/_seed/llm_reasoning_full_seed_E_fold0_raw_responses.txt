@@ -1,0 +1,173 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "The founder's advanced education and leadership in a specialized industry suggest potential for innovative contributions that may be undervalued.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited professional experience duration and lack of entrepreneurial track record could underestimate operational risks.",
+    "underrated_aspects": "Deep technical expertise and academic background in structural engineering may lead to breakthroughs not immediately apparent from traditional metrics."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership role as CTO & CIO indicates strategic influence, but the lack of detailed experience or industry context limits confidence in upside potential.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Absence of educational background and limited professional history heighten uncertainty about technical and managerial capabilities.",
+    "underrated_aspects": "Potential for strong technical leadership in digital solutions, despite limited publicly available experience details."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple leadership roles across diverse industries and high-level education in materials science suggest broad strategic and technical expertise that could be highly valuable.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Varied industry experience may indicate adaptability but also potential lack of deep focus in a single domain, which could pose execution risks.",
+    "underrated_aspects": "Strong interdisciplinary background and extensive industry experience in biotech and pharma may enable innovative approaches."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership roles in healthcare with an MBA suggest managerial competence, but limited industry-specific experience may understate potential.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Relatively short tenure in leadership roles in healthcare could underestimate operational and industry-specific risks.",
+    "underrated_aspects": "MBA in finance combined with healthcare leadership experience could facilitate strategic growth in healthcare tech."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Diverse roles in education and ownership in financial services suggest entrepreneurial spirit and leadership, but limited industry-specific innovation evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Ownership in a different industry and varied roles may underestimate sector-specific challenges and scalability issues.",
+    "underrated_aspects": "Experience in multiple educational and community roles could provide unique insights into consumer engagement."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership in multiple startups and industries indicates entrepreneurial drive, but small company sizes and limited tenure may undervalue scalability potential.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Multiple short-term roles and small startup leadership may underestimate operational and market risks.",
+    "underrated_aspects": "Hands-on experience in diverse industries could foster innovative cross-sector solutions."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term leadership in a large company and a strong technical background suggest significant operational and technical expertise that could be highly leveraged.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Extensive corporate experience might underestimate the agility and risk profile of startup environments.",
+    "underrated_aspects": "Deep technical and managerial experience in software and technology sectors may enable innovative product development."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Creative industry background and leadership roles suggest strong design and branding skills, but limited entrepreneurial experience may understate growth potential.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Limited industry scope and small team size could underestimate operational and market risks.",
+    "underrated_aspects": "Design expertise and creative leadership could be highly valuable in consumer branding and product differentiation."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Diverse roles in biotech and logistics with a biology degree suggest broad scientific and operational knowledge, but limited entrepreneurial track record.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Multiple short-term roles and industry shifts may underestimate the risks of startup execution and focus.",
+    "underrated_aspects": "Strong scientific background and varied industry experience could enable innovative biotech solutions."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 1,
+    "hidden_upside": 1,
+    "hidden_upside_justification": "Lack of detailed background and industry experience makes it difficult to assess upside potential.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Minimal information and absence of industry context significantly underestimate potential risks.",
+    "underrated_aspects": "Insufficient data to identify underrated aspects."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Extensive leadership in medical equipment and engineering roles indicates strong technical and managerial skills with high growth potential.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Long tenure in large companies may underestimate startup-specific operational risks and agility challenges.",
+    "underrated_aspects": "Deep technical expertise and leadership in product development could lead to innovative medical solutions."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term CEO role and diverse healthcare and advisory experience suggest strategic leadership and industry insight.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "High-level roles in healthcare and finance may underestimate operational risks in startup environments.",
+    "underrated_aspects": "Strong industry network and leadership experience could accelerate startup growth."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 3,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Ownership and leadership in real estate indicate entrepreneurial initiative, but limited scale and industry-specific innovation evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Short tenure and small-scale operations may underestimate market and operational risks.",
+    "underrated_aspects": "Experience in real estate transactions and ownership could provide valuable market insights."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in data analytics and energy sectors suggests strategic and analytical skills, but limited entrepreneurial track record.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Multiple roles in large corporations may underestimate startup-specific execution risks.",
+    "underrated_aspects": "Strong analytical background and diverse industry experience could enable innovative data-driven solutions."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in education and research roles indicates academic and operational competence, but limited entrepreneurial evidence.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Multiple short-term roles and academic focus may underestimate market and operational risks.",
+    "underrated_aspects": "Academic background and research experience could foster innovative educational solutions."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 1,
+    "hidden_upside": 1,
+    "hidden_upside_justification": "Minimal information and lack of context make it impossible to assess upside potential.",
+    "hidden_risk": 4,
+    "hidden_risk_justification": "Absence of background details significantly underestimates potential risks.",
+    "underrated_aspects": "Insufficient data to identify underrated aspects."
+  },
+  {
+    "index": 16,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Strong academic background in finance and extensive experience as a portfolio manager suggest high potential for financial innovation and strategic growth.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Long tenure in established financial institutions may underestimate startup agility and market entry risks.",
+    "underrated_aspects": "Deep financial expertise and leadership in asset management could enable innovative financial products."
+  },
+  {
+    "index": 17,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership roles in semiconductor design indicate technical expertise, but limited entrepreneurial experience may understate growth potential.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Multiple roles in large companies may underestimate startup operational and market risks.",
+    "underrated_aspects": "Technical leadership in semiconductor design could lead to innovative hardware solutions."
+  },
+  {
+    "index": 18,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in health and wellness sectors suggests potential for impactful solutions, but limited entrepreneurial track record.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Multiple short-term roles and small team leadership may underestimate operational and market risks.",
+    "underrated_aspects": "Diverse experience in health and community sectors could foster innovative health tech solutions."
+  }
+]

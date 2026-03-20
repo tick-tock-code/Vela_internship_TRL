@@ -1,0 +1,32 @@
+{
+  "model": "gpt-4.1-nano",
+  "dataset_size": "full",
+  "random_state": 42,
+  "core_prompt_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\core_prompt.txt",
+  "experiments_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\experiments.json",
+  "experiments": [
+    "F"
+  ],
+  "output_parquet": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\F\\llm_reasoning_full.parquet",
+  "fold_metas": [
+    "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\llm_reasoning_full_seed_F_fold0.json",
+    "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\llm_reasoning_full_seed_F_fold1.json",
+    "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\llm_reasoning_full_seed_F_fold2.json",
+    "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\llm_reasoning_full_seed_F_fold3.json",
+    "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\features_storage\\llm_reasoning\\full_current\\_seed\\llm_reasoning_full_seed_F_fold4.json"
+  ],
+  "batch_within_folds": true,
+  "folds": 5,
+  "fold_sizes": [
+    19,
+    20,
+    16,
+    23,
+    22
+  ],
+  "batch_size": 20,
+  "concurrency": 10,
+  "dry_run": false,
+  "dry_run_fast": false,
+  "rate_limit_fallbacks": 0
+}

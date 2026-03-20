@@ -1,0 +1,146 @@
+[
+  {
+    "index": 0,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "The founder's military leadership and diverse industry experience suggest strong ownership and resilience, which are often underrated in traditional metrics.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited recent industry-specific experience and short tenure in roles may underestimate potential risks related to domain expertise.",
+    "underrated_aspects": "The founder's leadership in a high-responsibility military role indicates strong discipline and strategic thinking that are often overlooked."
+  },
+  {
+    "index": 1,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "The entrepreneurial experience as a co-founder in financial services hints at ownership and risk-taking, which are often undervalued.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Lack of detailed background and industry-specific experience makes it hard to assess operational risks accurately.",
+    "underrated_aspects": "The founder's dual co-founder roles suggest a high level of initiative and ownership that may not be reflected in traditional metrics."
+  },
+  {
+    "index": 2,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term leadership as principal and founder in management consulting indicates strong ownership and strategic responsibility, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's extensive experience in a small startup environment suggests stability but may underestimate risks of market or operational challenges.",
+    "underrated_aspects": "The founder's multi-year leadership roles in diverse industries reflect deep ownership and strategic oversight."
+  },
+  {
+    "index": 3,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Academic excellence in a highly ranked program and early industry experience suggest strong technical ownership, often undervalued.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited professional experience duration may underestimate risks related to scaling and operational maturity.",
+    "underrated_aspects": "The founder's technical background in a top-ranked program indicates strong domain expertise and ownership."
+  },
+  {
+    "index": 4,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple leadership roles across different companies and industries demonstrate ownership and adaptability, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Relatively short durations in roles may underestimate risks of operational continuity and deep industry expertise.",
+    "underrated_aspects": "The founder's progression through various roles in tech and management suggests strong ownership and strategic versatility."
+  },
+  {
+    "index": 5,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Diverse advanced degrees and leadership in scientific research indicate high ownership and technical expertise, often underrated.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "The founder's multiple PhDs and scientific roles may underestimate risks related to commercialization and market fit.",
+    "underrated_aspects": "The founder's extensive academic background and leadership in biotech research suggest strong ownership and technical depth."
+  },
+  {
+    "index": 6,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Long-term experience in creative and health industries shows ownership and resilience, often undervalued.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Diverse roles in non-technical fields may underestimate operational risks in startup scaling.",
+    "underrated_aspects": "The founder's multi-year engagement in creative industries indicates strong ownership and adaptability."
+  },
+  {
+    "index": 7,
+    "evidence_support_rating": 2,
+    "hidden_upside": 2,
+    "hidden_upside_justification": "Leadership roles in engineering industries suggest ownership, but limited recent experience may undervalue potential.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Short tenure as CEO and limited industry-specific experience may underestimate operational and market risks.",
+    "underrated_aspects": "The founder's leadership in engineering roles indicates technical ownership and strategic responsibility."
+  },
+  {
+    "index": 8,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term leadership in wholesale and board roles demonstrates ownership and strategic oversight, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's extensive experience in wholesale may underestimate risks related to technological or market shifts.",
+    "underrated_aspects": "The founder's long tenure and leadership roles suggest strong ownership and strategic influence."
+  },
+  {
+    "index": 9,
+    "evidence_support_rating": 3,
+    "hidden_upside": 3,
+    "hidden_upside_justification": "Leadership in marketing and ecommerce indicates ownership and strategic skills, often undervalued.",
+    "hidden_risk": 3,
+    "hidden_risk_justification": "Relatively short durations in roles may underestimate operational risks and industry-specific challenges.",
+    "underrated_aspects": "The founder's diverse marketing roles suggest ownership and adaptability in complex environments."
+  },
+  {
+    "index": 10,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Academic background in media and design combined with leadership roles indicates strong ownership and creative influence, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Limited industry-specific experience may underestimate risks related to market adoption and operational scaling.",
+    "underrated_aspects": "The founder's academic and leadership background in media design suggests ownership of creative and strategic vision."
+  },
+  {
+    "index": 11,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Advanced degrees and leadership in advertising and research indicate ownership and strategic influence, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Short tenure in roles may underestimate risks of operational execution and industry-specific challenges.",
+    "underrated_aspects": "The founder's academic credentials and leadership roles suggest strong ownership and strategic oversight."
+  },
+  {
+    "index": 12,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "High-level technical roles in government and venture capital indicate ownership and strategic responsibility, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The founder's roles in government and VC may underestimate operational risks in startup execution.",
+    "underrated_aspects": "The founder's leadership in high-responsibility roles reflects strong ownership and strategic influence."
+  },
+  {
+    "index": 13,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Long-term technical leadership in a large IT company suggests strong ownership and technical expertise, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The focus on technical roles may underestimate risks related to business development and market scaling.",
+    "underrated_aspects": "The founder's extensive technical leadership indicates deep ownership of complex systems and processes."
+  },
+  {
+    "index": 14,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Multiple senior technical roles in a large corporation demonstrate ownership and technical mastery, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "The technical focus may underestimate risks related to market adoption and operational scaling.",
+    "underrated_aspects": "The founder's broad technical expertise and leadership in complex projects suggest strong ownership."
+  },
+  {
+    "index": 15,
+    "evidence_support_rating": 4,
+    "hidden_upside": 4,
+    "hidden_upside_justification": "Leadership roles in data analytics and software engineering in large companies indicate ownership and technical depth, often underrated.",
+    "hidden_risk": 2,
+    "hidden_risk_justification": "Short durations in roles may underestimate operational and market risks in startup environments.",
+    "underrated_aspects": "The founder's technical leadership in data analytics infrastructure reflects strong ownership and strategic technical influence."
+  }
+]
