@@ -29,7 +29,7 @@ def _load_hq_extractor():
     if _EXTRACTOR is not None:
         return _EXTRACTOR
     script_path = (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "High_Quality_human_features"
         / "features"
         / "extract_structured.py"
@@ -138,14 +138,42 @@ def main() -> None:
     if not test_csv.exists():
         raise FileNotFoundError(f"Test CSV not found: {test_csv}")
 
+    print("Mirror XGB test predictions starting.")
+    print(f"Public CSV: {public_csv}")
+    print(f"Test CSV: {test_csv}")
+    print(f"Output CSV: {out_csv}")
+    print(f"Seed: {args.seed}  Folds: {args.folds}  Test size: {args.test_size}")
+    print(
+        f"Grid: {'mirror(0.30-0.95,50)' if args.mirror_grid else f'custom({args.t_min}-{args.t_max},{args.steps})'}"
+    )
+
+    # Ensure local/user site-packages are on sys.path for xgboost installs.
+    try:
+        import site
+        import sys
+
+        local_deps = base / ".python_deps"
+        if local_deps.exists() and str(local_deps) not in sys.path:
+            sys.path.append(str(local_deps))
+            print(f"Added local deps to sys.path: {local_deps}")
+
+        user_site = site.getusersitepackages()
+        if user_site and user_site not in sys.path:
+            sys.path.append(user_site)
+            print(f"Added user site-packages to sys.path: {user_site}")
+    except Exception as exc:
+        print(f"WARNING: unable to add user site-packages: {exc}")
+
     test_df = pd.read_csv(test_csv)
     if "founder_uuid" not in test_df.columns:
         raise RuntimeError("Test CSV missing founder_uuid column.")
     test_ids = test_df["founder_uuid"].astype(str)
     X_test = _extract_hq_features(test_df)
+    print(f"Loaded test rows: {len(test_df)}")
 
     # Full public data for CV + OOF tuning
     X_full, y_full, _ = load_structured_features(public_csv)
+    print(f"Loaded public rows: {len(y_full)}  positives={int(y_full.sum())}")
 
     # 1) val_split_tune (train on public_train, tune on public_val)
     train_df, val_df = _load_or_create_public_splits(
@@ -154,6 +182,7 @@ def main() -> None:
         seed=args.seed,
         test_size=args.test_size,
     )
+    print(f"Split sizes: train={len(train_df)}  val={len(val_df)}")
     X_train = _extract_hq_features(train_df)
     y_train = train_df["success"].to_numpy()
     X_val = _extract_hq_features(val_df)
@@ -181,7 +210,7 @@ def main() -> None:
     # 2) CV_val_tune (per-fold threshold, majority vote)
     votes = np.zeros(len(X_test), dtype=int)
     cv_val_thresholds: list[float] = []
-    for train_idx, val_idx in splits:
+    for fold_idx, (train_idx, val_idx) in enumerate(splits, start=1):
         X_tr = X_full.iloc[train_idx].copy()
         y_tr = y_full[train_idx]
         X_va = X_full.iloc[val_idx].copy()
@@ -200,6 +229,10 @@ def main() -> None:
         fold_best = best_threshold(fold_sweep)
         fold_threshold = float(fold_best["threshold"])
         cv_val_thresholds.append(fold_threshold)
+        print(
+            f"CV_val fold {fold_idx}: threshold={fold_threshold:.4f} "
+            f"F0.5={fold_best['f05']:.4f}"
+        )
 
         fold_test_probs = _apply_rule(fold_model.predict_proba(X_test)[:, 1], X_test)
         votes += (fold_test_probs >= fold_threshold).astype(int)
@@ -210,7 +243,7 @@ def main() -> None:
     # 3) CV_OOF_tune (global OOF threshold, full-data model)
     oof_scores: list[np.ndarray] = []
     oof_labels: list[np.ndarray] = []
-    for train_idx, val_idx in splits:
+    for fold_idx, (train_idx, val_idx) in enumerate(splits, start=1):
         X_tr = X_full.iloc[train_idx].copy()
         y_tr = y_full[train_idx]
         X_va = X_full.iloc[val_idx].copy()
@@ -220,6 +253,10 @@ def main() -> None:
         fold_val_probs = _apply_rule(fold_model.predict_proba(X_va)[:, 1], X_va)
         oof_scores.append(fold_val_probs)
         oof_labels.append(y_va)
+        print(
+            f"OOF fold {fold_idx}: collected {len(y_va)} scores "
+            f"(positives={int(y_va.sum())})"
+        )
 
     all_scores = np.concatenate(oof_scores)
     all_labels = np.concatenate(oof_labels)

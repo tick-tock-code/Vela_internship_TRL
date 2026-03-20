@@ -1,0 +1,11 @@
+{
+  "threshold": 0.6714285714285714,
+  "folds": 5,
+  "seed": 42,
+  "grid": "custom",
+  "t_min": 0.3,
+  "t_max": 0.95,
+  "steps": 50,
+  "public_csv": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\VCBench-Starter-Kit\\vcbench_final_public.csv",
+  "saved_at": "2026-03-20T14:04:32.374004"
+}
