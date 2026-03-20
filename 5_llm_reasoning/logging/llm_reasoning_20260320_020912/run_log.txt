@@ -1,0 +1,17 @@
+run_log started
+[2026-03-20T02:09:12.433816] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-20T02:09:13.327531] Loaded records: 4500 labels: 4500
+[2026-03-20T02:09:13.329109] Use LLM reasoning: True
+[2026-03-20T02:09:13.329765] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-20T02:09:13.330298] Human feature source: baseline
+[2026-03-20T02:09:13.331764] Model type: logistic
+[2026-03-20T02:09:13.332409] Run profile: full
+[2026-03-20T02:09:13.337832] Seed size=100 pool size=4400
+[2026-03-20T02:09:13.338506] OPENAI_API_KEY set: True
+[2026-03-20T02:09:13.346556] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-20T02:09:13.347159] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-20T02:09:24.592098] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-20T02:09:24.711853] Repair check: A nan_rows=0
+[2026-03-20T02:10:39.137278] Run-family start: id=20260319_032713 n_sets=10 n_features=18
+[2026-03-20T02:14:15.756442] Full reasoning cache missing; generating seed_100 reasoning for full dataset.
+[2026-03-20T02:19:29.935691] Seed reasoning column mismatch; aligning to pool columns. missing=[] extra=['evidence_support_rating']

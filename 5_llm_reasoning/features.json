@@ -53,13 +53,13 @@
     "llm_engineered_run_family_id":  "20260319_032713",
     "llm_engineered_family_allow_seed_mismatch":  false,
     "llm_engineered_seed_size":  100,
-    "cv_folds":  10,
+    "cv_folds":  5,
     "cv_use_fixed_folds":  true,
     "cv_folds_path":  "",
     "llm_reasoning_experiments":  [
-                                      "A",
-                                      "B",
-                                      "E"
+                                      "C",
+                                      "D",
+                                      "F"
                                   ],
     "llm_reasoning_core_prompt_path":  "core_prompt.txt",
     "llm_reasoning_experiments_path":  "experiments.json",
@@ -71,9 +71,17 @@
     "llm_temperature":  0,
     "llm_reasoning_mode":  "sequential_and_combined",
     "llm_reasoning_sequential":  [
-                                      "A",
-                                      "B",
-                                      "E"
+                                      "C",
+                                      "D",
+                                      "F"
                                   ],
     "llm_reasoning_combined":  []
+    ,
+    "llm_reasoning_rate_limit_fallback_sequence":  [
+                                                       8,
+                                                       6,
+                                                       4,
+                                                       2,
+                                                       1
+                                                   ]
 }

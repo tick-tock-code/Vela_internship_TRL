@@ -1,0 +1,15 @@
+run_log started
+[2026-03-19T21:49:35.212821] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T21:49:35.585334] Loaded records: 4500 labels: 4500
+[2026-03-19T21:49:35.585822] Use LLM reasoning: True
+[2026-03-19T21:49:35.586077] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-19T21:49:35.586372] Human feature source: baseline
+[2026-03-19T21:49:35.586666] Model type: logistic
+[2026-03-19T21:49:35.586889] Run profile: xgb_mirror
+[2026-03-19T21:49:35.589708] Seed size=100 pool size=4400
+[2026-03-19T21:49:35.589984] OPENAI_API_KEY set: True
+[2026-03-19T21:49:35.594812] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-19T21:49:35.595046] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-19T21:49:41.732323] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-19T21:49:41.848278] Repair check: A nan_rows=0
+[2026-03-19T21:49:41.863449] Full reasoning cache missing; generating seed_100 reasoning for mirror.

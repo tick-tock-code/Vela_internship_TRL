@@ -1,0 +1,3 @@
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1773953838.5285048}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1773953840.9500346}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1773953844.2570076}

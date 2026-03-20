@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Model artifacts (too large for git; train locally with classifier.py)
+model.pkl
+*.joblib
+
+# IDE / local tooling
+.vscode/
+.idea/
+*.swp
+.claude/
+
+# Secrets
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# LLM cache (large, re-generable — see features/extract_llm.py)
+features/llm_features_cache.json
+baselines/zero_shot_predictions.json
+
+# Submission folder
+submissions/
+
+# VCBench dataset files (commercial licence — not redistributable)
+data/vcbench_final_public.csv
+data/vcbench_final_private*.csv
+data/public_train.csv
+data/public_val.csv

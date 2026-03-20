@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Assess each of the following dimensions solely based on the founder profile, using clear, unbiased, and descriptive language that accurately reflects the profile's qualities. Rate each dimension on a scale from 1 (lowest) to 5 (highest), aligning your evaluation with the intended meaning of each dimension:\n\n- Progression and momentum over time\n- Degree of ownership and accountability demonstrated\n- Consistency and strategic focus in career development\n- Resourcefulness, resilience, and adaptability\n\nAfter rating the individual dimensions, assign an overall founder quality score according to this rubric:\n\n- Top-tier founder:\n- Exhibits rapid growth, early leadership, or significant impact\n- Demonstrates clear ownership and responsibility in ambiguous or high-risk environments\n- Operates within high-growth, innovative, or technical sectors\n\n- Lower-tier founder:\n- Shows limited ownership or responsibility\n- Exhibits slow, minimal, or inconsistent progress\n- Lacks clear direction, focus, or strategic coherence\n\nIn cases where evidence is mixed, assign a middle score and emphasize the most compelling evidence from the profile.\n\nInclude a summary note indicating that this is an initial draft of the evaluation instructions.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

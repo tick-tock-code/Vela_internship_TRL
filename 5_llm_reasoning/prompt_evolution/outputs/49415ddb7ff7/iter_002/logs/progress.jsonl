@@ -20,3 +20,10 @@
 {"index": 7, "stage": "done", "experiment": "AB", "processed": 160, "total": 200, "batch_index": 7, "batch_start": 140, "batch_end": 159, "batch_size": 20, "timestamp": 1773936102.635331}
 {"index": 5, "stage": "done", "experiment": "AB", "processed": 180, "total": 200, "batch_index": 5, "batch_start": 100, "batch_end": 119, "batch_size": 20, "timestamp": 1773936123.830812}
 {"index": 0, "stage": "done", "experiment": "AB", "processed": 200, "total": 200, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773936145.96858}
+{"index": -1, "stage": "start_run", "experiment": "AB", "processed": 0, "total": 20, "batch_size": 20, "n_batches": 1, "timestamp": 1773970881.087362}
+{"index": 0, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773970881.0890157}
+{"index": 0, "stage": "done", "experiment": "AB", "processed": 20, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773970881.0912945}
+{"index": -1, "stage": "start_run", "experiment": "AB", "processed": 0, "total": 20, "batch_size": 20, "n_batches": 1, "timestamp": 1773972410.8525913}
+{"index": 0, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773972410.8543668}
+{"index": 0, "stage": "window_start", "experiment": "AB", "window": 0, "concurrency": 10, "batch_ids": [0], "timestamp": 1773972410.8550668}
+{"index": 0, "stage": "done", "experiment": "AB", "processed": 20, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773972451.801174}

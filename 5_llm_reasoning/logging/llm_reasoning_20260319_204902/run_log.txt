@@ -1,0 +1,17 @@
+run_log started
+[2026-03-19T20:49:02.919260] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T20:49:03.333077] Loaded records: 4500 labels: 4500
+[2026-03-19T20:49:03.333716] Use LLM reasoning: True
+[2026-03-19T20:49:03.334128] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-19T20:49:03.334541] Human feature source: baseline
+[2026-03-19T20:49:03.334972] Model type: logistic
+[2026-03-19T20:49:03.335334] Run profile: xgb_mirror
+[2026-03-19T20:49:03.338802] Seed size=100 pool size=4400
+[2026-03-19T20:49:03.339379] OPENAI_API_KEY set: True
+[2026-03-19T20:49:03.343523] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-19T20:49:03.343953] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-19T20:49:10.021388] DRY_VALIDATE: xgb_mirror started
+[2026-03-19T20:49:10.087959] DRY_VALIDATE: currently_in_use rows=4400 nan_rows=0
+[2026-03-19T20:49:10.088659] DRY_VALIDATE: full_current missing. Seed_100 reasoning would be generated.
+[2026-03-19T20:49:10.089086] DRY_VALIDATE: experiments=['A', 'B', 'E']
+[2026-03-19T20:49:10.089600] DRY_VALIDATE: xgb_mirror complete

@@ -1,0 +1,18 @@
+{"index": -1, "stage": "start_run", "experiment": "F", "processed": 0, "total": 880, "batch_size": 20, "n_batches": 44, "timestamp": 1773978096.5957482}
+{"index": 0, "stage": "start_call", "experiment": "F", "processed": 0, "total": 880, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773978096.5965283}
+{"index": 10, "stage": "start_call", "experiment": "F", "processed": 0, "total": 880, "batch_index": 10, "batch_start": 200, "batch_end": 219, "batch_size": 20, "timestamp": 1773978096.5969238}
+{"index": 20, "stage": "start_call", "experiment": "F", "processed": 0, "total": 880, "batch_index": 20, "batch_start": 400, "batch_end": 419, "batch_size": 20, "timestamp": 1773978096.597263}
+{"index": 30, "stage": "start_call", "experiment": "F", "processed": 0, "total": 880, "batch_index": 30, "batch_start": 600, "batch_end": 619, "batch_size": 20, "timestamp": 1773978096.5977356}
+{"index": 40, "stage": "start_call", "experiment": "F", "processed": 0, "total": 880, "batch_index": 40, "batch_start": 800, "batch_end": 819, "batch_size": 20, "timestamp": 1773978096.598073}
+{"index": 0, "stage": "window_start", "experiment": "F", "window": 0, "concurrency": 10, "batch_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "timestamp": 1773978096.5983825}
+{"index": 1, "stage": "window_start", "experiment": "F", "window": 1, "concurrency": 10, "batch_ids": [8, 4, 3, 9, 6, 0, 5, 10, 11, 12], "timestamp": 1773978149.8731632}
+{"index": 4, "stage": "done", "experiment": "F", "processed": 200, "total": 880, "batch_index": 4, "batch_start": 80, "batch_end": 99, "batch_size": 20, "timestamp": 1773978177.8101315}
+{"index": 2, "stage": "window_start", "experiment": "F", "window": 2, "concurrency": 10, "batch_ids": [11, 10, 13, 14, 15, 16, 17, 18, 19, 20], "timestamp": 1773978202.8999586}
+{"index": 3, "stage": "window_start", "experiment": "F", "window": 3, "concurrency": 10, "batch_ids": [19, 14, 21, 22, 23, 24, 25, 26, 27, 28], "timestamp": 1773978265.1715934}
+{"index": 24, "stage": "done", "experiment": "F", "processed": 400, "total": 880, "batch_index": 24, "batch_start": 480, "batch_end": 499, "batch_size": 20, "timestamp": 1773978289.5706363}
+{"index": 4, "stage": "window_start", "experiment": "F", "window": 4, "concurrency": 10, "batch_ids": [21, 25, 29, 30, 31, 32, 33, 34, 35, 36], "timestamp": 1773978323.1591198}
+{"index": 30, "stage": "done", "experiment": "F", "processed": 600, "total": 880, "batch_index": 30, "batch_start": 600, "batch_end": 619, "batch_size": 20, "timestamp": 1773978350.9177716}
+{"index": 5, "stage": "window_start", "experiment": "F", "window": 5, "concurrency": 10, "batch_ids": [37, 38, 39, 40, 41, 42, 43], "timestamp": 1773978359.7539015}
+{"index": 37, "stage": "done", "experiment": "F", "processed": 800, "total": 880, "batch_index": 37, "batch_start": 740, "batch_end": 759, "batch_size": 20, "timestamp": 1773978399.6447272}
+{"index": 6, "stage": "window_start", "experiment": "F", "window": 6, "concurrency": 10, "batch_ids": [42], "timestamp": 1773978417.341683}
+{"index": 42, "stage": "done", "experiment": "F", "processed": 880, "total": 880, "batch_index": 42, "batch_start": 840, "batch_end": 859, "batch_size": 20, "timestamp": 1773978445.083421}

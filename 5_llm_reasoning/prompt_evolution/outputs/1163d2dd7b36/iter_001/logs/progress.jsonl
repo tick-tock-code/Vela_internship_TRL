@@ -1,0 +1,6 @@
+{"index": -1, "stage": "start_run", "experiment": "AB", "processed": 0, "total": 20, "batch_size": 20, "n_batches": 1, "timestamp": 1773970877.0400298}
+{"index": 0, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773970877.0406735}
+{"index": 0, "stage": "done", "experiment": "AB", "processed": 20, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773970877.04221}
+{"index": -1, "stage": "start_run", "experiment": "AB", "processed": 0, "total": 20, "batch_size": 20, "n_batches": 1, "timestamp": 1773971477.184338}
+{"index": 0, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773971477.1859543}
+{"index": 0, "stage": "done", "experiment": "AB", "processed": 20, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773971477.1874454}

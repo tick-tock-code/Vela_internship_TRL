@@ -1,0 +1,13 @@
+Evaluate each of the following dimensions on a scale from 1 to 5, based solely on the founder's profile. Use the following descriptive labels for clarity, but feel free to rephrase them to reduce bias while maintaining their intent:
+- growth trajectory and momentum
+- depth of ownership and responsibility
+- coherence and focus of career path
+- ingenuity and resourcefulness
+
+After rating each dimension, assign an overall founder quality score using this rubric:
+- Top founder: demonstrates rapid advancement or early leadership roles; shows clear ownership in uncertain or ambiguous environments; operates within high-growth or technical sectors
+- Weak founder: exhibits limited ownership; progresses slowly; displays inconsistent direction
+
+In cases where evidence from the profile is mixed, assign a middle score and emphasize the strongest evidence.
+
+Include a note indicating that this is an initial iteration.

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Assess each of the following dimensions on a scale from 1 to 5, using clear and unbiased language that accurately reflects the founder profile's qualities:\n\n- Advancement and growth trajectory\n- Level of ownership and sense of responsibility\n- Alignment and focus within the founder's career path\n- Resourcefulness and ability to adapt with limited resources\n\nAfter scoring each dimension, determine an overall founder quality score according to these criteria:\n\n- Top-tier founder: Demonstrates rapid advancement or early leadership, exhibits clear ownership in ambiguous or challenging environments, and operates within high-growth or highly technical areas.\n- Lower-tier founder: Shows limited ownership and responsibility, exhibits slow or stagnant progress, and lacks clear direction or focus.\n\nWhen evidence is ambiguous or mixed, assign a middle score and emphasize the most compelling evidence from the profile. Use the provided summary statistics to inform consistency and reasoning.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

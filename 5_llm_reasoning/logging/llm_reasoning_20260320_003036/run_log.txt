@@ -1,0 +1,35 @@
+run_log started
+[2026-03-20T00:30:36.422623] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-20T00:30:36.773426] Loaded records: 4500 labels: 4500
+[2026-03-20T00:30:36.773969] Use LLM reasoning: True
+[2026-03-20T00:30:36.774398] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-20T00:30:36.774716] Human feature source: baseline
+[2026-03-20T00:30:36.775051] Model type: logistic
+[2026-03-20T00:30:36.775320] Run profile: full
+[2026-03-20T00:30:36.779948] Seed size=100 pool size=4400
+[2026-03-20T00:30:36.780234] OPENAI_API_KEY set: True
+[2026-03-20T00:30:36.783558] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-20T00:30:36.783793] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+
+[ERROR] Unhandled exception:
+Traceback (most recent call last):
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 4430, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 1904, in main
+    _validate_run_state(
+    ~~~~~~~~~~~~~~~~~~~^
+        expected_pool=len(records),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        full_cache=folds_path_full,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 133, in _validate_run_state
+    _validate_fold_cache(pool_cache, expected_pool, "pool")
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 122, in _validate_fold_cache
+    _log_run(
+    ^^^^^^^^
+NameError: name '_log_run' is not defined

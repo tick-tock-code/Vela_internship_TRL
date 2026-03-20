@@ -1,0 +1,4 @@
+{"index": -1, "stage": "start_run", "experiment": "AB", "processed": 0, "total": 20, "batch_size": 20, "n_batches": 1, "timestamp": 1773973706.1892736}
+{"index": 0, "stage": "start_call", "experiment": "AB", "processed": 0, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773973706.190207}
+{"index": 0, "stage": "window_start", "experiment": "AB", "window": 0, "concurrency": 10, "batch_ids": [0], "timestamp": 1773973706.190798}
+{"index": 0, "stage": "done", "experiment": "AB", "processed": 20, "total": 20, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773973736.57747}

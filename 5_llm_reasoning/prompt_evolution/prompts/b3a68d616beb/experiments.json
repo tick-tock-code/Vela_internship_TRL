@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Evaluate each of the listed dimensions\u2014growth trajectory and momentum, depth of ownership and accountability, career focus and coherence, and resourcefulness and grit\u2014by assigning a score from 1 to 5 based solely on concrete, evidence-based aspects of the founder profile. Use the provided descriptive labels for clarity, but feel free to rephrase these labels to reduce bias while maintaining their original intent. Emphasize consistency and rely exclusively on clear, observable evidence; avoid speculation or subjective interpretation. Prioritize concrete signals such as role progression, leadership responsibility, industry focus, and entrepreneurial activities. After scoring each dimension, determine an overall founder quality rating using the specified rubric: assign a top-tier score if the profile demonstrates rapid progression, clear ownership in ambiguous or high-growth environments, and experience in relevant technical or high-growth contexts; assign a lower score if the profile shows limited ownership, slow or inconsistent progression, and lacks clear entrepreneurial signals. When evidence is mixed, lean toward the middle score, emphasizing the strongest, most relevant evidence present.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

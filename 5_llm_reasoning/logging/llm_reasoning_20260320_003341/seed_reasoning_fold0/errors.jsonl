@@ -1,0 +1,16 @@
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1773967091.3259213}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1773967093.8110132}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1773967097.335824}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1773967097.33702}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1773967103.8006556}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1773967106.1082215}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1773967109.4132032}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1773967109.4140568}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1773967115.8668518}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1773967118.298687}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1773967121.6302464}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1773967121.6310003}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1773967130.9135263}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1773967133.4013815}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1773967136.8044868}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded", "attempt": 4, "timestamp": 1773967136.8054872}

@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-20T02:19:30.072870",
+  "experiments": [
+    "A",
+    "B",
+    "E"
+  ],
+  "source": "seed_merge",
+  "pool_records": 4400,
+  "seed_records": 100
+}

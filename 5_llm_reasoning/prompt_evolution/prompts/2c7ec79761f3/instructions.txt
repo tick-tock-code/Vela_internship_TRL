@@ -1,0 +1,22 @@
+Assess each of the following dimensions on a scale from 1 to 5 based solely on the founder's profile. Use these clarified descriptors to guide your scoring, and you may rephrase them to reduce bias while preserving their intent:
+
+- Trajectory and momentum of growth
+- Depth of ownership and sense of accountability
+- Alignment and focus of the career path
+- Resourcefulness and ability to solve problems with limited resources
+
+After evaluating these dimensions, assign an overall founder quality score according to the following criteria:
+
+- Top-tier founder:
+- Demonstrates rapid career progression or early leadership roles
+- Shows clear ownership and responsibility in ambiguous or startup environments
+- Operates within high-growth, technical, or innovative sectors
+
+- Lower-tier (weak) founder:
+- Exhibits limited ownership or responsibility
+- Has slow or minimal progression in roles
+- Displays inconsistent or unfocused career development
+
+In cases where evidence is mixed, assign a middle score and prioritize the strongest evidence within the profile.
+
+Ensure your reasoning justifies each score with specific observations from the profile, emphasizing growth trajectory, leadership, ownership, coherence, resourcefulness, and sector relevance.

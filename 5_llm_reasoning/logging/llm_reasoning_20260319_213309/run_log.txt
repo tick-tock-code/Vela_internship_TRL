@@ -1,0 +1,26 @@
+run_log started
+[2026-03-19T21:33:09.083624] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+[2026-03-19T21:33:09.610174] Loaded records: 4500 labels: 4500
+[2026-03-19T21:33:09.610841] Use LLM reasoning: True
+[2026-03-19T21:33:09.611130] Config flags: llm_engineered_run_family=True llm_engineered_freeze=True llm_engineered_force_recompute=False llm_engineered_run_family_id=20260319_032713
+[2026-03-19T21:33:09.611402] Human feature source: baseline
+[2026-03-19T21:33:09.611706] Model type: logistic
+[2026-03-19T21:33:09.611973] Run profile: xgb_mirror
+[2026-03-19T21:33:09.615348] Seed size=100 pool size=4400
+[2026-03-19T21:33:09.615712] OPENAI_API_KEY set: True
+[2026-03-19T21:33:09.622414] CV fold sizes: 880, 880, 880, 880, 880
+[2026-03-19T21:33:09.622782] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k5_seed42.json
+[2026-03-19T21:33:19.904100] A/B/E nan-free found; skipping reasoning generation.
+[2026-03-19T21:33:20.034956] Repair check: A nan_rows=0
+[2026-03-19T21:33:20.052786] Full reasoning cache missing; generating seed_100 reasoning for mirror.
+
+[ERROR] Unhandled exception:
+Traceback (most recent call last):
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 4065, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 3880, in main
+    reasoning_full_df = _build_full_current_df(exp_list_for_combo)
+  File "C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\vcbench_pipeline.py", line 3189, in _build_full_current_df
+    raise RuntimeError("Seed reasoning columns do not match pool reasoning columns.")
+RuntimeError: Seed reasoning columns do not match pool reasoning columns.

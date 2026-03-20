@@ -6,7 +6,9 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 import time
+import traceback
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -110,6 +112,7 @@ REQUIRED_COLUMNS = {
 DEFAULTS: dict[str, Any] = {
     "experiment": "AB",
     "pool_size": 10,
+    "keep_top": 2,
     "sample_size": 200,
     "batch_size": 20,
     "concurrency": 10,
@@ -360,6 +363,12 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def _append_jsonl(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload) + "\n")
+
+
 def _validate_mutation(text: str) -> tuple[bool, str]:
     stripped = text.strip()
     if not stripped:
@@ -424,6 +433,45 @@ def _persist_prompt_variant(
         parent_id=parent_id,
         created_iter=created_iter,
     )
+
+
+def _load_prompt_variant(root: Path, prompt_id: str) -> PromptVariant:
+    prompt_dir = root / "prompts" / prompt_id
+    instructions_path = prompt_dir / "instructions.txt"
+    meta_path = prompt_dir / "metadata.json"
+    exp_path = prompt_dir / "experiments.json"
+    if not instructions_path.exists():
+        raise FileNotFoundError(f"Missing instructions for prompt {prompt_id}")
+    instructions = instructions_path.read_text(encoding="utf-8")
+    parent_id = None
+    created_iter = None
+    if meta_path.exists():
+        meta = _read_json(meta_path)
+        parent_id = meta.get("parent_id")
+        created_iter = meta.get("created_iter")
+    return PromptVariant(
+        prompt_id=prompt_id,
+        instructions=instructions,
+        experiments_path=exp_path,
+        parent_id=parent_id,
+        created_iter=created_iter,
+    )
+
+
+def _load_prompt_hashes(root: Path) -> set[str]:
+    hashes: set[str] = set()
+    prompts_root = root / "prompts"
+    if not prompts_root.exists():
+        return hashes
+    for hash_path in prompts_root.glob("*/hash.json"):
+        try:
+            payload = _read_json(hash_path)
+            value = payload.get("hash")
+            if isinstance(value, str) and value:
+                hashes.add(value)
+        except Exception:
+            continue
+    return hashes
 
 
 def _build_critic_payload(
@@ -892,11 +940,14 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--config", type=str, default="")
     p.add_argument("--experiment", type=str, default=DEFAULTS["experiment"])
     p.add_argument("--pool_size", type=int, default=DEFAULTS["pool_size"])
+    p.add_argument("--keep_top", type=int, default=DEFAULTS["keep_top"])
     p.add_argument("--sample_size", type=int, default=DEFAULTS["sample_size"])
     p.add_argument("--batch_size", type=int, default=DEFAULTS["batch_size"])
     p.add_argument("--concurrency", type=int, default=DEFAULTS["concurrency"])
     p.add_argument("--concurrency_ladder", type=str, default="10,8,6,4,2,1")
     p.add_argument("--iterations", type=int, default=DEFAULTS["iterations"])
+    p.add_argument("--run_id", type=str, default="")
+    p.add_argument("--resume", action="store_true")
     p.add_argument("--save_every", type=int, default=DEFAULTS["save_every"])
     p.add_argument("--full_eval_enabled", action="store_true")
     p.add_argument("--full_eval_concurrency", type=int, default=DEFAULTS["full_eval_concurrency"])
@@ -959,12 +1010,40 @@ def main() -> None:
     root = Path(args.output_root)
     root = root if root.is_absolute() else Path(__file__).parent / root
     root.mkdir(parents=True, exist_ok=True)
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = args.run_id.strip() if str(args.run_id).strip() else datetime.now().strftime("%Y%m%d_%H%M%S")
     run_root = root / "runs" / run_id
+    if args.resume and not run_root.exists():
+        raise RuntimeError(f"Cannot resume; run directory not found: {run_root}")
     run_root.mkdir(parents=True, exist_ok=True)
     run_cfg = dict(vars(args))
     run_cfg["concurrency_ladder"] = concurrency_ladder
-    _write_json(run_root / "run_config.json", run_cfg)
+    run_cfg_path = run_root / "run_config.json"
+    if not (args.resume and run_cfg_path.exists()):
+        _write_json(run_cfg_path, run_cfg)
+    _write_json(
+        run_root / "run_start.json",
+        {
+            "run_id": run_id,
+            "timestamp": datetime.now().isoformat(),
+            "resume": bool(args.resume),
+            "iterations": int(args.iterations),
+            "pool_size": int(args.pool_size),
+            "sample_size": int(args.sample_size),
+        },
+    )
+
+    def _log_unhandled(exc_type, exc, tb) -> None:
+        _write_json(
+            run_root / "run_error.json",
+            {
+                "error": str(exc),
+                "traceback": "".join(traceback.format_exception(exc_type, exc, tb)),
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
+        sys.__excepthook__(exc_type, exc, tb)
+
+    sys.excepthook = _log_unhandled
 
     input_csv = _resolve_input_csv(args.dataset, args.input_csv or None)
     records, labels = _load_vcbench_local(input_csv)
@@ -985,13 +1064,13 @@ def main() -> None:
             llm_google_model = str(data.get("llm_google_model"))
         if "cv_use_fixed_folds" in data:
             cv_use_fixed_folds = bool(data.get("cv_use_fixed_folds"))
-        if "cv_folds_path" in data:
-            cv_folds_path = str(data.get("cv_folds_path") or "")
-        if data.get("llm_engineered_seed_size") is not None:
-            try:
-                seed_size = int(data.get("llm_engineered_seed_size"))
-            except Exception:
-                seed_size = 100
+    if "cv_folds_path" in data:
+        cv_folds_path = str(data.get("cv_folds_path") or "")
+    if data.get("llm_engineered_seed_size") is not None:
+        try:
+            seed_size = int(data.get("llm_engineered_seed_size"))
+        except Exception:
+            seed_size = 100
 
     if isinstance(cfg.get("llm_providers"), dict):
         llm_providers = dict(cfg.get("llm_providers"))
@@ -1027,18 +1106,9 @@ def main() -> None:
         use_fixed=cv_use_fixed_folds,
     )
 
+    start_iter = 1
     prompt_pool: list[PromptVariant] = []
     prompt_hashes: set[str] = set()
-    base_instructions_clean = _ensure_unique_instruction(base_instructions, prompt_hashes, "base")
-    base_prompt = _persist_prompt_variant(
-        root=root,
-        base_experiment=base_experiment,
-        instructions=base_instructions_clean,
-        parent_id=None,
-        created_iter=None,
-    )
-    prompt_hashes.add(_hash_text(base_instructions_clean))
-    prompt_pool.append(base_prompt)
 
     critic_input_rate = (
         args.critic_usd_per_1k_input
@@ -1051,66 +1121,142 @@ def main() -> None:
         else args.usd_per_1k_output
     )
 
-    seed_budget = BudgetTracker(
-        budget_usd=float(args.budget_usd_per_iteration),
-        usd_per_1k_input=float(critic_input_rate),
-        usd_per_1k_output=float(critic_output_rate),
-        chars_per_token=float(args.token_chars_per_token),
-    )
-
-    initial_mutations = max(0, int(args.initial_mutations))
-    for i in range(min(initial_mutations, args.pool_size - 1)):
-        mutated, usage = _mutate_with_critic(
-            instructions=base_instructions,
-            model=args.critic_model,
-            provider=args.critic_provider,
-            temperature=args.critic_temperature,
-            sample_outputs=[],
-            summary={"note": "initial mutation"},
-            dry_run=args.dry_run,
-            fallback_salt=f"init-{i}",
-            rate_limit_sleep_min=args.rate_limit_sleep_min,
-            rate_limit_sleep_max=args.rate_limit_sleep_max,
-            max_rate_limit_retries=args.max_rate_limit_retries_per_batch,
+    if args.resume:
+        completed_iters: list[int] = []
+        for iter_dir in sorted(run_root.glob("iter_*")):
+            if not iter_dir.is_dir():
+                continue
+            metrics_path = iter_dir / "metrics.json"
+            if not metrics_path.exists():
+                continue
+            try:
+                idx = int(iter_dir.name.split("_")[-1])
+            except Exception:
+                continue
+            completed_iters.append(idx)
+        if not completed_iters:
+            raise RuntimeError("Resume requested but no completed iterations found.")
+        last_iter = max(completed_iters)
+        start_iter = last_iter + 1
+        if start_iter > args.iterations:
+            print(
+                f"[prompt_evolution] Resume requested but iterations already complete "
+                f"(last={last_iter}, target={args.iterations})."
+            )
+            return
+        selected_path = run_root / f"iter_{last_iter:03d}" / "selected_ids.json"
+        selected_ids: list[str] = []
+        if selected_path.exists():
+            selected_ids = [str(pid) for pid in _read_json(selected_path)]
+        created_ids: list[str] = []
+        prompts_root = root / "prompts"
+        if prompts_root.exists():
+            for meta_path in prompts_root.glob("*/metadata.json"):
+                try:
+                    meta = _read_json(meta_path)
+                except Exception:
+                    continue
+                if meta.get("created_iter") == last_iter:
+                    pid = str(meta.get("prompt_id", "")).strip()
+                    if pid:
+                        created_ids.append(pid)
+        pool_ids: list[str] = []
+        for pid in selected_ids + created_ids:
+            if pid not in pool_ids:
+                pool_ids.append(pid)
+        if not pool_ids:
+            raise RuntimeError("Resume requested but prompt pool could not be reconstructed.")
+        for pid in pool_ids:
+            prompt_pool.append(_load_prompt_variant(root, pid))
+        prompt_hashes = _load_prompt_hashes(root)
+        if len(prompt_pool) < args.pool_size and selected_ids:
+            while len(prompt_pool) < args.pool_size:
+                prompt_pool.append(
+                    _load_prompt_variant(root, selected_ids[len(prompt_pool) % len(selected_ids)])
+                )
+        base_prompt_candidates = [p for p in prompt_pool if p.created_iter is None]
+        base_prompt = base_prompt_candidates[0] if base_prompt_candidates else prompt_pool[0]
+        _write_json(
+            run_root / "resume.json",
+            {
+                "resumed_at": datetime.now().isoformat(),
+                "last_completed_iter": last_iter,
+                "start_iter": start_iter,
+                "target_iterations": args.iterations,
+            },
         )
-        mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"init-{i}")
-        if usage:
-            prompt_tokens = _estimate_tokens_from_chars(
-                usage.get("prompt_chars", 0), args.token_chars_per_token
-            )
-            response_tokens = _estimate_tokens_from_chars(
-                usage.get("response_chars", 0), args.token_chars_per_token
-            )
-            _apply_budget(
-                seed_budget,
-                prompt_tokens,
-                response_tokens,
-                critic_input_rate,
-                critic_output_rate,
-            )
-            if seed_budget.exceeded():
-                break
-        ok, _ = _validate_mutation(mutated)
-        if not ok:
-            mutated = base_instructions + "\n\nEmphasize consistency and evidence."
-        mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"init-{i}-fallback")
-        prompt_hashes.add(_hash_text(mutated))
-        prompt_pool.append(
-            _persist_prompt_variant(
-                root=root,
-                base_experiment=base_experiment,
-                instructions=mutated,
-                parent_id=base_prompt.prompt_id,
-                created_iter=0,
-            )
+    else:
+        base_instructions_clean = _ensure_unique_instruction(base_instructions, prompt_hashes, "base")
+        base_prompt = _persist_prompt_variant(
+            root=root,
+            base_experiment=base_experiment,
+            instructions=base_instructions_clean,
+            parent_id=None,
+            created_iter=None,
         )
-
-    while len(prompt_pool) < args.pool_size:
+        prompt_hashes.add(_hash_text(base_instructions_clean))
         prompt_pool.append(base_prompt)
+
+        seed_budget = BudgetTracker(
+            budget_usd=float(args.budget_usd_per_iteration),
+            usd_per_1k_input=float(critic_input_rate),
+            usd_per_1k_output=float(critic_output_rate),
+            chars_per_token=float(args.token_chars_per_token),
+        )
+
+        initial_mutations = max(0, int(args.initial_mutations))
+        for i in range(min(initial_mutations, args.pool_size - 1)):
+            mutated, usage = _mutate_with_critic(
+                instructions=base_instructions,
+                model=args.critic_model,
+                provider=args.critic_provider,
+                temperature=args.critic_temperature,
+                sample_outputs=[],
+                summary={"note": "initial mutation"},
+                dry_run=args.dry_run,
+                fallback_salt=f"init-{i}",
+                rate_limit_sleep_min=args.rate_limit_sleep_min,
+                rate_limit_sleep_max=args.rate_limit_sleep_max,
+                max_rate_limit_retries=args.max_rate_limit_retries_per_batch,
+            )
+            mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"init-{i}")
+            if usage:
+                prompt_tokens = _estimate_tokens_from_chars(
+                    usage.get("prompt_chars", 0), args.token_chars_per_token
+                )
+                response_tokens = _estimate_tokens_from_chars(
+                    usage.get("response_chars", 0), args.token_chars_per_token
+                )
+                _apply_budget(
+                    seed_budget,
+                    prompt_tokens,
+                    response_tokens,
+                    critic_input_rate,
+                    critic_output_rate,
+                )
+                if seed_budget.exceeded():
+                    break
+            ok, _ = _validate_mutation(mutated)
+            if not ok:
+                mutated = base_instructions + "\n\nEmphasize consistency and evidence."
+            mutated = _ensure_unique_instruction(mutated, prompt_hashes, f"init-{i}-fallback")
+            prompt_hashes.add(_hash_text(mutated))
+            prompt_pool.append(
+                _persist_prompt_variant(
+                    root=root,
+                    base_experiment=base_experiment,
+                    instructions=mutated,
+                    parent_id=base_prompt.prompt_id,
+                    created_iter=0,
+                )
+            )
+
+        while len(prompt_pool) < args.pool_size:
+            prompt_pool.append(base_prompt)
 
     current_concurrency = int(args.concurrency)
     stop_run = False
-    for iter_idx in range(1, args.iterations + 1):
+    for iter_idx in range(start_iter, args.iterations + 1):
         iter_label = f"iter_{iter_idx:03d}"
         iter_root = run_root / iter_label
         iter_root.mkdir(parents=True, exist_ok=True)
@@ -1136,7 +1282,12 @@ def main() -> None:
         summary_by_prompt: dict[str, dict[str, Any]] = {}
 
         for prompt in prompt_pool:
-            ladder_index = concurrency_ladder.index(current_concurrency)
+            ladder_index = (
+                concurrency_ladder.index(current_concurrency)
+                if current_concurrency in concurrency_ladder
+                else 0
+            )
+            prompt_error_logged = False
             while True:
                 try:
                     metrics, outputs, summary = _evaluate_prompt(
@@ -1204,7 +1355,19 @@ def main() -> None:
                             },
                         )
                         continue
-                    raise
+                    if not prompt_error_logged:
+                        _append_jsonl(
+                            iter_root / "prompt_errors.jsonl",
+                            {
+                                "iteration": iter_idx,
+                                "prompt_id": prompt.prompt_id,
+                                "error": str(exc),
+                                "concurrency": current_concurrency,
+                                "timestamp": datetime.now().isoformat(),
+                            },
+                        )
+                        prompt_error_logged = True
+                    break
             if budget_exceeded:
                 break
 
@@ -1233,13 +1396,14 @@ def main() -> None:
             key=lambda p: metrics_by_prompt.get(p.prompt_id, {}).get(args.selection_metric, 0.0),
             reverse=True,
         )
-        top_keep = ranked[: min(2, len(ranked))]
+        keep_top = max(1, min(int(args.keep_top), len(ranked)))
+        top_keep = ranked[:keep_top]
         selected_ids = [p.prompt_id for p in top_keep]
         _write_json(iter_root / "selected_ids.json", selected_ids)
         _write_json(iter_root / "pool.json", [p.prompt_id for p in prompt_pool])
 
         next_pool = list(top_keep)
-        parent_cycle = ranked[: min(2, len(ranked))]
+        parent_cycle = ranked[:keep_top]
         if not parent_cycle:
             parent_cycle = [base_prompt]
 
@@ -1336,7 +1500,9 @@ def main() -> None:
 
         if args.full_eval_enabled and args.save_every > 0 and iter_idx % args.save_every == 0:
             best = ranked[0]
-            full_eval_concurrency = int(args.full_eval_concurrency) if args.full_eval_concurrency else current_concurrency
+            full_eval_concurrency = (
+                int(args.full_eval_concurrency) if args.full_eval_concurrency else current_concurrency
+            )
             if full_eval_concurrency < 1:
                 full_eval_concurrency = 1
             _full_eval(
@@ -1355,7 +1521,5 @@ def main() -> None:
 
         if stop_run:
             break
-
-
 if __name__ == "__main__":
     main()

@@ -27,11 +27,11 @@
   "repair_nan": false,
   "nan_rows_before": 0,
   "nan_rows_after": 0,
-  "dry_run": false,
+  "dry_run": true,
   "dry_run_fast": false,
-  "estimated_prompt_tokens": 79039,
-  "estimated_completion_tokens": 50502,
-  "estimated_prompt_chars": 316143,
-  "estimated_completion_chars": 201993,
-  "estimated_requests": 10
+  "estimated_prompt_tokens": 0,
+  "estimated_completion_tokens": 0,
+  "estimated_prompt_chars": 0,
+  "estimated_completion_chars": 0,
+  "estimated_requests": 0
 }

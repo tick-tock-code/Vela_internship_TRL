@@ -1,0 +1,14 @@
+{"index": -1, "stage": "start_run", "experiment": "A+B+E", "processed": 0, "total": 23, "batch_size": 20, "n_batches": 2, "timestamp": 1773968005.847476}
+{"index": 0, "stage": "start_call", "experiment": "A+B+E", "processed": 0, "total": 23, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1773968005.8546793}
+{"index": 0, "stage": "window_start", "experiment": "A+B+E", "window": 0, "concurrency": 10, "batch_ids": [0, 1], "timestamp": 1773968005.8552315}
+{"index": 0, "stage": "rate_limit_sleep", "experiment": "A+B+E", "sleep_seconds": 5.0, "timestamp": 1773968013.154824}
+{"index": 0, "stage": "rate_limit_fallback", "experiment": "A+B+E", "concurrency_next": 5, "failed_batch_ids": [1, 0], "timestamp": 1773968018.1555526}
+{"index": 1, "stage": "window_start", "experiment": "A+B+E", "window": 1, "concurrency": 5, "batch_ids": [1, 0], "timestamp": 1773968018.1563501}
+{"index": 1, "stage": "rate_limit_sleep", "experiment": "A+B+E", "sleep_seconds": 5.0, "timestamp": 1773968025.5491202}
+{"index": 1, "stage": "rate_limit_fallback", "experiment": "A+B+E", "concurrency_next": 5, "failed_batch_ids": [1, 0], "timestamp": 1773968030.5498035}
+{"index": 2, "stage": "window_start", "experiment": "A+B+E", "window": 2, "concurrency": 5, "batch_ids": [1, 0], "timestamp": 1773968030.5506635}
+{"index": 2, "stage": "rate_limit_sleep", "experiment": "A+B+E", "sleep_seconds": 8, "timestamp": 1773968037.5646665}
+{"index": 2, "stage": "rate_limit_fallback", "experiment": "A+B+E", "concurrency_next": 5, "failed_batch_ids": [0, 1], "timestamp": 1773968045.5655913}
+{"index": 3, "stage": "window_start", "experiment": "A+B+E", "window": 3, "concurrency": 5, "batch_ids": [0, 1], "timestamp": 1773968045.5664377}
+{"index": 3, "stage": "rate_limit_sleep", "experiment": "A+B+E", "sleep_seconds": 16, "timestamp": 1773968052.7210023}
+{"index": 3, "stage": "rate_limit_fallback", "experiment": "A+B+E", "concurrency_next": 5, "failed_batch_ids": [], "timestamp": 1773968068.7221875}

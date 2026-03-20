@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Evaluate each of the following dimensions on a scale from 1 to 5, using precise, objective, and unbiased language that accurately characterizes the founder's experience and qualities. The dimensions are:\n\n- Growth pattern and leadership development\n- Level of ownership and sense of responsibility\n- Career focus and relevance to the industry\n- Resourcefulness and adaptability in startup or high-challenge environments\n\nAssign an overall founder quality score according to the following rubric:\n\n- Top founder: Exhibits rapid advancement or early leadership roles, demonstrates clear ownership in ambiguous or challenging contexts, and operates within high-growth or technically complex sectors.\n- Weak founder: Shows limited ownership, slow or stagnant career progression, and lacks evidence of leadership or adaptability in dynamic environments.\n\nWhen the profile presents mixed evidence, assign a middle score and highlight the strongest indicators. Use the provided statistical context for background but avoid referencing it directly in your evaluation. Justify each score with a succinct explanation that emphasizes relevant evidence from the profile, avoiding ambiguous or subjective language.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

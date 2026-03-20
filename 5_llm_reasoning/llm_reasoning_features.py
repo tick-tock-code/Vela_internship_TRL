@@ -50,6 +50,7 @@ class ReasoningConfig:
     skip_select: bool = False
     rate_limit_fallback_concurrency: int = 5
     rate_limit_fallback_windows: int = 1
+    rate_limit_fallback_sequence: list[int] | None = None
     inline_repair: bool = True
     inline_repair_max_attempts: int = 1
     target_batch_indices: list[int] | None = None
@@ -57,6 +58,7 @@ class ReasoningConfig:
     rate_limit_sleep_max: float = 120.0
     max_rate_limit_retries_per_batch: int = 3
     max_rate_limit_errors: int = 100
+    retryable_requeue_max_attempts: int = 2
     max_batches: int = 0
     token_chars_per_token: float = 4.0
 
@@ -283,6 +285,34 @@ def _is_rate_limit_error(exc: Exception) -> bool:
     return False
 
 
+def _is_retryable_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    retry_tokens = (
+        "connection error",
+        "connection reset",
+        "connection aborted",
+        "connection refused",
+        "connection",
+        "timeout",
+        "timed out",
+        "temporarily unavailable",
+        "service unavailable",
+        "socket",
+        "eof",
+        "name or service not known",
+        "dns",
+        "ssl",
+        "tls",
+        "proxy",
+    )
+    if any(token in msg for token in retry_tokens):
+        return True
+    name = exc.__class__.__name__.lower()
+    if any(token in name for token in ("timeout", "connection", "transport", "proxy", "socket")):
+        return True
+    return False
+
+
 def _extract_retry_delay_seconds(message: str) -> float | None:
     msg = message.lower()
     match = re.search(r"retry in ([0-9]+(?:\\.[0-9]+)?)s", msg)
@@ -325,7 +355,10 @@ def write_per_experiment_parquets(
         evidence_col = f"{exp_id}_evidence_support_rating"
         if evidence_col in df.columns and evidence_col not in exp_keys:
             exp_keys = exp_keys + [evidence_col]
-        exp_cols = ["founder_uuid", "success"] + GLOBAL_NUMERIC_KEYS + GLOBAL_TEXT_KEYS + exp_keys
+        exp_cols = ["founder_uuid", "success"]
+        exp_cols += [c for c in GLOBAL_NUMERIC_KEYS if c in df.columns]
+        exp_cols += [c for c in GLOBAL_TEXT_KEYS if c in df.columns]
+        exp_cols += [c for c in exp_keys if c in df.columns]
         exp_df = df[exp_cols].copy()
         exp_dir = exp_root / exp_id
         exp_dir.mkdir(parents=True, exist_ok=True)
@@ -586,15 +619,21 @@ def generate_reasoning_features(
     concurrency = max(1, int(config.concurrency))
     fallback_concurrency = max(1, int(config.rate_limit_fallback_concurrency))
     fallback_windows = max(0, int(config.rate_limit_fallback_windows))
+    fallback_sequence = list(config.rate_limit_fallback_sequence or [])
+    if not fallback_sequence:
+        fallback_sequence = [fallback_concurrency]
+    fallback_sequence = [max(1, int(v)) for v in fallback_sequence]
     rate_limit_fallbacks = 0
     google_model = config.google_model or "gemini-2.0-flash"
     chars_per_token = float(config.token_chars_per_token) if config.token_chars_per_token else 4.0
     max_rate_limit_retries = max(0, int(config.max_rate_limit_retries_per_batch))
     max_rate_limit_errors = max(0, int(config.max_rate_limit_errors))
+    max_retryable_requeues = max(0, int(config.retryable_requeue_max_attempts))
     rate_limit_sleep_min = max(0.0, float(config.rate_limit_sleep_min))
     rate_limit_sleep_max = max(rate_limit_sleep_min, float(config.rate_limit_sleep_max))
     rate_limit_attempts: dict[int, int] = {}
     rate_limit_error_count = 0
+    retryable_requeues: dict[int, int] = {}
 
     def _accumulate_usage(prompt_text: str, response_text: str) -> None:
         if not prompt_text and not response_text:
@@ -1157,8 +1196,11 @@ def generate_reasoning_features(
         queue = list(batches)
         window_index = 0
         fallback_windows_remaining = 0
+        fallback_level = -1
         while queue:
-            if fallback_windows_remaining > 0:
+            if fallback_level >= 0:
+                current_concurrency = min(concurrency, fallback_sequence[fallback_level])
+            elif fallback_windows_remaining > 0:
                 current_concurrency = min(concurrency, fallback_concurrency)
             else:
                 current_concurrency = concurrency
@@ -1236,7 +1278,64 @@ def generate_reasoning_features(
                                 },
                             )
                             continue
-                        raise
+                        if _is_retryable_error(exc):
+                            rate_limited = True
+                            delay = _extract_retry_delay_seconds(str(exc))
+                            if delay is not None:
+                                max_retry_delay = max(max_retry_delay, delay)
+                            attempts = rate_limit_attempts.get(batch_idx, 0) + 1
+                            rate_limit_attempts[batch_idx] = attempts
+                            if max_rate_limit_retries and attempts > max_rate_limit_retries:
+                                requeues = retryable_requeues.get(batch_idx, 0)
+                                if requeues < max_retryable_requeues:
+                                    retryable_requeues[batch_idx] = requeues + 1
+                                    failed_batches.append((batch_idx, batch_start, batch_recs, True))
+                                    _append_jsonl(
+                                        error_log,
+                                        {
+                                            "index": batch_idx,
+                                            "error": str(exc),
+                                            "stage": "retryable_exceeded_requeue",
+                                            "attempt": attempts,
+                                            "requeue": requeues + 1,
+                                            "timestamp": time.time(),
+                                        },
+                                    )
+                                    continue
+                                _append_jsonl(
+                                    error_log,
+                                    {
+                                        "index": batch_idx,
+                                        "error": str(exc),
+                                        "stage": "retryable_exceeded_drop",
+                                        "attempt": attempts,
+                                        "requeue": requeues,
+                                        "timestamp": time.time(),
+                                    },
+                                )
+                                continue
+                            failed_batches.append((batch_idx, batch_start, batch_recs, strict_retry))
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": str(exc),
+                                    "stage": "retryable_error",
+                                    "attempt": attempts,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            continue
+                        _append_jsonl(
+                            error_log,
+                            {
+                                "index": batch_idx,
+                                "error": str(exc),
+                                "stage": "batch_error",
+                                "timestamp": time.time(),
+                            },
+                        )
+                        continue
                     failures += batch_failures
                     _apply_result(batch_idx, batch_start, batch_recs, parsed_items, parsed_single)
                     if raw_text:
@@ -1294,6 +1393,8 @@ def generate_reasoning_features(
                         time.sleep(0.05)
             if rate_limited:
                 rate_limit_fallbacks += 1
+                if fallback_level < len(fallback_sequence) - 1:
+                    fallback_level += 1
                 if fallback_windows > 0:
                     fallback_windows_remaining = fallback_windows
                 sleep_seconds = 0.0
@@ -1323,7 +1424,9 @@ def generate_reasoning_features(
                             "index": window_index - 1,
                             "stage": "rate_limit_fallback",
                             "experiment": exp_label,
-                            "concurrency_next": min(concurrency, fallback_concurrency),
+                            "concurrency_next": min(concurrency, fallback_sequence[fallback_level])
+                            if fallback_level >= 0
+                            else min(concurrency, fallback_concurrency),
                             "failed_batch_ids": [b[0] for b in failed_batches],
                             "timestamp": time.time(),
                         },
@@ -1331,6 +1434,8 @@ def generate_reasoning_features(
             else:
                 if fallback_windows_remaining > 0:
                     fallback_windows_remaining -= 1
+                if fallback_level >= 0:
+                    fallback_level = -1
     else:
         queue = list(batches)
         while queue:
@@ -1390,7 +1495,70 @@ def generate_reasoning_features(
                             )
                             time.sleep(sleep_seconds)
                         continue
-                    raise
+                    if _is_retryable_error(exc):
+                        attempts += 1
+                        delay = _extract_retry_delay_seconds(str(exc))
+                        if max_rate_limit_retries and attempts > max_rate_limit_retries:
+                            requeues = retryable_requeues.get(batch_idx, 0)
+                            if requeues < max_retryable_requeues:
+                                retryable_requeues[batch_idx] = requeues + 1
+                                _append_jsonl(
+                                    error_log,
+                                    {
+                                        "index": batch_idx,
+                                        "error": str(exc),
+                                        "stage": "retryable_exceeded_requeue",
+                                        "attempt": attempts,
+                                        "requeue": requeues + 1,
+                                        "timestamp": time.time(),
+                                    },
+                                )
+                                queue.append((batch_idx, batch_start, batch_recs, True))
+                                skip_batch = True
+                                break
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": str(exc),
+                                    "stage": "retryable_exceeded_drop",
+                                    "attempt": attempts,
+                                    "requeue": requeues,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            skip_batch = True
+                            break
+                        sleep_seconds = 0.0
+                        if delay is not None and delay > 0:
+                            sleep_seconds = max(rate_limit_sleep_min, delay)
+                        else:
+                            sleep_seconds = max(rate_limit_sleep_min, 2 ** min(attempts, 5))
+                        if sleep_seconds > 0:
+                            sleep_seconds = min(rate_limit_sleep_max, sleep_seconds)
+                            _append_jsonl(
+                                error_log,
+                                {
+                                    "index": batch_idx,
+                                    "error": str(exc),
+                                    "stage": "retryable_sleep",
+                                    "sleep_seconds": sleep_seconds,
+                                    "timestamp": time.time(),
+                                },
+                            )
+                            time.sleep(sleep_seconds)
+                        continue
+                    _append_jsonl(
+                        error_log,
+                        {
+                            "index": batch_idx,
+                            "error": str(exc),
+                            "stage": "batch_error",
+                            "timestamp": time.time(),
+                        },
+                    )
+                    skip_batch = True
+                    break
             if skip_batch:
                 continue
             failures += batch_failures

@@ -1,0 +1,14 @@
+Mirror Holdout (XGB stumps + prior_exit rule)
+CSV: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+Seed: 42  Test size: 0.2
+Train rows: 3600  Val rows: 900
+Grid: mirror(0.30-0.95,50)
+Split mode: csv_split
+
+Best threshold (tuned on val):
+  F0.5=0.2889
+  Precision=0.3611
+  Recall=0.1605
+  Positive rate=0.0400
+  N predicted positive=36
+  Threshold=0.8837

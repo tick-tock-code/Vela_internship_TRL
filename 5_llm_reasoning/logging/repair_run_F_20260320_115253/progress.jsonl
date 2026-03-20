@@ -1,0 +1,17 @@
+{"index": -1, "stage": "start_run", "experiment": "F", "processed": 0, "total": 4400, "batch_size": 20, "n_batches": 220, "timestamp": 1774007573.839043}
+{"index": 0, "stage": "window_start", "experiment": "F", "window": 0, "concurrency": 10, "batch_ids": [99, 152], "timestamp": 1774007574.1028047}
+{"index": 0, "stage": "rate_limit_sleep", "experiment": "F", "sleep_seconds": 5.0, "timestamp": 1774007582.5414138}
+{"index": 0, "stage": "rate_limit_fallback", "experiment": "F", "concurrency_next": 5, "failed_batch_ids": [99, 152], "timestamp": 1774007587.5429955}
+{"index": 1, "stage": "window_start", "experiment": "F", "window": 1, "concurrency": 5, "batch_ids": [99, 152], "timestamp": 1774007587.5438461}
+{"index": 1, "stage": "rate_limit_sleep", "experiment": "F", "sleep_seconds": 5.0, "timestamp": 1774007594.5786662}
+{"index": 1, "stage": "rate_limit_fallback", "experiment": "F", "concurrency_next": 5, "failed_batch_ids": [99, 152], "timestamp": 1774007599.580708}
+{"index": 2, "stage": "window_start", "experiment": "F", "window": 2, "concurrency": 5, "batch_ids": [99, 152], "timestamp": 1774007599.5818138}
+{"index": 2, "stage": "rate_limit_sleep", "experiment": "F", "sleep_seconds": 8, "timestamp": 1774007606.7420206}
+{"index": 2, "stage": "rate_limit_fallback", "experiment": "F", "concurrency_next": 5, "failed_batch_ids": [99, 152], "timestamp": 1774007614.7428572}
+{"index": 3, "stage": "window_start", "experiment": "F", "window": 3, "concurrency": 5, "batch_ids": [99, 152], "timestamp": 1774007614.743995}
+{"index": 3, "stage": "rate_limit_sleep", "experiment": "F", "sleep_seconds": 16, "timestamp": 1774007621.890623}
+{"index": 3, "stage": "rate_limit_fallback", "experiment": "F", "concurrency_next": 5, "failed_batch_ids": [99, 152], "timestamp": 1774007637.8930829}
+{"index": 4, "stage": "window_start", "experiment": "F", "window": 4, "concurrency": 5, "batch_ids": [99, 152], "timestamp": 1774007637.8943956}
+{"index": 4, "stage": "rate_limit_sleep", "experiment": "F", "sleep_seconds": 32, "timestamp": 1774007645.1422853}
+{"index": 4, "stage": "rate_limit_fallback", "experiment": "F", "concurrency_next": 5, "failed_batch_ids": [99, 152], "timestamp": 1774007677.1436949}
+{"index": 5, "stage": "window_start", "experiment": "F", "window": 5, "concurrency": 5, "batch_ids": [99, 152], "timestamp": 1774007677.1448534}

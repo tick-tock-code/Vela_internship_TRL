@@ -1,0 +1,21 @@
+{
+  "mode": "holdout",
+  "csv_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\VCBench-Starter-Kit\\vcbench_final_public.csv",
+  "seed": 42,
+  "test_size": 0.2,
+  "mirror_grid": true,
+  "split_file": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\mirror_experiments\\splits\\holdout_seed42.json",
+  "split_mode": "csv_split",
+  "n_rows": 4500,
+  "train_size": 3600,
+  "val_size": 900,
+  "positive_rate": 0.09,
+  "best": {
+    "f05": 0.28888888888888886,
+    "precision": 0.3611111111111111,
+    "recall": 0.16049382716049382,
+    "positive_rate": 0.04,
+    "n_predicted_positive": 36,
+    "threshold": 0.883673469387755
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Evaluate each of the following dimensions on a scale from 1 to 5, based solely on the founder profile. Use clear descriptive labels to guide your ratings, and consider rephrasing them to minimize bias while maintaining their intended meaning:\n\n- Growth trajectory and momentum\n- Depth of ownership and sense of accountability\n- Alignment of career path and focus\n- Resourcefulness and ability to operate with limited resources\n\nAfter rating each dimension, determine an overall founder quality score according to this rubric:\n\nTop founder:\n- Demonstrates rapid growth or early leadership roles\n- Shows strong ownership in uncertain or ambiguous situations\n- Operates within high-growth industries or technical fields\n\nWeak founder:\n- Exhibits limited ownership or responsibility\n- Demonstrates slow or minimal progression\n- Displays inconsistent direction or focus\n\nWhen the evidence is mixed, assign a middle score and prioritize the strongest indicators in the profile.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

@@ -1,0 +1,43 @@
+{"index": 6, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977536.9239755}
+{"index": 0, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977539.1981444}
+{"index": 9, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977540.274105}
+{"index": 5, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977540.6973798}
+{"index": 2, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977541.3285277}
+{"index": 4, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977541.8816195}
+{"index": 3, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977544.546913}
+{"index": 1, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977545.5845003}
+{"index": 11, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977585.186677}
+{"index": 15, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977586.1437912}
+{"index": 10, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977586.5655446}
+{"index": 19, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977587.7474792}
+{"index": 14, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977588.5399585}
+{"index": 13, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977590.0664816}
+{"index": 18, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977591.916675}
+{"index": 12, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977594.0953565}
+{"index": 17, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977594.5881572}
+{"index": 15, "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4.1-nano in organization org-ICV8RMNSlduu99qbZXIvDVut on tokens per min (TPM): Limit 200000, Used 195522, Requested 8452. Please try again in 1.192s. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}", "stage": "rate_limit", "attempt": 1, "timestamp": 1773977603.7280238}
+{"index": 10, "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4.1-nano in organization org-ICV8RMNSlduu99qbZXIvDVut on tokens per min (TPM): Limit 200000, Used 195423, Requested 6913. Please try again in 700ms. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}", "stage": "rate_limit", "attempt": 1, "timestamp": 1773977603.7315302}
+{"index": 14, "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4.1-nano in organization org-ICV8RMNSlduu99qbZXIvDVut on tokens per min (TPM): Limit 200000, Used 195807, Requested 7283. Please try again in 927ms. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}", "stage": "rate_limit", "attempt": 1, "timestamp": 1773977606.453714}
+{"index": 23, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977639.8121548}
+{"index": 10, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977639.8472424}
+{"index": 21, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977641.2379267}
+{"index": 14, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977642.6247208}
+{"index": 15, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977642.7519405}
+{"index": 20, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977644.6131158}
+{"index": 28, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977677.1601582}
+{"index": 26, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977681.1473122}
+{"index": 32, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977681.2021365}
+{"index": 27, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977681.3087714}
+{"index": 34, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977681.8463519}
+{"index": 25, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977682.7663553}
+{"index": 33, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977684.6303282}
+{"index": 30, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977685.2567644}
+{"index": 28, "error": "Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4.1-nano in organization org-ICV8RMNSlduu99qbZXIvDVut on tokens per min (TPM): Limit 200000, Used 198831, Requested 7474. Please try again in 1.891s. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}", "stage": "rate_limit", "attempt": 1, "timestamp": 1773977695.619729}
+{"index": 36, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977738.2308328}
+{"index": 41, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977738.8997514}
+{"index": 39, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977739.2405756}
+{"index": 35, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977742.8549047}
+{"index": 38, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977742.943235}
+{"index": 40, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977743.5470517}
+{"index": 28, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977750.9230535}
+{"index": 43, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773977784.189908}

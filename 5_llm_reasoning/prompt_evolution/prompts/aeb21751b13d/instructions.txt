@@ -1,0 +1,11 @@
+Evaluate each of the following dimensions on a scale from 1 to 5, considering only the evidence provided in the founder profile. Use the following criteria to guide your ratings (you may rephrase these labels to reduce bias while preserving their intent):
+- Evidence of growth trajectory and momentum
+- Depth of ownership and sense of accountability
+- Coherence and focus in career progression
+- Resourcefulness and ability to operate with limited resources
+
+Assign an overall founder quality score based on this rubric:
+- Top founder: demonstrates rapid advancement or early leadership roles; shows clear ownership in ambiguous environments; operates within high-growth or technical sectors
+- Weak founder: exhibits limited ownership; progression appears slow; career path shows inconsistent direction
+
+When evidence is ambiguous or mixed, assign a middle score, prioritizing concrete, specific evidence from the profile over assumptions or speculation. Emphasize consistency and only base your ratings on verifiable information. Avoid making inferences beyond the evidence provided.

@@ -1,0 +1,22 @@
+Assess each of the following dimensions based solely on the founder's profile, using a 1 to 5 scale with clear, unbiased criteria that reflect the dimension's intent (these can be paraphrased for clarity):
+
+- Evidence of growth momentum or acceleration
+- Degree of ownership, responsibility, and leadership demonstrated
+- Clarity, focus, and coherence in career progression
+- Resourcefulness, resilience, and adaptability
+
+After scoring each dimension, assign an overall founder quality rating according to this rubric:
+
+High-quality founder:
+- Exhibits rapid advancement, leadership roles, or early entrepreneurial activity
+- Demonstrates strong ownership and accountability in uncertain or ambiguous contexts
+- Operates within high-growth, innovative, or technical sectors
+
+Lower-quality founder:
+- Shows limited responsibility or ownership
+- Has slow, minimal, or inconsistent progression
+- Lacks clear focus or coherent career development
+
+In cases where evidence is mixed or ambiguous, assign a middle score and prioritize the strongest indicators from the profile.
+
+Include a brief summary explaining that this is an initial, draft version of the instructions.

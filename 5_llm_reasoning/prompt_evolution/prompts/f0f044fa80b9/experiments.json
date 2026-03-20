@@ -1,0 +1,20 @@
+[
+  {
+    "id": "AB",
+    "instructions": "Evaluate each of the following dimensions on a scale from 1 to 5, based solely on the founder profile. Use the following descriptive labels to guide your assessment, rephrasing them as needed for clarity while maintaining their core meaning:\n- growth trajectory and momentum\n- depth of ownership and sense of accountability\n- coherence and focus of career path\n- resourcefulness and ingenuity in overcoming challenges\n\nAfter scoring these dimensions, assign an overall founder quality score according to this rubric:\n\nHigh-potential founder:\n- demonstrates rapid advancement or early leadership roles\n- shows strong ownership in ambiguous or uncertain settings\n- operates within high-growth or technical environments\n\nLower-potential founder:\n- exhibits limited ownership or responsibility\n- progresses slowly or inconsistently\n- demonstrates unclear or unfocused direction\n\nIn cases where evidence is mixed, assign a middle score and prioritize the most compelling evidence in the profile.\n\nInclude a summary note indicating this is the initial version.",
+    "numeric_keys": [
+      "trajectory_strength",
+      "ownership_signal",
+      "career_coherence",
+      "scrappiness",
+      "rubric_score"
+    ],
+    "text_keys": [
+      "trajectory_strength_justification",
+      "ownership_signal_justification",
+      "career_coherence_justification",
+      "scrappiness_justification",
+      "rubric_score_justification"
+    ]
+  }
+]

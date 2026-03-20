@@ -2,45 +2,45 @@
   "total_rows": 200,
   "numeric": {
     "evidence_support_rating": {
-      "mean": 3.275,
-      "std": 0.8502881568907942,
-      "min": 1.0,
-      "max": 5.0,
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
       "nan_count": 0
     },
     "AB_trajectory_strength": {
-      "mean": 2.975,
-      "std": 1.0047000102283088,
-      "min": 1.0,
-      "max": 5.0,
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
       "nan_count": 0
     },
     "AB_ownership_signal": {
-      "mean": 3.025,
-      "std": 0.9427720273095649,
-      "min": 1.0,
-      "max": 4.0,
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
       "nan_count": 0
     },
     "AB_career_coherence": {
-      "mean": 3.26,
-      "std": 0.9628266593106971,
-      "min": 1.0,
-      "max": 5.0,
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
       "nan_count": 0
     },
     "AB_scrappiness": {
       "mean": 3.0,
-      "std": 0.7700420924343052,
-      "min": 1.0,
-      "max": 4.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
       "nan_count": 0
     },
     "AB_rubric_score": {
-      "mean": 3.095,
-      "std": 0.9382840105331172,
-      "min": 1.0,
-      "max": 5.0,
+      "mean": 3.0,
+      "std": 0.0,
+      "min": 3.0,
+      "max": 3.0,
       "nan_count": 0
     }
   },

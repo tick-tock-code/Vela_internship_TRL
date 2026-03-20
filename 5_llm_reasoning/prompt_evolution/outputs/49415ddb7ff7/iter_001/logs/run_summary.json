@@ -1,20 +1,8 @@
 {
-  "status": "completed",
+  "status": "cached",
   "experiment": "AB",
-  "total_records": 200,
-  "processed": 200,
-  "validation_failures": 0,
-  "dataset_size": "200",
-  "nan_rows_before": 0,
-  "nan_rows_after": 0,
-  "rate_limit_fallbacks": 0,
-  "rate_limit_error_count": 0,
-  "inline_repair_retries": 0,
-  "repair_only": false,
-  "estimated_prompt_tokens": 81101,
-  "estimated_completion_tokens": 56321,
-  "estimated_prompt_chars": 324390,
-  "estimated_completion_chars": 225271,
-  "estimated_requests": 10,
-  "timestamp": 1773934726.9470785
+  "total_records": 20,
+  "processed": 20,
+  "dataset_size": "20",
+  "timestamp": 1773972048.2163525
 }

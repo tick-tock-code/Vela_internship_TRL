@@ -1,0 +1,11 @@
+Mirror CV Tuned (XGB stumps + prior_exit rule)
+CSV: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
+Folds: 5  Seed: 42
+Grid: mirror(0.30-0.95,50)
+
+Mean +/- Std (threshold tuned on each validation fold):
+  F0.5=0.2592 +/- 0.0390
+  Precision=0.2856 +/- 0.1020
+  Recall=0.2914 +/- 0.1465
+  Positive rate=0.1109 +/- 0.0762
+  Threshold=0.6741 +/- 0.1025
