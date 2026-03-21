@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_ranking_education",
+    "industry_tech_or_health",
+    "has_executive_role",
+    "has_investment_event",
+    "industry_is_nan",
+    "has_dominant_degree_field",
+    "long_term_experience",
+    "small_company_experience",
+    "multiple_educations",
+    "multiple_roles",
+    "industry_experience_in_target",
+    "recent_role",
+    "has_education_in_field",
+    "has_leadership_experience",
+    "has_international_experience",
+    "has_high_company_size_experience",
+    "has_multiple_exits"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

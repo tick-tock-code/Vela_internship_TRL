@@ -1,0 +1,32 @@
+{
+  "features": [
+    "prior_acquisitions",
+    "prior_ipos",
+    "multiple_exits",
+    "qs_top_200",
+    "qs_top_25",
+    "industry_match",
+    "long_experience",
+    "technical_role",
+    "senior_leadership",
+    "large_company_years",
+    "stem_degree",
+    "qs_inverse_best",
+    "short_tenure_pattern",
+    "has_mba",
+    "startup_exp",
+    "has_phd"
+  ],
+  "use_llm_reasoning": false,
+  "llm_engineered_cache": true,
+  "llm_engineered_freeze": false,
+  "llm_engineered_force_recompute": false,
+  "llm_engineered_run_family": true,
+  "llm_engineered_run_family_size": 10,
+  "llm_engineered_run_family_n_features": 18,
+  "llm_engineered_run_family_id": "",
+  "llm_engineered_seed_size": 100,
+  "llm_n_features": 18,
+  "cv_folds": 5,
+  "cv_use_fixed_folds": true
+}

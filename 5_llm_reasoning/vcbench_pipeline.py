@@ -12,6 +12,7 @@ Pipeline steps:
 from __future__ import annotations
 
 import argparse
+import time
 import re
 import os
 import shutil
@@ -87,6 +88,72 @@ HQ_FEATURES_BASE = [
     "persistence_score",
 ]
 HQ_FEATURES_WITH_GAP = HQ_FEATURES_BASE + ["repeat_founding_gap"]
+
+LEGACY_HUMAN_FEATURE_SETS = [
+    {
+        "name": "Human Legacy 1 (scaled durations)",
+        "features": [
+            "has_phd",
+            "has_mba",
+            "stem_degree",
+            "multiple_exits",
+            "senior_leadership",
+            "startup_exp",
+            "short_tenure_pattern",
+            "industry_match",
+            "qs_top_25",
+            "qs_top_200",
+            "qs_inverse_best",
+            "prior_ipos",
+            "prior_acquisitions",
+            "large_company_years",
+            "experience_duration",
+            "technical_experience_duration",
+        ],
+    },
+    {
+        "name": "Human Legacy 2 (binary equivalents)",
+        "features": [
+            "has_phd",
+            "has_mba",
+            "stem_degree",
+            "multiple_exits",
+            "senior_leadership",
+            "startup_exp",
+            "short_tenure_pattern",
+            "industry_match",
+            "long_experience",
+            "technical_role",
+            "qs_top_25",
+            "qs_top_200",
+            "qs_inverse_best",
+            "prior_ipos",
+            "prior_acquisitions",
+            "large_company_years",
+        ],
+    },
+    {
+        "name": "Human Legacy 3 (mixed durations)",
+        "features": [
+            "has_phd",
+            "has_mba",
+            "stem_degree",
+            "multiple_exits",
+            "senior_leadership",
+            "startup_exp",
+            "short_tenure_pattern",
+            "industry_match",
+            "technical_role",
+            "qs_top_25",
+            "qs_top_200",
+            "qs_inverse_best",
+            "prior_ipos",
+            "prior_acquisitions",
+            "large_company_years",
+            "experience_duration",
+        ],
+    },
+]
 
 
 def _install_excepthook() -> None:
@@ -318,6 +385,7 @@ def _save_llm_engineered_cache(
     google_model: str | None,
     n_features: int,
     seed_hash: str | None = None,
+    rules: list[dict[str, str]] | None = None,
 ) -> None:
     current_dir = cache_dir / "current"
     current_dir.mkdir(parents=True, exist_ok=True)
@@ -334,6 +402,9 @@ def _save_llm_engineered_cache(
         "seed_hash": seed_hash,
     }
     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    if rules:
+        rules_path = current_dir / "llm_rules.json"
+        rules_path.write_text(json.dumps(rules, indent=2), encoding="utf-8")
 
 
 def _rotate_llm_engineered_cache(cache_dir: Path) -> None:
@@ -934,6 +1005,71 @@ def _write_family_leaderboard(
         )
 
 
+def _refresh_family_leaderboard_from_full_csv(
+    full_csv: Path,
+    report_path: Path,
+    csv_path: Path,
+    cv_folds: int,
+    pool_size: int,
+) -> None:
+    if not full_csv.exists():
+        return
+    df = pd.read_csv(full_csv)
+    if df.empty:
+        return
+    df = df[df["set_id"].notna() & (df["set_id"].astype(str) != "")]
+    df = df[df["regression"].astype(str).str.contains("LLM Engineered", na=False)]
+    if df.empty:
+        return
+    # Normalize columns to legacy leaderboard schema
+    out = pd.DataFrame(
+        {
+            "set_id": df["set_id"].astype(str),
+            "regression": df["regression"].astype(str),
+            "F0.5": df["F0.5_mean"].astype(float),
+            "ROC-AUC": df["ROC-AUC_mean"].astype(float),
+            "PR-AUC": df["PR-AUC_mean"].astype(float),
+            "Prec": df["Prec_mean"].astype(float),
+            "Rec": df["Rec_mean"].astype(float),
+            "Acc": df["Acc_mean"].astype(float),
+            "reasoning_experiment": df["reasoning_combo"].fillna("").astype(str),
+        }
+    )
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(csv_path, index=False)
+    header = "| Set ID | Regression | F0.5 | ROC-AUC | PR-AUC | Prec | Rec | Acc |"
+    sep = "|---|---|---:|---:|---:|---:|---:|---:|"
+    lines = [header, sep]
+    for _, row in out.iterrows():
+        lines.append(
+            "| {set_id} | {name} | {f0:.3f} | {roc:.3f} | {pr:.3f} | {prec:.3f} | {rec:.3f} | {acc:.3f} |".format(
+                set_id=row.get("set_id", ""),
+                name=row.get("regression", ""),
+                f0=float(row.get("F0.5", float("nan"))),
+                roc=float(row.get("ROC-AUC", float("nan"))),
+                pr=float(row.get("PR-AUC", float("nan"))),
+                prec=float(row.get("Prec", float("nan"))),
+                rec=float(row.get("Rec", float("nan"))),
+                acc=float(row.get("Acc", float("nan"))),
+            )
+        )
+    leaderboard_table = "\n".join(lines)
+    section = (
+        "## LLM Engineered Run-Family Leaderboard (from latest full results)\n\n"
+        + leaderboard_table
+        + "\n\n"
+        + f"*Metrics are {cv_folds}-fold stratified CV on {pool_size} founders (seed excluded).*\\n"
+    )
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    if report_path.exists():
+        base = report_path.read_text(encoding="utf-8").rstrip()
+        report_path.write_text(base + "\n\n" + section, encoding="utf-8")
+    else:
+        report_path.write_text(
+            "# LLM Regression Summary (F0.5)\n\n" + section, encoding="utf-8"
+        )
+
+
 def _build_reasoning_combos(
     reasoning_df: pd.DataFrame,
     experiment_ids: list[str],
@@ -1057,6 +1193,9 @@ def _write_full_results_report(
     _add_csv_rows(full_lr_rows, "logistic", full_size)
     _add_csv_rows(full_xgb_rows, "xgboost", full_size)
     pd.DataFrame(csv_rows).to_csv(csv_path, index=False)
+    paper_stats_dir = Path(__file__).parent / "docs" / "paper_stats"
+    _write_experiment_top_picks(csv_path, paper_stats_dir / "experiment_top_picks.md", full_size)
+    _write_paper_structure(paper_stats_dir / "paper_structure.md")
 
     def _fmt(row: dict[str, Any], key: str) -> str:
         return _format_mean_std(float(row.get(key, float("nan"))), float(row.get(f"{key}_std", float("nan"))))
@@ -1181,6 +1320,26 @@ def _write_full_results_report(
             lines.append(f"| {combo} | {avg:+.3f} | {std:.3f} | {vals.size} |")
         return "\n".join(lines)
 
+    def _legacy_summary_block(
+        lr_rows: list[dict[str, Any]],
+        xgb_rows: list[dict[str, Any]],
+    ) -> str:
+        legacy_names = {s["name"] for s in LEGACY_HUMAN_FEATURE_SETS}
+        legacy_lr = [r for r in lr_rows if r.get("regression") in legacy_names]
+        legacy_xgb = [r for r in xgb_rows if r.get("regression") in legacy_names]
+        if not legacy_lr and not legacy_xgb:
+            return "_No legacy human-only rows to summarize._"
+        lines = ["**Legacy human-only (LR + XGB)**"]
+        for rows, label in ((legacy_lr, "LR"), (legacy_xgb, "XGB")):
+            if not rows:
+                continue
+            lines.append(f"- {label}:")
+            for row in rows:
+                lines.append(
+                    f"  - {row.get('regression','')}: { _fmt(row, 'F0.5') }"
+                )
+        return "\n".join(lines)
+
     section_lines: list[str] = [
         f"## Part 1: Pool ({pool_size})",
         "",
@@ -1190,6 +1349,7 @@ def _write_full_results_report(
         "#### Human + Reasoning",
         _render_table(lr_table1_rows, include_set=False),
         _top_k_block(lr_table1_rows, title="Top 5 by F0.5", include_set=False),
+        _legacy_summary_block(lr_table1_rows, xgb_table1_rows),
         "#### LLM-Engineered + Reasoning",
         _render_table(lr_table2_rows, include_set=True),
         _avg_improvement_table(lr_table2_rows, title="Average ΔF0.5 vs Engineered Only (LR)"),
@@ -1235,6 +1395,133 @@ def _write_full_results_report(
     section = "\n".join(section_lines)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("# LLM Regression Summary (F0.5)\n\n" + section + "\n", encoding="utf-8")
+
+
+def _write_experiment_top_picks(csv_path: Path, report_path: Path, full_size: int) -> None:
+    if not csv_path.exists():
+        return
+    df = pd.read_csv(csv_path)
+    if df.empty:
+        return
+
+    df = df[(df["dataset_size"] == full_size) & (df["threshold_tuning"] == "oof")].copy()
+    if df.empty:
+        return
+
+    df["reasoning_combo"] = df["reasoning_combo"].fillna("")
+    variant_map = {
+        "full_hq_no_rule": "HQ (no rule)",
+        "full_mirror_rule": "Mirror (rule)",
+    }
+    df = df[df["variant"].isin(variant_map.keys())].copy()
+    if df.empty:
+        return
+    df["variant_label"] = df["variant"].map(variant_map)
+
+    combos = {
+        "HQ Only": "",
+        "A": "A",
+        "A+E": "A+E",
+        "A+F": "A+F",
+        "A+D+E+F": "A+D+E+F",
+        "A+B+C+D+E+F": "A+B+C+D+E+F",
+    }
+
+    def _fmt(mean: float, std: float) -> str:
+        if math.isnan(mean) or math.isnan(std):
+            return "—"
+        return f"{mean:.3f}+/-{std:.3f}"
+
+    rows = []
+    for label, combo in combos.items():
+        row = {"Experiment": label}
+        for model in ["logistic", "xgboost"]:
+            for variant_label in ["HQ (no rule)", "Mirror (rule)"]:
+                key = f"{model.upper()} | {variant_label}"
+                sub = df[
+                    (df["model_type"] == model)
+                    & (df["variant_label"] == variant_label)
+                    & (df["reasoning_combo"] == combo)
+                ]
+                if sub.empty:
+                    row[key] = "—"
+                else:
+                    row[key] = _fmt(float(sub.iloc[0]["F0.5_mean"]), float(sub.iloc[0]["F0.5_std"]))
+        rows.append(row)
+
+    out = pd.DataFrame(rows)
+    cols = [
+        "Experiment",
+        "LOGISTIC | HQ (no rule)",
+        "LOGISTIC | Mirror (rule)",
+        "XGBOOST | HQ (no rule)",
+        "XGBOOST | Mirror (rule)",
+    ]
+    out = out[cols]
+
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    header = "| Experiment | LOGISTIC | HQ (no rule) | LOGISTIC | Mirror (rule) | XGBOOST | HQ (no rule) | XGBOOST | Mirror (rule) |"
+    sep = "|---|---:|---:|---:|---:|"
+    lines = [header, sep]
+    for _, row in out.iterrows():
+        lines.append(
+            "| {exp} | {l_hq} | {l_m} | {x_hq} | {x_m} |".format(
+                exp=row["Experiment"],
+                l_hq=row["LOGISTIC | HQ (no rule)"],
+                l_m=row["LOGISTIC | Mirror (rule)"],
+                x_hq=row["XGBOOST | HQ (no rule)"],
+                x_m=row["XGBOOST | Mirror (rule)"],
+            )
+        )
+    report_path.write_text(
+        "\n".join(
+            [
+                "# Experiment Top Picks (Full 4,500 | OOF-tuned)",
+                "",
+                *lines,
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_paper_structure(report_path: Path) -> None:
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        "\n".join(
+            [
+                "# Paper Structure Notes",
+                "",
+                "We evaluate a minimal reasoning baseline (A), a small additive extension (A+E), a rubric-style extension (A+F), a richer multi-signal model (ADEF), and the maximal combination (ABCDEF). This provides a graded complexity spectrum while avoiding post-hoc selection.",
+                "",
+                "## Part 1: Pool experiments (4,400)",
+                "- Human-only baselines and Human + reasoning combos.",
+                "- LLM-engineered baselines and LLM-engineered + reasoning combos.",
+                "- Reported for both Logistic Regression and XGBoost.",
+                "",
+                "## Part 2: HQ mirror experiments (4,500)",
+                "- HQ features + reasoning additions on the full dataset.",
+                "- Full mirror (rule layer) + reasoning additions on the full dataset.",
+                "- Reported for both Logistic Regression and XGBoost.",
+                "",
+                "## Test-set plan (private)",
+                "- HQ Only (baseline)",
+                "- HQ + A (minimal reasoning)",
+                "- HQ + A+E (incremental improvement)",
+                "- HQ + A+F (stronger gain, more complexity)",
+                "- HQ + A+D+E+F (best-performing complex version)",
+                "- HQ + A+B+C+D+E+F (only if added complexity appears to help)",
+                "",
+                "## Private test addendum",
+                "- Run 3x human-only feature sets with XGBoost.",
+                "- Run top 3 LLM-engineered sets with XGBoost.",
+                "- Run top 3 LLM-engineered + A+E with XGBoost.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
 
 
 def _write_reasoning_xgb_oof_report(
@@ -2007,6 +2294,7 @@ def main() -> None:
     if human_feature_source not in ("baseline", "high_quality"):
         human_feature_source = "baseline"
     llm_engineered_rotated = False
+    cache_dir = Path(__file__).parent / "features_storage" / "llm_engineered"
     cv_folds = (
         int(args.cv_folds)
         if args.cv_folds is not None
@@ -2446,7 +2734,7 @@ def main() -> None:
                     attempt = 0
                     while True:
                         try:
-                            llm_all, _, _, llm_feature_names = asyncio.run(
+                            llm_all, _, _, llm_feature_names, _ = asyncio.run(
                                 asyncio.wait_for(
                                     generate_llm_features(
                                         train_recs=seed_train_recs,
@@ -2473,8 +2761,8 @@ def main() -> None:
                                 llm_feature_names = []
                                 break
                             _log(f"  Retrying in {args.llm_retry_sleep:.1f}s...")
-                            import time
-                            time.sleep(max(0.0, float(args.llm_retry_sleep)))
+                            import time as _time
+                            _time.sleep(max(0.0, float(args.llm_retry_sleep)))
                     if not llm_feature_names:
                         continue
 
@@ -2661,7 +2949,7 @@ def main() -> None:
                 _log("  Loaded cached LLM-engineered features.")
             else:
                 _log(f"\n  Generating {llm_n} LLM features with {args.llm_model}...")
-                llm_all, _, _, llm_feature_names = asyncio.run(
+                llm_all, _, _, llm_feature_names, llm_rules = asyncio.run(
                     generate_llm_features(
                         train_recs=seed_recs,
                         y_train=seed_labels,
@@ -2683,7 +2971,26 @@ def main() -> None:
                         google_model=llm_google_model,
                         n_features=llm_n,
                         seed_hash=seed_hash,
+                        rules=llm_rules,
                     )
+
+    def _load_currently_in_use_df() -> pd.DataFrame | None:
+        use_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "currently_in_use"
+        use_path = use_root / "llm_reasoning_full.parquet"
+        if not use_path.exists():
+            return None
+        df = pd.read_parquet(use_path)
+        if len(df) == len(all_records) and len(records) != len(all_records):
+            df = df.iloc[pool_idx].reset_index(drop=True)
+        return df
+
+    def _combo_is_subset(combo_label: str, allowed: set[str]) -> bool:
+        if not combo_label:
+            return False
+        if combo_label.lower() in {"n/a", "na", "none"}:
+            return False
+        parts = [p for p in combo_label.replace("_", "+").split("+") if p]
+        return bool(parts) and set(parts).issubset(allowed)
 
     if use_llm_reasoning:
         output_root = Path(__file__).parent / "features_storage" / "llm_reasoning"
@@ -2895,16 +3202,6 @@ def main() -> None:
                         selected[exp_id] = candidate
                         break
             return selected
-
-        def _load_currently_in_use_df() -> pd.DataFrame | None:
-            use_root = Path(__file__).parent / "features_storage" / "llm_reasoning" / "currently_in_use"
-            use_path = use_root / "llm_reasoning_full.parquet"
-            if not use_path.exists():
-                return None
-            df = pd.read_parquet(use_path)
-            if len(df) == len(all_records) and len(records) != len(all_records):
-                df = df.iloc[pool_idx].reset_index(drop=True)
-            return df
 
         def _generate_reasoning_fold_batches(
             experiments_list: list[str] | None,
@@ -4068,9 +4365,46 @@ def main() -> None:
             )
             _append_row(xgb_table1_rows, "Table 1", "Human Only", "", "", means, stds)
 
-            def _combo_is_subset(combo_label: str, allowed: set[str]) -> bool:
-                parts = [p for p in combo_label.replace("_", "+").split("+") if p]
-                return bool(parts) and set(parts).issubset(allowed)
+            # Legacy human-only feature sets (LR + XGB).
+            legacy_union = set()
+            for legacy in LEGACY_HUMAN_FEATURE_SETS:
+                legacy_union.update(legacy["features"])
+            legacy_custom = [f for f in legacy_union if f not in base_feature_names_baseline]
+            legacy_custom_df = _custom_feature_df(records, legacy_custom) if legacy_custom else pd.DataFrame(index=base_all_baseline.index)
+            legacy_full = pd.concat([base_all_baseline, legacy_custom_df], axis=1)
+            for legacy in LEGACY_HUMAN_FEATURE_SETS:
+                legacy_name = legacy["name"]
+                legacy_features = legacy["features"]
+                missing = [f for f in legacy_features if f not in legacy_full.columns]
+                if missing:
+                    _log_run(f"Legacy set '{legacy_name}' missing columns: {missing}. Skipping.")
+                    continue
+                legacy_df = legacy_full[legacy_features].copy()
+                means, stds = _train_and_log_cv(
+                    legacy_features,
+                    legacy_df,
+                    labels,
+                    args_lr,
+                    input_csv,
+                    legacy_name,
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent / "training_logs" / "human" / "legacy" / legacy_name.replace(" ", "_"),
+                    cv_splits=cv_splits,
+                )
+                _append_row(lr_table1_rows, "Table 1", legacy_name, "", "", means, stds)
+
+                means, stds = _train_and_log_cv(
+                    legacy_features,
+                    legacy_df,
+                    labels,
+                    args_xgb,
+                    input_csv,
+                    f"{legacy_name} (XGB)",
+                    cv_folds=cv_folds,
+                    log_dir=Path(__file__).parent / "training_logs" / "human" / "legacy_xgb" / legacy_name.replace(" ", "_"),
+                    cv_splits=cv_splits,
+                )
+                _append_row(xgb_table1_rows, "Table 1", legacy_name, "", "", means, stds)
 
             part1_exp_list = ["A", "B", "E"]
             selected_part1 = _select_latest_valid_runs(part1_exp_list)
@@ -4462,6 +4796,7 @@ def main() -> None:
                 _log_run(f"Run-family processing {set_id}")
                 set_all = None
                 set_names = None
+                set_rules = None
                 if llm_engineered_cache:
                     set_all, set_names = _load_llm_engineered_cache(
                         cache_dir=set_dir,
@@ -4500,13 +4835,13 @@ def main() -> None:
                                 )
 
                             if float(args.llm_timeout) > 0:
-                                set_all, _, _, set_names = asyncio.run(
+                                set_all, _, _, set_names, set_rules = asyncio.run(
                                     asyncio.wait_for(
                                         _run_generate(), timeout=float(args.llm_timeout)
                                     )
                                 )
                             else:
-                                set_all, _, _, set_names = asyncio.run(_run_generate())
+                                set_all, _, _, set_names, set_rules = asyncio.run(_run_generate())
                             break
                         except Exception:
                             err = traceback.format_exc()
@@ -4543,6 +4878,7 @@ def main() -> None:
                             google_model=llm_google_model,
                             n_features=run_n,
                             seed_hash=seed_hash,
+                            rules=set_rules,
                         )
 
                 if set_all is None or set_names is None:
@@ -4606,6 +4942,43 @@ def main() -> None:
                     cv_folds,
                     len(labels),
                 )
+            if xgb_table2_rows:
+                leaderboard_path = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard_xgb.md"
+                leaderboard_csv = Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard_xgb.csv"
+                _write_family_leaderboard(
+                    xgb_table2_rows,
+                    leaderboard_path,
+                    leaderboard_csv,
+                    cv_folds,
+                    len(labels),
+                )
+                # Persist top-3 engineered-only sets by XGB F0.5 for paper pipeline selection.
+                xgb_only = [
+                    row
+                    for row in xgb_table2_rows
+                    if row.get("regression") == "LLM Engineered Only"
+                ]
+                if xgb_only:
+                    xgb_only_sorted = sorted(
+                        xgb_only,
+                        key=lambda r: float(r.get("F0.5", float("-inf"))),
+                        reverse=True,
+                    )
+                    top3 = [r.get("set_id", "") for r in xgb_only_sorted[:3] if r.get("set_id")]
+                    top3_path = Path(__file__).parent / "docs" / "paper_stats" / "engineered_top3_xgb.json"
+                    top3_path.parent.mkdir(parents=True, exist_ok=True)
+                    top3_path.write_text(
+                        json.dumps(
+                            {
+                                "family_id": family_id,
+                                "metric": "XGB engineered-only F0.5",
+                                "set_ids": top3,
+                                "timestamp": datetime.now().isoformat(),
+                            },
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
 
     # Full-dataset HQ + Reasoning (no rule layer) and Full Mirror + Reasoning (rule layer).
     if use_llm_reasoning and reasoning_feature_names:
@@ -4918,6 +5291,13 @@ def main() -> None:
         )
         _log(f"\nUpdated report: {report_path}")
         _log(f"Full results CSV: {full_csv}")
+        _refresh_family_leaderboard_from_full_csv(
+            full_csv,
+            Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.md",
+            Path(__file__).parent / "docs" / "llm_engineered_family_leaderboard.csv",
+            cv_folds,
+            len(labels),
+        )
         _write_snapshot_combined_report()
         if args.snapshot_label:
             snapshot_dir = _write_run_snapshot(args.snapshot_label)

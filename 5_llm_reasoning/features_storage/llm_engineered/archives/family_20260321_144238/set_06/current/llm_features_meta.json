@@ -1,0 +1,31 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_ranking_education",
+    "has_executive_experience",
+    "industry_experience_in_target",
+    "has_ipo_event",
+    "has_acquisition_event",
+    "has_advanced_degree",
+    "has_technical_work_experience",
+    "has_startup_in_target_industry",
+    "has_education_in_top_qs_ranking",
+    "has_experience_in_target_industry",
+    "has_multiple_educations",
+    "has_multiple_industry_experience",
+    "industry_experience_in_n_target",
+    "has_international_experience",
+    "has_experience_in_leading_roles",
+    "has_education_in_target_field",
+    "has_experience_in_target_field",
+    "has_experience_in_high_qs_ranking_institution"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

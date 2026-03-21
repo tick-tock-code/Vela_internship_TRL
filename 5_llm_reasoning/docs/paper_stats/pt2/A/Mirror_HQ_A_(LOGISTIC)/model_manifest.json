@@ -1,0 +1,9 @@
+{
+  "model_type": "logistic",
+  "seed": 42,
+  "threshold": 0.18000000000000005,
+  "feature_names_hash": "1f7b8be2c1d53d830bc838d5f3f3b82e3886d0e1b06617530618e56838e59519",
+  "train_matrix_hash": "11833386e0c6e02cd82bff39104802c6d593faad057969c59f7753c71cb20091",
+  "label_hash": "24ebf37c39d2755e10a9ee64562be9ad0fdb806039b6e0405d85501833dd7f12",
+  "model_hash": "aa8040e2ff53c670ee19a7b8d6148c592d3b1f89c6015df606a892b1888ed5cf"
+}

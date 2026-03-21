@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_rank",
+    "has_executive_experience",
+    "industry_in_tech",
+    "has_ipo",
+    "has_acquisition",
+    "education_in_field",
+    "has_relevant_experience_years",
+    "industry_in_finance_or_banking",
+    "education_in_top_qs",
+    "role_as_cofounder",
+    "industry_in_healthcare",
+    "has_multiple_educations",
+    "industry_in_software",
+    "role_in_leadership",
+    "industry_in_research",
+    "has_experience_in_industry",
+    "education_in_qs_top_50"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

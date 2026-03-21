@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_education",
+    "industry_in_tech_or_health",
+    "has_executive_experience",
+    "has_ipo_or_acquisition",
+    "has_graduate_degree",
+    "has_long_term_experience",
+    "experienced_in_software_or_it",
+    "industry_known",
+    "has_education_in_ranked_institution",
+    "has_public_experience",
+    "industry_has_ipo",
+    "industry_has_acquisition",
+    "founder_has_bachelor_or_higher",
+    "industry_in_health_or_biotech",
+    "has_experience_in_startup_roles",
+    "industry_has_long_history",
+    "founder_has_multidisciplinary_education"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

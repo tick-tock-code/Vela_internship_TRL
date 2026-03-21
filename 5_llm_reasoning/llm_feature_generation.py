@@ -22,10 +22,10 @@ async def generate_llm_features(
     all_recs: list[dict[str, Any]] | None = None,
     providers: dict[str, bool] | None = None,
     google_model: str | None = None,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str], list[dict[str, str]]]:
     """Generate LLM features exactly like the example script.
 
-    Returns (l_all, l_train, l_test, llm_names).
+    Returns (l_all, l_train, l_test, llm_names, llm_rules).
     """
     _load_env_if_present()
     try:
@@ -77,6 +77,14 @@ async def generate_llm_features(
     l_train = evaluator.evaluate_df(train_recs)
     l_test = evaluator.evaluate_df(test_recs)
     llm_names = [r.name for r in rules]
+    llm_rules = [
+        {
+            "name": str(r.name),
+            "description": str(r.description),
+            "expression": str(r.expression),
+        }
+        for r in rules
+    ]
 
     if all_recs is None:
         l_all = pd.DataFrame(index=range(len(train_recs) + len(test_recs)))
@@ -93,7 +101,7 @@ async def generate_llm_features(
         desc = _sanitize(str(r.description))
         print(f"    {i}. {name}: {desc}")
 
-    return l_all, l_train, l_test, llm_names
+    return l_all, l_train, l_test, llm_names, llm_rules
 
 
 def _load_env_if_present() -> None:
