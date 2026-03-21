@@ -1,4 +1,0 @@
-{"index": 2, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773880523.5653973}
-{"index": 4, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773880524.3699882}
-{"index": 18, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773880566.4094117}
-{"index": 18, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1773880586.458577}

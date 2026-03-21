@@ -1,5 +1,8 @@
 features_full.parquet
 training_logs/
+logging/
+benchmark_raw/
+.tmp_tests/
 training_log_*.txt
 loss_curve_*.csv
 human_feature_correlations.csv

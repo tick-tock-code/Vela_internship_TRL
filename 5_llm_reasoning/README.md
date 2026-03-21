@@ -4,18 +4,22 @@ This folder contains an in-depth pipeline that combines the 15 baseline features
 from the example script with your own feature registry, with an option to add
 LLM-derived features.
 
-## Files
+## Structure
 
-- `feature_registry.py`  
-  Defines custom feature formulas and named feature sets.
-
-- `vcbench_pipeline.py`  
-  Loads VCBench, imports the baseline 15 features, adds custom features, can
-  optionally add LLM features, saves a feature dataset, and trains/evaluates a
-  scikit-learn Logistic Regression model.
-
-- `feature_selector_gui.py`  
-  A simple GUI to select features and save them to a JSON file.
+- `python/`  
+  All Python entrypoints and utilities (pipelines, analyses, repairs, tests).
+- `configs/`  
+  JSON configs (features, experiments, prompt evolution).
+- `prompts/`  
+  Core prompt templates.
+- `scripts/`  
+  PowerShell helpers (e.g., GUI launcher).
+- `docs/`  
+  Reports, paper stats, and supporting notes.
+- `features_storage/`, `test_dataset/`  
+  Cached features and test artifacts.
+- `training_logs/`, `logging/`  
+  Run logs (older sweep logs archived under `_archive/`).
 
 ## Custom features included
 
@@ -28,37 +32,37 @@ LLM-derived features.
 Example (default feature set = base + custom):
 
 ```bash
-python vcbench_pipeline.py --dataset sample
+python python/vcbench_pipeline.py --dataset sample
 ```
 
 Override with a named set:
 
 ```bash
-python vcbench_pipeline.py --dataset full --feature_set custom_only
+python python/vcbench_pipeline.py --dataset full --feature_set custom_only
 ```
 
 Override with explicit custom features:
 
 ```bash
-python vcbench_pipeline.py --dataset full --features qs_top_25,prior_ipos,large_company_years
+python python/vcbench_pipeline.py --dataset full --features qs_top_25,prior_ipos,large_company_years
 ```
 
 Use the GUI to save a JSON feature list:
 
 ```bash
-python feature_selector_gui.py
+python python/feature_selector_gui.py
 ```
 
 Then run the pipeline with:
 
 ```bash
-python vcbench_pipeline.py --dataset full --feature_config features.json
+python python/vcbench_pipeline.py --dataset full --feature_config configs/features.json
 ```
 
 ## Generated artifacts
 
 The pipeline writes Parquet outputs and training logs during runs. These files
-are ignored by git via `3_pipeline_for_features/.gitignore`.
+are ignored by git via `5_llm_reasoning/.gitignore`.
 
 ## Notes
 

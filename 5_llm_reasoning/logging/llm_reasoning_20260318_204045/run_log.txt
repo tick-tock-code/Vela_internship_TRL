@@ -1,9 +1,0 @@
-run_log started
-[2026-03-18T20:40:45.532831] Loading dataset from: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\VCBench-Starter-Kit\vcbench_final_public.csv
-[2026-03-18T20:40:45.920213] Loaded records: 4500 labels: 4500
-[2026-03-18T20:40:45.920795] Use LLM reasoning: True
-[2026-03-18T20:40:45.921212] Config flags: llm_engineered_run_family=False llm_engineered_freeze=False llm_engineered_run_family_id=20260318_182731
-[2026-03-18T20:40:45.923986] Seed size=100 pool size=4400
-[2026-03-18T20:40:45.924361] OPENAI_API_KEY set: True
-[2026-03-18T20:40:45.928628] CV fold sizes: 440, 440, 440, 440, 440, 440, 440, 440, 440, 440
-[2026-03-18T20:40:45.929215] CV fold cache: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\features_storage\cv_folds\folds_k10_seed42.json

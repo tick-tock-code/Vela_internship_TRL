@@ -1,4 +1,0 @@
-{"index": 4, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773878989.8435268}
-{"index": 19, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773879038.5733058}
-{"index": 21, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773879093.0647087}
-{"index": 20, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1773879102.6610575}
