@@ -21,7 +21,11 @@ from think_reason_learn.datasets import load_vcbench
 from think_reason_learn.features import FeatureEvaluator, FeatureGenerator
 from think_reason_learn.features._types import Rule
 from think_reason_learn.features._types import Rule
-from think_reason_learn.datasets._vcbench import VCBENCH_SCHEMA, VCBENCH_HELPERS
+from think_reason_learn.datasets._vcbench import (
+    VCBENCH_SCHEMA,
+    VCBENCH_HELPERS,
+    _safe_json_parse,
+)
 from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 
 from feature_registry import FEATURE_REGISTRY
@@ -55,6 +59,7 @@ TEST_DIR = BASE_DIR / "test_dataset"
 DEFAULT_TEST_CSV = TEST_DIR / "vcbench_final_private (success column removed) - vcbench_final_private.csv"
 DEFAULT_TEST_REASONING = TEST_DIR / "llm_reasoning_private.parquet"
 ENGINEERED_SET_IDS_DEFAULT = ["set_01", "set_04", "set_05"]
+TEST_PARSE_VERSION = "vcbench_safe_json_parse_v1"
 
 
 def _load_env_if_present() -> None:
@@ -255,31 +260,56 @@ def _make_unique_ids(records: list[dict[str, Any]], prefix: str) -> list[str]:
     return ids
 
 
-def _load_test_records(test_csv: Path) -> list[dict[str, Any]]:
+def _load_test_records(test_csv: Path) -> tuple[list[dict[str, Any]], pd.DataFrame]:
+    """Load test CSV and parse JSON fields using vcbench-safe parser (mirror-aligned)."""
     df = pd.read_csv(test_csv)
-    records = df.to_dict(orient="records")
-    def _parse_json(val: Any) -> Any:
-        if val is None:
-            return []
-        if isinstance(val, float) and math.isnan(val):
-            return []
-        if isinstance(val, str):
-            s = val.strip()
-            if not s or s.lower() in {"nan", "none"}:
-                return []
-            if s[0] in "[{":
-                try:
-                    return json.loads(s)
-                except Exception:
-                    return []
-        return val
-    for rec in records:
-        for key in ("ipos", "acquisitions", "jobs_json", "educations_json"):
-            rec[key] = _parse_json(rec.get(key))
-        # Mirror training record structure expected by HQ feature builder.
-        rec["educations"] = rec.get("educations_json", [])
-        rec["jobs"] = rec.get("jobs_json", [])
-    return records
+    has_prose = "anonymised_prose" in df.columns
+    records: list[dict[str, Any]] = []
+    for _, row in df.iterrows():
+        rec: dict[str, Any] = {
+            "founder_uuid": row.get("founder_uuid", None),
+            "industry": row.get("industry", "") or "",
+            "educations": _safe_json_parse(row.get("educations_json", "")),
+            "jobs": _safe_json_parse(row.get("jobs_json", "")),
+            "ipos": _safe_json_parse(row.get("ipos", "")),
+            "acquisitions": _safe_json_parse(row.get("acquisitions", "")),
+        }
+        if has_prose:
+            rec["anonymised_prose"] = row.get("anonymised_prose", "") or ""
+        records.append(rec)
+    return records, df
+
+
+def _records_hash(records: list[dict[str, Any]]) -> str:
+    def _default(obj: Any) -> Any:
+        if isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        if isinstance(obj, (np.ndarray,)):
+            return obj.tolist()
+        return str(obj)
+
+    payload = json.dumps(records, sort_keys=True, default=_default, ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _load_hq_extractor(script_path: Path):
+    spec = importlib.util.spec_from_file_location("hq_extract_structured", script_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load HQ feature script: {script_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)  # type: ignore[assignment]
+    if not hasattr(module, "extract_features"):
+        raise AttributeError(f"HQ script missing extract_features: {script_path}")
+    return module.extract_features  # type: ignore[attr-defined]
+
+
+def _extract_hq_from_raw_df(raw_df: pd.DataFrame, script_path: Path) -> pd.DataFrame:
+    extractor = _load_hq_extractor(script_path)
+    hq_df = extractor(raw_df)
+    missing = [f for f in HQ_FEATURES_BASE if f not in hq_df.columns]
+    if missing:
+        raise RuntimeError("Missing HQ features: " + ", ".join(missing))
+    return hq_df
 
 
 def _oof_cv_metrics(
@@ -632,8 +662,34 @@ def _ensure_test_reasoning(
     model: str,
     providers: dict[str, bool],
     google_model: str | None,
+    records_hash: str,
+    parse_version: str,
 ) -> pd.DataFrame:
+    meta_path = test_reasoning_path.parent / "llm_reasoning_private_meta.json"
+    regen_all = False
     if test_reasoning_path.exists():
+        if not meta_path.exists():
+            regen_all = True
+        else:
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            except Exception:
+                meta = {}
+            if (
+                meta.get("parse_version") != parse_version
+                or meta.get("records_hash") != records_hash
+            ):
+                regen_all = True
+
+    if regen_all and test_reasoning_path.exists():
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = test_reasoning_path.parent / f"{test_reasoning_path.stem}.bak_{ts}{test_reasoning_path.suffix}"
+        test_reasoning_path.replace(backup_path)
+        if meta_path.exists():
+            meta_backup = meta_path.parent / f"{meta_path.stem}.bak_{ts}{meta_path.suffix}"
+            meta_path.replace(meta_backup)
+
+    if test_reasoning_path.exists() and not regen_all:
         df = pd.read_parquet(test_reasoning_path)
         # Check for missing experiment columns before validating.
         missing_exps = [exp for exp in exp_ids if not any(c.startswith(f"{exp}_") for c in df.columns)]
@@ -641,6 +697,14 @@ def _ensure_test_reasoning(
             _load_reasoning_cache(df, exp_ids)
         numeric_cols = [c for c in df.columns if c not in ("founder_uuid", "row_index", "success")]
         if not missing_exps and not (numeric_cols and df[numeric_cols].isna().any().any()):
+            meta_payload = {
+                "parse_version": parse_version,
+                "records_hash": records_hash,
+                "n_records": len(records),
+                "experiments": exp_ids,
+                "saved_at": datetime.now().isoformat(),
+            }
+            meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
             return df
         # Targeted repair or missing-exp generation (do not delete the file)
         batch_size = 20
@@ -701,6 +765,14 @@ def _ensure_test_reasoning(
                 merged_df = merged_df.merge(exp_df, on=id_col, how="left")
         if merged_df is not None:
             merged_df.to_parquet(test_reasoning_path, index=False)
+            meta_payload = {
+                "parse_version": parse_version,
+                "records_hash": records_hash,
+                "n_records": len(records),
+                "experiments": exp_ids,
+                "saved_at": datetime.now().isoformat(),
+            }
+            meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
             return merged_df
 
     labels = np.zeros(len(records), dtype=int)
@@ -785,6 +857,14 @@ def _ensure_test_reasoning(
     if merged_df is None:
         raise RuntimeError("Failed to generate test reasoning features.")
     merged_df.to_parquet(test_reasoning_path, index=False)
+    meta_payload = {
+        "parse_version": parse_version,
+        "records_hash": records_hash,
+        "n_records": len(records),
+        "experiments": exp_ids,
+        "saved_at": datetime.now().isoformat(),
+    }
+    meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
     return merged_df
 
 
@@ -936,7 +1016,8 @@ def main() -> None:
     legacy_full.to_parquet(human_feat_dir / "features_pool.parquet", index=False)
 
     # Legacy features for test set
-    test_records = _load_test_records(test_csv)
+    test_records, raw_test_df = _load_test_records(test_csv)
+    test_records_hash = _records_hash(test_records)
     test_ids = _make_unique_ids(test_records, "test")
     base_rows_test = [base_extractor(r) for r in test_records]
     base_df_test = pd.DataFrame(base_rows_test, index=test_ids)
@@ -984,11 +1065,13 @@ def main() -> None:
         test_reasoning_path,
         PROMPT_DIR / "core_prompt.txt",
         CONFIG_DIR / "experiments.json",
-        ["A", "B", "C", "D", "E", "F"],
+        ["A", "D", "E", "F"],
         PAPER_DIR / "test_reasoning_logs",
         args.llm_model,
         {"openai": True, "google": False},
         args.google_model,
+        test_records_hash,
+        TEST_PARSE_VERSION,
     )
     test_reasoning_df, _ = _load_reasoning_cache(test_reasoning_df, ["A", "D", "E", "F"])
     if "founder_uuid" not in test_reasoning_df.columns and "row_index" in test_reasoning_df.columns:
@@ -1148,9 +1231,8 @@ def main() -> None:
     # Keep row order alignment with full_current (positional index)
     hq_full_no_gap = hq_df_full[HQ_FEATURES_BASE].copy()
     rule_mask_full = hq_df_full["exit_count"].fillna(0.0).astype(float).values > 0
-    hq_df_test = _build_high_quality_features(test_records, hq_script)
-    hq_df_test["founder_uuid"] = test_ids
-    hq_df_test = hq_df_test.set_index("founder_uuid")
+    hq_df_test = _extract_hq_from_raw_df(raw_test_df, hq_script)
+    hq_df_test.index = test_ids
     hq_test_no_gap = hq_df_test[HQ_FEATURES_BASE].copy()
     rule_mask_test = hq_df_test["exit_count"].fillna(0.0).astype(float).values > 0
 

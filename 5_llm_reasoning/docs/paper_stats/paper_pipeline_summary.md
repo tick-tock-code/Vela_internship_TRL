@@ -29,6 +29,10 @@ This document describes what `paper_pipeline.py` does, end‑to‑end, so you ca
   - `core_prompt.txt`
   - `experiments.json`
 
+**Test parsing (mirror‑aligned):**
+- The private test CSV is parsed using the same `_safe_json_parse` logic as `think_reason_learn.datasets._vcbench`.
+- HQ test features are extracted directly from the raw test CSV (same as the mirror pipeline).
+
 ## Outputs (Primary)
 
 - Main report:
@@ -115,10 +119,13 @@ This document describes what `paper_pipeline.py` does, end‑to‑end, so you ca
 
 ## Reasoning Feature Handling (Private Test Set)
 
-`_ensure_test_reasoning(...)` guarantees that **A/B/C/D/E/F** test reasoning features exist and are clean.
+`_ensure_test_reasoning(...)` guarantees that **A/D/E/F** test reasoning features exist and are clean.
 
 Behavior:
-- If merged test reasoning parquet exists and is clean → reuse it.
+- If merged test reasoning parquet exists, metadata must match:
+  - `parse_version: vcbench_safe_json_parse_v1`
+  - `records_hash` (hash of parsed test records)
+- If metadata mismatches → archive old parquet and regenerate.
 - If missing experiments or NaNs → generate only the missing/NaN batches.
 - Each experiment is run **separately** (one prompt per experiment).
 
@@ -132,6 +139,7 @@ Generation parameters:
 All test reasoning outputs are written to:
 - `test_dataset/exp_<ID>/` (per‑experiment run artifacts)
 - `test_dataset/llm_reasoning_private.parquet` (merged output)
+- `test_dataset/llm_reasoning_private_meta.json` (parse metadata + records hash)
 
 ## OOF Threshold Tuning (Both Parts)
 
