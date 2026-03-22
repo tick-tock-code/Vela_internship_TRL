@@ -1,0 +1,87 @@
+[
+  {
+    "model_name": "Human Legacy 1 (scaled durations)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Human Legacy 2 (binary equivalents)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Human Legacy 3 (mixed durations)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_05",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_08",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_07",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_05 + A+E",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_08 + A+E",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_07 + A+E",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ HQ (LOGISTIC)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ HQ (XGBOOST)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ D (LOGISTIC)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ D (XGBOOST)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ A+E (LOGISTIC)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ A+E (XGBOOST)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ A+D+E+F (LOGISTIC)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Mirror HQ A+D+E+F (XGBOOST)",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  }
+]
