@@ -1,0 +1,12 @@
+{
+  "parse_version": "vcbench_safe_json_parse_v1",
+  "records_hash": "59acefde58bfaf879c7145218995a590e2fb400ba0ad2e2d6c06fe5cd28a24fc",
+  "n_records": 4500,
+  "experiments": [
+    "A",
+    "D",
+    "E",
+    "F"
+  ],
+  "saved_at": "2026-03-21T20:41:50.325339"
+}

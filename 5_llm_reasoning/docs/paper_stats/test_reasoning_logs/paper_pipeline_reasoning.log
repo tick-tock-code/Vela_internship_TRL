@@ -1,0 +1,60 @@
+[2026-03-21T20:41:50.213831] Regenerating test reasoning: metadata mismatch or missing. parse_version=vcbench_safe_json_parse_v1
+[2026-03-21T20:41:50.216516] Generating test reasoning for exp A (full run)
+[2026-03-21T20:41:50.240351] Generating test reasoning for exp D (full run)
+[2026-03-21T20:41:50.261443] Generating test reasoning for exp E (full run)
+[2026-03-21T20:41:50.283708] Generating test reasoning for exp F (full run)
+[2026-03-21T20:41:50.324808] Test reasoning generation complete (merged parquet written).
+[2026-03-21T20:43:05.416039] Regenerating test reasoning: metadata mismatch or missing. parse_version=vcbench_safe_json_parse_v1
+[2026-03-21T20:43:05.420202] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_A -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_204305\exp_A
+[2026-03-21T20:43:05.422858] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_D -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_204305\exp_D
+[2026-03-21T20:43:05.425145] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_E -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_204305\exp_E
+[2026-03-21T20:43:05.427481] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_F -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_204305\exp_F
+[2026-03-21T20:43:05.429680] Generating test reasoning for exp A (full run)
+[2026-03-21T20:46:01.295828] Generating test reasoning for exp D (full run)
+[2026-03-21T20:48:59.776626] Generating test reasoning for exp E (full run)
+[2026-03-21T20:51:54.941221] Generating test reasoning for exp F (full run)
+[2026-03-21T20:54:48.997098] Test reasoning generation complete (merged parquet written).
+[2026-03-21T21:02:11.117656] Generating test reasoning for exp A (full run)
+[2026-03-21T21:05:05.463835] Generating test reasoning for exp D (full run)
+[2026-03-21T21:08:03.093718] Generating test reasoning for exp E (full run)
+[2026-03-21T21:10:52.267959] Generating test reasoning for exp F (full run)
+[2026-03-21T21:13:48.164358] Test reasoning generation complete (merged parquet written).
+[2026-03-21T21:29:34.502360] Regenerating test reasoning: metadata mismatch or missing. parse_version=vcbench_safe_json_parse_v1
+[2026-03-21T21:29:34.505347] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_A -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_212934\exp_A
+[2026-03-21T21:29:34.507763] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_D -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_212934\exp_D
+[2026-03-21T21:29:34.510075] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_E -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_212934\exp_E
+[2026-03-21T21:29:34.512403] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_F -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_212934\exp_F
+[2026-03-21T21:29:34.515541] Generating test reasoning for exp A (full run)
+[2026-03-21T21:32:36.406560] Generating test reasoning for exp D (full run)
+[2026-03-21T21:35:34.156683] Generating test reasoning for exp E (full run)
+[2026-03-21T21:38:31.622252] Generating test reasoning for exp F (full run)
+[2026-03-21T21:41:26.513651] Test reasoning generation complete (merged parquet written).
+[2026-03-21T21:54:03.395534] Regenerating test reasoning: metadata mismatch or missing. parse_version=vcbench_safe_json_parse_v1
+[2026-03-21T21:54:03.398150] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_A -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_215403\exp_A
+[2026-03-21T21:54:03.400685] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_D -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_215403\exp_D
+[2026-03-21T21:54:03.403544] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_E -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_215403\exp_E
+[2026-03-21T21:54:03.406126] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_F -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_215403\exp_F
+[2026-03-21T21:54:03.408819] Generating test reasoning for exp A (full run)
+[2026-03-21T21:56:56.959762] Generating test reasoning for exp A (full run)
+[2026-03-21T21:59:44.100832] Generating test reasoning for exp A (full run)
+[2026-03-21T22:00:38.732476] Generating test reasoning for exp A (full run)
+[2026-03-21T22:15:45.648663] Generating test reasoning for exp D (full run)
+[2026-03-21T22:39:41.532895] Generating test reasoning for exp E (full run)
+[2026-03-21T22:51:20.811958] Generating test reasoning for exp F (full run)
+[2026-03-21T23:13:03.445288] Test reasoning generation complete (merged parquet written).
+[2026-03-21T23:25:26.173239] Regenerating test reasoning: metadata mismatch or missing. parse_version=vcbench_safe_json_parse_v1
+[2026-03-21T23:25:26.177957] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_A -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_232526\exp_A
+[2026-03-21T23:25:26.180557] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_D -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_232526\exp_D
+[2026-03-21T23:25:26.183019] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_E -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_232526\exp_E
+[2026-03-21T23:25:26.185444] Archiving stale test reasoning dir: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\exp_F -> C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\5_llm_reasoning\test_dataset\_stale_20260321_232526\exp_F
+[2026-03-21T23:25:26.188154] Generating test reasoning for exp A (full run)
+[2026-03-21T23:27:07.955165] Generating test reasoning for exp A (full run)
+[2026-03-21T23:42:39.660704] Generating test reasoning for exp D (full run)
+[2026-03-21T23:53:18.130267] Generating test reasoning for exp A (full run)
+[2026-03-21T23:53:18.156981] Generating test reasoning for exp D (full run)
+[2026-03-21T23:55:03.005224] Generating test reasoning for exp A (full run)
+[2026-03-21T23:55:03.029720] Generating test reasoning for exp D (full run)
+[2026-03-22T00:03:30.242783] Test reasoning meta missing; will reuse cached reasoning and rebuild meta. parse_version=vcbench_safe_json_parse_v1
+[2026-03-22T00:03:30.272825] Using cached test reasoning (clean, no missing experiments).
+[2026-03-22T00:05:28.352059] Using cached test reasoning (clean, no missing experiments).
+[2026-03-22T00:12:10.466620] Using cached test reasoning (clean, no missing experiments).

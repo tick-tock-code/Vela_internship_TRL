@@ -67,6 +67,7 @@ The folder is organized to keep code, configs, prompts, and outputs separate.
 - `mirror_experiments/mirror_holdout_xgb.py` 80/20 holdout mirror with rule layer
 - `mirror_experiments/mirror_cv_tuned_xgb.py` CV mirror with tuned threshold grid
 - `mirror_experiments/mirror_test_predictions.py` Predict test CSV with mirror model
+- `docs/paper_stats/mirror_parity_check.md` Test-side parity note (paper pipeline vs mirror)
 
 **Custom features included**
 - QS tiers (binary) `qs_top_25`, `qs_top_50`, `qs_top_100`, `qs_top_200`

@@ -1,20 +1,10 @@
 {
-  "status": "completed",
-  "experiment": "C",
+  "status": "started",
+  "experiment": "D",
   "total_records": 4500,
-  "processed": 4500,
-  "validation_failures": 183,
+  "processed": 0,
   "dataset_size": "full",
-  "nan_rows_before": 0,
-  "nan_rows_after": 0,
-  "rate_limit_fallbacks": 1,
-  "rate_limit_error_count": 1,
-  "inline_repair_retries": 12,
-  "repair_only": false,
-  "estimated_prompt_tokens": 3124933,
-  "estimated_completion_tokens": 878289,
-  "estimated_prompt_chars": 12499309,
-  "estimated_completion_chars": 3512731,
-  "estimated_requests": 282,
-  "timestamp": 1774068665.8486965
+  "batch_size": 20,
+  "n_batches": 225,
+  "timestamp": 1774137303.032143
 }

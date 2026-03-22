@@ -2,8 +2,8 @@
   "model": "gpt-4.1-nano",
   "dataset_size": "full",
   "random_state": 42,
-  "core_prompt_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\core_prompt.txt",
-  "experiments_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\experiments.json",
+  "core_prompt_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\prompts\\core_prompt.txt",
+  "experiments_path": "C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\5_llm_reasoning\\configs\\experiments.json",
   "experiments": [
     "E"
   ],
@@ -19,19 +19,19 @@
   "rate_limit_error_count": 0,
   "inline_repair": true,
   "inline_repair_max_attempts": 1,
-  "inline_repair_retries": 0,
+  "inline_repair_retries": 1,
   "repair_only": false,
   "target_batch_count": 0,
-  "validation_failures": 3,
+  "validation_failures": 4,
   "repair_existing": false,
   "repair_nan": true,
   "nan_rows_before": 0,
   "nan_rows_after": 0,
   "dry_run": false,
   "dry_run_fast": false,
-  "estimated_prompt_tokens": 2059889,
-  "estimated_completion_tokens": 631901,
-  "estimated_prompt_chars": 8239232,
-  "estimated_completion_chars": 2527273,
-  "estimated_requests": 228
+  "estimated_prompt_tokens": 1785447,
+  "estimated_completion_tokens": 646795,
+  "estimated_prompt_chars": 7141446,
+  "estimated_completion_chars": 2586831,
+  "estimated_requests": 231
 }

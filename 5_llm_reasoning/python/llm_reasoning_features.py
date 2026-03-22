@@ -9,6 +9,7 @@ import os
 import re
 import time
 import hashlib
+import sys
 import threading
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -178,15 +179,53 @@ def _parse_batch_response(
     return items
 
 
+def _read_windows_env_key(name: str) -> str:
+    if not sys.platform.startswith("win"):
+        return ""
+    try:
+        import winreg  # type: ignore
+    except Exception:
+        return ""
+    # User-level env
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment")
+        val, _ = winreg.QueryValueEx(key, name)
+        if val:
+            return str(val)
+    except Exception:
+        pass
+    # Machine-level env
+    try:
+        key = winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
+        )
+        val, _ = winreg.QueryValueEx(key, name)
+        if val:
+            return str(val)
+    except Exception:
+        pass
+    return ""
+
+
+def _get_env_key(name: str) -> str:
+    val = os.getenv(name, "") or os.getenv("\ufeff" + name, "")
+    if not val:
+        val = _read_windows_env_key(name)
+        if val:
+            os.environ[name] = val
+    return val
+
+
 def _refresh_llm_from_env() -> None:
     try:
         from think_reason_learn.core import _config as trl_config
         def _env(key: str) -> str:
-            val = os.getenv(key, "")
+            val = _get_env_key(key)
             if val:
                 return val
             bom_key = "\ufeff" + key
-            return os.getenv(bom_key, "")
+            return _get_env_key(bom_key)
 
         if _env("OPENAI_API_KEY"):
             trl_config.settings.OPENAI_API_KEY = _env("OPENAI_API_KEY")
@@ -211,9 +250,13 @@ def _refresh_llm_from_env() -> None:
 def _get_openai_client() -> OpenAI:
     client = getattr(_THREAD_LOCAL, "openai_client", None)
     if client is None:
-        api_key = os.getenv("OPENAI_API_KEY", "")
+        api_key = _get_env_key("OPENAI_API_KEY")
         if not api_key:
-            api_key = os.getenv("\ufeffOPENAI_API_KEY", "")
+            api_key = _get_env_key("\ufeffOPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "OPENAI_API_KEY missing from environment/registry; cannot call OpenAI."
+            )
         client = OpenAI(api_key=api_key)
         _THREAD_LOCAL.openai_client = client
     return client

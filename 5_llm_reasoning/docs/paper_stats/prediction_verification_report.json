@@ -15,34 +15,34 @@
     "details": "manifest hashes matched"
   },
   {
-    "model_name": "Engineered set_01",
-    "status": "SKIP",
-    "details": "Missing test features; no predictions generated."
-  },
-  {
-    "model_name": "Engineered set_04",
-    "status": "SKIP",
-    "details": "Missing test features; no predictions generated."
-  },
-  {
     "model_name": "Engineered set_05",
-    "status": "SKIP",
-    "details": "Missing test features; no predictions generated."
+    "status": "PASS",
+    "details": "manifest hashes matched"
   },
   {
-    "model_name": "Engineered set_01 + A+E",
-    "status": "SKIP",
-    "details": "Missing test features; no predictions generated."
+    "model_name": "Engineered set_08",
+    "status": "PASS",
+    "details": "manifest hashes matched"
   },
   {
-    "model_name": "Engineered set_04 + A+E",
-    "status": "SKIP",
-    "details": "Missing test features; no predictions generated."
+    "model_name": "Engineered set_07",
+    "status": "PASS",
+    "details": "manifest hashes matched"
   },
   {
     "model_name": "Engineered set_05 + A+E",
-    "status": "SKIP",
-    "details": "Missing test features; no predictions generated."
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_08 + A+E",
+    "status": "PASS",
+    "details": "manifest hashes matched"
+  },
+  {
+    "model_name": "Engineered set_07 + A+E",
+    "status": "PASS",
+    "details": "manifest hashes matched"
   },
   {
     "model_name": "Mirror HQ HQ (LOGISTIC)",

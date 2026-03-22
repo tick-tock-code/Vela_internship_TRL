@@ -32,6 +32,7 @@ This document describes what `paper_pipeline.py` does, end‑to‑end, so you ca
 **Test parsing (mirror‑aligned):**
 - The private test CSV is parsed using the same `_safe_json_parse` logic as `think_reason_learn.datasets._vcbench`.
 - HQ test features are extracted directly from the raw test CSV (same as the mirror pipeline).
+- Parity note: `docs/paper_stats/mirror_parity_check.md` documents the test‑side equivalence.
 
 ## Outputs (Primary)
 

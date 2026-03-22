@@ -7,6 +7,8 @@ from dataclasses import dataclass
 import asyncio
 import os
 import hashlib
+import importlib.util
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -665,11 +667,30 @@ def _ensure_test_reasoning(
     records_hash: str,
     parse_version: str,
 ) -> pd.DataFrame:
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / "paper_pipeline_reasoning.log"
+
+    def _log(msg: str) -> None:
+        ts = datetime.now().isoformat()
+        line = f"[{ts}] {msg}"
+        print(line)
+        try:
+            with log_path.open("a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except Exception:
+            pass
+
     meta_path = test_reasoning_path.parent / "llm_reasoning_private_meta.json"
     regen_all = False
+    force_meta_write = False
     if test_reasoning_path.exists():
         if not meta_path.exists():
-            regen_all = True
+            force_meta_write = True
+            regen_all = False
+            _log(
+                "Test reasoning meta missing; will reuse cached reasoning and rebuild meta. "
+                f"parse_version={parse_version}"
+            )
         else:
             try:
                 meta = json.loads(meta_path.read_text(encoding="utf-8"))
@@ -682,12 +703,28 @@ def _ensure_test_reasoning(
                 regen_all = True
 
     if regen_all and test_reasoning_path.exists():
+        _log(
+            "Regenerating test reasoning: metadata mismatch or missing. "
+            f"parse_version={parse_version}"
+        )
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = test_reasoning_path.parent / f"{test_reasoning_path.stem}.bak_{ts}{test_reasoning_path.suffix}"
         test_reasoning_path.replace(backup_path)
         if meta_path.exists():
             meta_backup = meta_path.parent / f"{meta_path.stem}.bak_{ts}{meta_path.suffix}"
             meta_path.replace(meta_backup)
+        # Archive per-experiment cached outputs to force regeneration.
+        stale_root = test_reasoning_path.parent / f"_stale_{ts}"
+        stale_root.mkdir(parents=True, exist_ok=True)
+        for exp_id in exp_ids:
+            exp_dir = test_reasoning_path.parent / f"exp_{exp_id}"
+            if exp_dir.exists():
+                dest = stale_root / exp_dir.name
+                _log(f"Archiving stale test reasoning dir: {exp_dir} -> {dest}")
+                try:
+                    shutil.move(str(exp_dir), str(dest))
+                except Exception as exc:
+                    _log(f"WARNING: failed to archive {exp_dir}: {exc}")
 
     if test_reasoning_path.exists() and not regen_all:
         df = pd.read_parquet(test_reasoning_path)
@@ -696,7 +733,20 @@ def _ensure_test_reasoning(
         if not missing_exps:
             _load_reasoning_cache(df, exp_ids)
         numeric_cols = [c for c in df.columns if c not in ("founder_uuid", "row_index", "success")]
-        if not missing_exps and not (numeric_cols and df[numeric_cols].isna().any().any()):
+        # Compute NaN presence per experiment (avoid repairing clean experiments).
+        _, exp_key_map = build_experiment_key_map(CONFIG_DIR / "experiments.json")
+        exp_nan_flags: dict[str, bool] = {}
+        for exp_id in exp_ids:
+            exp_cols = [
+                c
+                for c in exp_key_map.get(exp_id, [])
+                if c in df.columns and pd.api.types.is_numeric_dtype(df[c])
+            ]
+            exp_nan_flags[exp_id] = bool(exp_cols and df[exp_cols].isna().any().any())
+        any_nan = any(exp_nan_flags.values())
+
+        if not missing_exps and not any_nan:
+            _log("Using cached test reasoning (clean, no missing experiments).")
             meta_payload = {
                 "parse_version": parse_version,
                 "records_hash": records_hash,
@@ -704,12 +754,15 @@ def _ensure_test_reasoning(
                 "experiments": exp_ids,
                 "saved_at": datetime.now().isoformat(),
             }
-            meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
+            if force_meta_write or not meta_path.exists():
+                meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
             return df
         # Targeted repair or missing-exp generation (do not delete the file)
+        _log(
+            "Cached reasoning needs repair/missing experiments. "
+            f"missing_exps={missing_exps} nan_flags={exp_nan_flags}"
+        )
         batch_size = 20
-        nan_rows = df[numeric_cols].isna().any(axis=1).to_numpy().nonzero()[0].tolist()
-        batch_ids = sorted({int(idx // batch_size) for idx in nan_rows})
         labels = np.zeros(len(records), dtype=int)
         output_dir = test_reasoning_path.parent
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -721,6 +774,29 @@ def _ensure_test_reasoning(
             merged_df = df.copy()
             id_col = "founder_uuid" if "founder_uuid" in df.columns else "row_index"
         for exp_id in exp_list:
+            exp_missing = exp_id in missing_exps
+            exp_cols = [
+                c
+                for c in exp_key_map.get(exp_id, [])
+                if c in df.columns and pd.api.types.is_numeric_dtype(df[c])
+            ]
+            exp_nan_rows: list[int] = []
+            if not exp_missing and exp_cols:
+                exp_nan_rows = (
+                    df[exp_cols].isna().any(axis=1).to_numpy().nonzero()[0].tolist()
+                )
+            if not exp_missing and not exp_nan_rows:
+                _log(f"Skipping exp {exp_id}: no NaNs detected.")
+                continue
+            batch_ids = (
+                sorted({int(idx // batch_size) for idx in exp_nan_rows})
+                if exp_nan_rows
+                else None
+            )
+            _log(
+                f"Repairing/adding test reasoning for exp {exp_id} "
+                f"(target_batches={len(batch_ids) if batch_ids else 'all'})"
+            )
             exp_dir = output_dir / f"exp_{exp_id}"
             exp_dir.mkdir(parents=True, exist_ok=True)
             meta_path = exp_dir / "llm_reasoning_private_manifest.json"
@@ -741,16 +817,21 @@ def _ensure_test_reasoning(
                 repair_nan=True,
                 inline_repair=True,
                 rate_limit_fallback_sequence=[8, 6, 4, 2, 1],
-                repair_existing=True,
+                repair_existing=bool(batch_ids),
                 target_batch_indices=batch_ids,
             )
-            df_exp, _ = generate_reasoning_features(
-                records,
-                labels,
-                cfg_repair,
-                output_dir=exp_dir,
-                metadata_path=meta_path,
-            )
+            try:
+                df_exp, _ = generate_reasoning_features(
+                    records,
+                    labels,
+                    cfg_repair,
+                    output_dir=exp_dir,
+                    metadata_path=meta_path,
+                    existing_df=df if batch_ids else None,
+                )
+            except Exception as exc:
+                _log(f"ERROR: exp {exp_id} repair failed: {exc}")
+                raise
             df_exp, _ = _load_reasoning_cache(df_exp, [exp_id])
             if id_col is None:
                 id_col = "founder_uuid" if "founder_uuid" in df_exp.columns else "row_index"
@@ -765,6 +846,7 @@ def _ensure_test_reasoning(
                 merged_df = merged_df.merge(exp_df, on=id_col, how="left")
         if merged_df is not None:
             merged_df.to_parquet(test_reasoning_path, index=False)
+            _log("Repaired/merged test reasoning written.")
             meta_payload = {
                 "parse_version": parse_version,
                 "records_hash": records_hash,
@@ -782,6 +864,7 @@ def _ensure_test_reasoning(
     id_col: str | None = None
 
     for exp_id in exp_ids:
+        _log(f"Generating test reasoning for exp {exp_id} (full run)")
         cfg = ReasoningConfig(
             model=model,
             dataset_size="full",
@@ -803,13 +886,17 @@ def _ensure_test_reasoning(
         exp_dir = output_dir / f"exp_{exp_id}"
         exp_dir.mkdir(parents=True, exist_ok=True)
         meta_path = exp_dir / "llm_reasoning_private_manifest.json"
-        df, _ = generate_reasoning_features(
-            records,
-            labels,
-            cfg,
-            output_dir=exp_dir,
-            metadata_path=meta_path,
-        )
+        try:
+            df, _ = generate_reasoning_features(
+                records,
+                labels,
+                cfg,
+                output_dir=exp_dir,
+                metadata_path=meta_path,
+            )
+        except Exception as exc:
+            _log(f"ERROR: exp {exp_id} generation failed: {exc}")
+            raise
         # Targeted repair for NaNs if any remain
         numeric_cols = [c for c in df.columns if c not in ("founder_uuid", "row_index", "success")]
         if numeric_cols and df[numeric_cols].isna().any().any():
@@ -837,14 +924,18 @@ def _ensure_test_reasoning(
                     repair_existing=True,
                     target_batch_indices=batch_ids,
                 )
-                df, _ = generate_reasoning_features(
-                    records,
-                    labels,
-                    cfg_repair,
-                    output_dir=exp_dir,
-                    metadata_path=meta_path,
-                    existing_df=df,
-                )
+                try:
+                    df, _ = generate_reasoning_features(
+                        records,
+                        labels,
+                        cfg_repair,
+                        output_dir=exp_dir,
+                        metadata_path=meta_path,
+                        existing_df=df,
+                    )
+                except Exception as exc:
+                    _log(f"ERROR: exp {exp_id} repair failed: {exc}")
+                    raise
         df, _ = _load_reasoning_cache(df, [exp_id])
         if id_col is None:
             id_col = "founder_uuid" if "founder_uuid" in df.columns else "row_index"
@@ -857,6 +948,7 @@ def _ensure_test_reasoning(
     if merged_df is None:
         raise RuntimeError("Failed to generate test reasoning features.")
     merged_df.to_parquet(test_reasoning_path, index=False)
+    _log("Test reasoning generation complete (merged parquet written).")
     meta_payload = {
         "parse_version": parse_version,
         "records_hash": records_hash,
@@ -1307,7 +1399,10 @@ def main() -> None:
     verification_rows: list[dict[str, Any]] = []
     pred_combo_filter = [c.strip() for c in args.pt2_pred_combos.split(",") if c.strip()]
     pred_model_filter = [m.strip().lower() for m in args.pt2_pred_models.split(",") if m.strip()]
-    if pred_combo_filter and not pred_model_filter:
+    # Default Part-2 prediction filter: HQ, A+E, A+D+E+F (both models).
+    if not pred_combo_filter:
+        pred_combo_filter = ["HQ", "A+E", "A+D+E+F"]
+    if not pred_model_filter:
         pred_model_filter = ["logistic", "xgboost"]
 
     def _safe_col(name: str) -> str:
