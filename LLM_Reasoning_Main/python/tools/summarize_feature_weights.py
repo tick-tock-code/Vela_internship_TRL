@@ -1,4 +1,8 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 
 from pathlib import Path
 import json
@@ -8,8 +12,8 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from itertools import combinations
 
-from feature_registry import FEATURE_REGISTRY
-from paths import BASE_DIR, CONFIG_DIR
+from lib.feature_registry import FEATURE_REGISTRY
+from lib.paths import BASE_DIR, CONFIG_DIR
 
 
 DOCS_DIR = BASE_DIR / "docs"
@@ -301,7 +305,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-
-

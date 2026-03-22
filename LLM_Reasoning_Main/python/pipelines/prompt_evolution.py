@@ -1,6 +1,10 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Train-only GEPA-style prompt evolution for merged Experiment A+B."""
 
-from __future__ import annotations
 
 import argparse
 import hashlib
@@ -20,10 +24,10 @@ from sklearn.model_selection import StratifiedKFold
 from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 from think_reason_learn.core.llms import llm as trl_llm
 
-from llm_reasoning_features import ReasoningConfig, generate_reasoning_features, _assert_no_label_fields
-from vcbench_pipeline import _report_metrics, _train_sklearn
-from cv_folds import build_splits_from_fold_ids, load_or_create_folds, resolve_folds_path
-from paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
+from lib.llm_reasoning_features import ReasoningConfig, generate_reasoning_features, _assert_no_label_fields
+from pipelines.vcbench_pipeline import _report_metrics, _train_sklearn
+from lib.cv_folds import build_splits_from_fold_ids, load_or_create_folds, resolve_folds_path
+from lib.paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
 
 
 DEFAULT_CONFIG_PATH = CONFIG_DIR / "prompt_evolution_config.json"

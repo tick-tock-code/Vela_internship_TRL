@@ -1,6 +1,10 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Benchmark LLM reasoning speed/quality over batch size × concurrency settings."""
 
-from __future__ import annotations
 
 import argparse
 import json
@@ -15,8 +19,8 @@ import pandas as pd
 
 from think_reason_learn.datasets import load_vcbench
 
-from llm_reasoning_features import ReasoningConfig, generate_reasoning_features
-from paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
+from lib.llm_reasoning_features import ReasoningConfig, generate_reasoning_features
+from lib.paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
 
 
 @dataclass

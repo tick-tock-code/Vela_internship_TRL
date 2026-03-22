@@ -1,6 +1,10 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Schema and dry-run tests for LLM reasoning (no API calls)."""
 
-from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -8,14 +12,14 @@ import shutil
 
 import numpy as np
 
-from llm_reasoning_features import (
+from lib.llm_reasoning_features import (
     ReasoningConfig,
     _load_core_prompt,
     _load_experiments,
     _validate_experiments,
     generate_reasoning_features,
 )
-from paths import BASE_DIR
+from lib.paths import BASE_DIR
 
 
 def _write(path: Path, content: str) -> None:
@@ -157,7 +161,7 @@ def test_dry_run_fast_limits_rows() -> None:
 
 
 def test_label_field_rejection() -> None:
-    from llm_reasoning_features import _assert_no_label_fields
+    from lib.llm_reasoning_features import _assert_no_label_fields
 
     try:
         _assert_no_label_fields({"success": 1}, "record")

@@ -1,4 +1,9 @@
-﻿"""VCBench in-depth pipeline (human + optional LLM features).
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+"""VCBench in-depth pipeline (human + optional LLM features).
 
 Pipeline steps:
 1. Load VCBench data (sample or full).
@@ -9,7 +14,6 @@ Pipeline steps:
 6. Train logistic regression and evaluate metrics.
 """
 
-from __future__ import annotations
 
 import argparse
 import time
@@ -43,18 +47,18 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split, StratifiedKFold, StratifiedShuffleSplit
 
-from cv_folds import load_or_create_folds, resolve_folds_path
+from lib.cv_folds import load_or_create_folds, resolve_folds_path
 from think_reason_learn.datasets import load_vcbench
 
-from feature_registry import FEATURE_REGISTRY, FEATURE_SETS
-from llm_feature_generation import generate_llm_features
-from llm_reasoning_features import (
+from lib.feature_registry import FEATURE_REGISTRY, FEATURE_SETS
+from lib.llm_feature_generation import generate_llm_features
+from lib.llm_reasoning_features import (
     ReasoningConfig,
     build_experiment_key_map,
     generate_reasoning_features,
     write_per_experiment_parquets,
 )
-from paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
+from lib.paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
 
 RUN_LOG_PATH: Path | None = None
 
@@ -5420,7 +5424,3 @@ if __name__ == "__main__":
         except Exception:
             pass
         raise
-
-
-
-

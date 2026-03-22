@@ -1,16 +1,20 @@
-﻿"""Feature selector GUI for VCBench.
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+"""Feature selector GUI for VCBench.
 
 Saves a JSON file with the selected feature names.
 """
 
-from __future__ import annotations
 
 import json
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-from paths import CONFIG_DIR
+from lib.paths import CONFIG_DIR
 
 BASELINE_FEATURES = [
     ("top_university", "Any education with QS ranking â‰¤ 50."),

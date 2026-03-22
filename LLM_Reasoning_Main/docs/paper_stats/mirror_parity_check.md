@@ -6,7 +6,7 @@ This note summarizes the **test‑side parity** between the paper pipeline and t
 
 ## Scope
 - **Mirror pipeline:** `mirror_experiments/mirror_test_predictions.py`
-- **Paper pipeline:** `python/paper_pipeline.py`
+- **Paper pipeline:** `python/pipelines/paper_pipeline.py`
 - **Focus:** Test‑set feature generation and model inputs (not training).
 
 ## ✅ Confirmed Parity

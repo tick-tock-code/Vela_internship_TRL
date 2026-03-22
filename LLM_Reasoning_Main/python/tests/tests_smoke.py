@@ -1,13 +1,17 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Lightweight smoke tests for vcbench_pipeline helpers.
 
 These tests are intentionally small and fast; they do not touch the dataset.
 """
 
-from __future__ import annotations
 
 import numpy as np
 
-import vcbench_pipeline as vp
+from pipelines import vcbench_pipeline as vp
 
 
 def test_precision_at_k_basic() -> None:

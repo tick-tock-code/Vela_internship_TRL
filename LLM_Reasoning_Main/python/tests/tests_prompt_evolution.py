@@ -1,9 +1,13 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Tests for prompt evolution guards (no API calls)."""
 
 import numpy as np
 import pandas as pd
 
-from prompt_evolution import _build_critic_payload, _validate_mutation
+from pipelines.prompt_evolution import _build_critic_payload, _validate_mutation
 
 
 def test_validate_mutation_rejects_schema_markers() -> None:

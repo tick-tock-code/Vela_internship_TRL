@@ -1,4 +1,7 @@
 from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import argparse
 import json
@@ -30,17 +33,17 @@ from think_reason_learn.datasets._vcbench import (
 )
 from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 
-from feature_registry import FEATURE_REGISTRY
-from llm_reasoning_features import (
+from lib.feature_registry import FEATURE_REGISTRY
+from lib.llm_reasoning_features import (
     ReasoningConfig,
     build_experiment_key_map,
     generate_reasoning_features,
     _refresh_llm_from_env,
 )
 
-from cv_folds import load_or_create_folds
+from lib.cv_folds import load_or_create_folds
 
-from vcbench_pipeline import (
+from pipelines.vcbench_pipeline import (
     HQ_FEATURES_BASE,
     LEGACY_HUMAN_FEATURE_SETS,
     _apply_rule_override,
@@ -54,7 +57,7 @@ from vcbench_pipeline import (
     _train_model,
 )
 
-from paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
+from lib.paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
 
 PAPER_DIR = BASE_DIR / "docs" / "paper_stats"
 TEST_DIR = BASE_DIR / "test_dataset"

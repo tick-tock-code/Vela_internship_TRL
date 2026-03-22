@@ -1,6 +1,10 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Repair NaN batches for latest run_A using batch-level re-queries."""
 
-from __future__ import annotations
 
 from pathlib import Path
 import json
@@ -12,8 +16,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from think_reason_learn.datasets import load_vcbench
 
-from llm_reasoning_features import ReasoningConfig, generate_reasoning_features, LABEL_FIELDS
-from paths import BASE_DIR, CONFIG_DIR, PROMPT_DIR
+from lib.llm_reasoning_features import ReasoningConfig, generate_reasoning_features, LABEL_FIELDS
+from lib.paths import BASE_DIR, CONFIG_DIR, PROMPT_DIR
 
 
 def _latest_run(runs_root: Path, exp_id: str) -> Path | None:

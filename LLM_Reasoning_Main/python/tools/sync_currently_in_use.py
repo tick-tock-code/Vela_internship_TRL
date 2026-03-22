@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import argparse
 import json
 from datetime import datetime
@@ -6,7 +10,7 @@ import shutil
 
 import numpy as np
 import pandas as pd
-from paths import BASE_DIR
+from lib.paths import BASE_DIR
 
 
 def _reasoning_run_valid(run_dir: Path, exp_id: str) -> bool:

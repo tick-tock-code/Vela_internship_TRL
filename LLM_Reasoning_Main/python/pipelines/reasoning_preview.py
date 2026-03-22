@@ -1,6 +1,10 @@
-﻿"""Preview LLM reasoning outputs on first N train founders."""
-
 from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+"""Preview LLM reasoning outputs on first N train founders."""
+
 
 import argparse
 import json
@@ -14,9 +18,9 @@ import numpy as np
 
 from think_reason_learn.datasets import load_vcbench
 
-from llm_reasoning_features import ReasoningConfig, generate_reasoning_features
-from paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
-from cv_folds import load_or_create_folds, resolve_folds_path
+from lib.llm_reasoning_features import ReasoningConfig, generate_reasoning_features
+from lib.paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
+from lib.cv_folds import load_or_create_folds, resolve_folds_path
 
 
 def _resolve_input_csv(dataset: str, override: str) -> str:

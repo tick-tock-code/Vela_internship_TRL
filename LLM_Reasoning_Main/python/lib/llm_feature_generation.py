@@ -11,7 +11,7 @@ import pandas as pd
 from think_reason_learn.core.llms import OpenAIChoice, GoogleChoice
 from think_reason_learn.datasets import VCBENCH_HELPERS, VCBENCH_SCHEMA
 from think_reason_learn.features import FeatureEvaluator, FeatureGenerator
-from paths import PROJECT_ROOT
+from lib.paths import PROJECT_ROOT
 
 
 async def generate_llm_features(

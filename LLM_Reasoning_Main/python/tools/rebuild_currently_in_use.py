@@ -1,13 +1,17 @@
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 """Rebuild current/currently_in_use from latest run_A/run_B/run_E parquets."""
 
-from __future__ import annotations
 
 from pathlib import Path
 import json
 import sys
 
 import pandas as pd
-from paths import BASE_DIR
+from lib.paths import BASE_DIR
 
 
 def _latest_run(runs_root: Path, exp_id: str) -> Path | None:

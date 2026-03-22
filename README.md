@@ -15,11 +15,11 @@ These are preserved for reference or provenance and are not the primary pipeline
 - `think_reason_learn_docs/` — upstream docs/reference material for the above.
 
 ## Pipelines (where to look)
-- **VCBench pipeline** (main training + evaluation): `LLM_Reasoning_Main/python/vcbench_pipeline.py`.
+- **VCBench pipeline** (main training + evaluation): `LLM_Reasoning_Main/python/pipelines/vcbench_pipeline.py`.
   - Generates/loads features, runs CV, produces reports.
-- **Paper pipeline** (paper‑grade evaluations + test predictions): `LLM_Reasoning_Main/python/paper_pipeline.py`.
+- **Paper pipeline** (paper‑grade evaluations + test predictions): `LLM_Reasoning_Main/python/pipelines/paper_pipeline.py`.
   - Uses fixed splits, OOF thresholds, and produces test‑set prediction CSVs.
-- **LLM‑engineered n_rules sweep**: `LLM_Reasoning_Main/python/llm_feature_generation.py` + sweep scripts in `LLM_Reasoning_Main/python/`.
+- **LLM‑engineered n_rules sweep**: `LLM_Reasoning_Main/python/lib/llm_feature_generation.py` + sweep scripts in `LLM_Reasoning_Main/python/`.
 
 ## Notes
 - Many of the non‑key folders are **copied from external repos** or earlier experiments; they remain for comparison and auditability.

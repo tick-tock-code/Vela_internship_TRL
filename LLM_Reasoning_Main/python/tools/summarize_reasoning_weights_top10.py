@@ -1,4 +1,8 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 
 from pathlib import Path
 import json
@@ -8,7 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
-from paths import BASE_DIR
+from lib.paths import BASE_DIR
 
 DOCS_DIR = BASE_DIR / "docs" / "proper_run"
 RESULTS_CSV = BASE_DIR / "docs" / "llm_full_results.csv"
@@ -200,4 +204,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
