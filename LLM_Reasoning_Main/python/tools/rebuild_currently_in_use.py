@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-"""Rebuild current/currently_in_use from latest run_A/run_B/run_E parquets."""
+"""Rebuild currently_in_use from latest run_A/run_B/run_E parquets."""
 
 
 from pathlib import Path

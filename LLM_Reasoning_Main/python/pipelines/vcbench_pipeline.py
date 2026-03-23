@@ -3013,7 +3013,7 @@ def main() -> None:
         def _load_existing_reasoning(
             exp_list: list[str] | None,
         ) -> tuple[pd.DataFrame | None, list[str]]:
-            # Prefer current/ if present
+            # Prefer currently_in_use/ if present
             current_path = current_root / "llm_reasoning_full.parquet"
             if current_path.exists():
                 df = pd.read_parquet(current_path)
@@ -3390,7 +3390,7 @@ def main() -> None:
             current_path = current_root / "llm_reasoning_full.parquet"
             runs_root = BASE_DIR / "features_storage" / "llm_reasoning" / "runs"
             if not current_path.exists():
-                # Try to sync the most recent run_A into current/ for repair
+                # Try to sync the most recent run_A into currently_in_use/ for repair
                 if runs_root.exists():
                     candidates = sorted(
                         [p for p in runs_root.glob("run_A_*") if p.is_dir()],
