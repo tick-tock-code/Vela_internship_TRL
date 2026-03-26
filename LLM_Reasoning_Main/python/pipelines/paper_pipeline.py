@@ -20,6 +20,7 @@ from itertools import combinations
 import numpy as np
 import pandas as pd
 from sklearn.metrics import fbeta_score
+from sklearn.model_selection import StratifiedShuffleSplit
 import joblib
 
 from think_reason_learn.datasets import load_vcbench
@@ -400,6 +401,46 @@ def _oof_cv_metrics(
     means = {k: float(np.mean([m[k] for m in fold_metrics])) for k in keys}
     stds = {k: float(np.std([m[k] for m in fold_metrics])) for k in keys}
     return means, stds, float(oof_threshold)
+
+
+def _make_train_val_split(
+    y: np.ndarray,
+    test_size: float = 0.2,
+    seed: int = 42,
+) -> tuple[np.ndarray, np.ndarray]:
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
+    indices = np.arange(len(y))
+    train_idx, val_idx = next(splitter.split(indices, y))
+    return train_idx, val_idx
+
+
+def _train_val_metrics(
+    df: pd.DataFrame,
+    y: np.ndarray,
+    feature_names: list[str],
+    model_type: str,
+    train_idx: np.ndarray,
+    val_idx: np.ndarray,
+    rule_mask: np.ndarray | None = None,
+) -> tuple[dict[str, float], float]:
+    train_df = df.iloc[train_idx]
+    val_df = df.iloc[val_idx]
+
+    X_train, X_val = _preprocess_features(train_df, val_df.copy(), feature_names, model_type)
+    train_scores, val_scores, _ = _train_model(
+        model_type,
+        X_train.values.astype(float),
+        y[train_idx],
+        X_val.values.astype(float),
+        42,
+    )
+    if rule_mask is not None:
+        val_scores = _apply_rule_override(val_scores, rule_mask[val_idx])
+
+    threshold, _ = _select_threshold(y[val_idx], val_scores)
+    metrics = _metrics_from_scores(y[val_idx], val_scores, threshold)
+    metrics["accuracy"] = float(np.mean((val_scores >= metrics["threshold"]).astype(int) == y[val_idx]))
+    return metrics, float(threshold)
 
 
 def _preprocess_features(
@@ -1123,7 +1164,10 @@ def main() -> None:
 
     # Base human features for legacy sets
     base_extractor = _load_base_feature_extractor(
-        BASE_DIR.parent / "2_Human_features_running_example_script" / "vcbench_lambda_features_minimal.py"
+        BASE_DIR.parent
+        / "Archive"
+        / "Old_Human_features_running_example_script"
+        / "vcbench_lambda_features_minimal.py"
     )
     base_rows = [base_extractor(r) for r in pool_records]
     base_df = pd.DataFrame(base_rows, index=pool_ids)
@@ -1297,6 +1341,8 @@ def main() -> None:
         dataset_label=f"{input_csv}_full",
         use_fixed=True,
     )
+    pool_tv_split = _make_train_val_split(pool_labels)
+    full_tv_split = _make_train_val_split(labels)
 
     model_runs: list[ModelRun] = []
     # Part 1: human legacy (baseline comparisons)
@@ -1427,7 +1473,8 @@ def main() -> None:
                 )
             )
 
-    results_rows: list[dict[str, Any]] = []
+    results_rows_cv: list[dict[str, Any]] = []
+    results_rows_tv: list[dict[str, Any]] = []
     preds_pt1: dict[str, list[int]] = {"founder_uuid": test_ids}
     preds_pt2: dict[str, list[int]] = {"founder_uuid": test_ids}
     verification_rows: list[dict[str, Any]] = []
@@ -1500,6 +1547,16 @@ def main() -> None:
             splits,
             rule_mask=rule_mask_train,
         )
+        tv_train_idx, tv_val_idx = (pool_tv_split if run.part == "pt1" else full_tv_split)
+        tv_metrics, tv_threshold = _train_val_metrics(
+            train_df,
+            y_train,
+            run.feature_names,
+            run.model_type,
+            tv_train_idx,
+            tv_val_idx,
+            rule_mask=rule_mask_train,
+        )
         full_metrics, model, train_matrix = _full_train_metrics(
             train_df,
             y_train,
@@ -1526,7 +1583,7 @@ def main() -> None:
         )
         (folder / "model_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
-        results_rows.append(
+        results_rows_cv.append(
             {
                 "part": run.part,
                 "family": run.family,
@@ -1538,6 +1595,22 @@ def main() -> None:
                 "f0.5_std": stds["f0.5"],
                 "threshold_oof": oof_threshold,
                 "full_train_f0.5": full_metrics["f0.5"],
+                "eval_mode": "cv",
+            }
+        )
+        results_rows_tv.append(
+            {
+                "part": run.part,
+                "family": run.family,
+                "model_name": run.name,
+                "model_type": run.model_type,
+                "reasoning_combo": run.reasoning_combo or "n/a",
+                "set_id": run.set_id or "",
+                "f0.5_mean": tv_metrics["f0.5"],
+                "f0.5_std": 0.0,
+                "threshold_oof": tv_threshold,
+                "full_train_f0.5": full_metrics["f0.5"],
+                "eval_mode": "train_val",
             }
         )
 
@@ -1602,7 +1675,7 @@ def main() -> None:
 
     # Write results CSV
     results_path = PAPER_DIR / "paper_pipeline_results.csv"
-    pd.DataFrame(results_rows).to_csv(results_path, index=False)
+    pd.DataFrame(results_rows_cv + results_rows_tv).to_csv(results_path, index=False)
 
     # Write prediction CSVs
     pd.DataFrame(preds_pt1).to_csv(PAPER_DIR / "paper_pipeline_test_preds_pt1.csv", index=False)
@@ -1612,40 +1685,55 @@ def main() -> None:
     )
 
     # Report
-    def _fmt(mean: float, std: float) -> str:
+    def _fmt_cv(mean: float, std: float) -> str:
         return f"{mean:.3f}+/-{std:.3f}"
 
-    part1_rows = [r for r in results_rows if r["part"] == "pt1"]
-    part2_rows = [r for r in results_rows if r["part"] == "pt2"]
+    def _fmt_tv(val: float) -> str:
+        return f"{val:.3f}"
+
+    part1_rows_cv = [r for r in results_rows_cv if r["part"] == "pt1"]
+    part2_rows_cv = [r for r in results_rows_cv if r["part"] == "pt2"]
+    part1_rows_tv = [r for r in results_rows_tv if r["part"] == "pt1"]
+    part2_rows_tv = [r for r in results_rows_tv if r["part"] == "pt2"]
 
     lines = [
         "# Paper Pipeline Report",
         f"Generated: {datetime.now().isoformat()}",
         "",
-        "## Part 1 (Pool 4400, XGB only — engineered sets 01/04/05 and A+E only)",
+        "## Part 1 (Pool 4400) ? CV (OOF)",
         "| Set ID | Regression | Reasoning Combo | F0.5 (mean+/-std) |",
         "|---|---|---|---:|",
     ]
-    for row in part1_rows:
+    for row in part1_rows_cv:
         lines.append(
-            f"| {row.get('set_id', '') or '--'} | {row['family']} | {row['reasoning_combo']} | {_fmt(row['f0.5_mean'], row['f0.5_std'])} |"
+            f"| {row.get('set_id', '') or '--'} | {row['family']} | {row['reasoning_combo']} | {_fmt_cv(row['f0.5_mean'], row['f0.5_std'])} |"
         )
-    # Family mean/std across replicates
-    if part1_rows:
-        lines += ["", "**Part 1 family mean +/- std (F0.5):**"]
-        for fam in sorted({r["family"] for r in part1_rows}):
-            vals = [r["f0.5_mean"] for r in part1_rows if r["family"] == fam]
+    if part1_rows_cv:
+        lines += ["", "**Part 1 family mean +/- std (F0.5, CV):**"]
+        for fam in sorted({r["family"] for r in part1_rows_cv}):
+            vals = [r["f0.5_mean"] for r in part1_rows_cv if r["family"] == fam]
             if vals:
                 lines.append(f"- {fam}: {np.mean(vals):.3f}+/-{np.std(vals):.3f}")
 
     lines += [
         "",
-        "## Part 2 (Full 4500, Full Mirror + Reasoning; rule layer — top picks only)",
-        "| Model | Combo | Type | F0.5 (mean±std) |",
+        "## Part 1 (Pool 4400) ? Train/Val split (80/20)",
+        "| Set ID | Regression | Reasoning Combo | F0.5 (val) |",
         "|---|---|---|---:|",
     ]
-    for row in part2_rows:
-        lines.append(f"| {row['model_name']} | {row['reasoning_combo']} | {row['model_type']} | {_fmt(row['f0.5_mean'], row['f0.5_std'])} |")
+    for row in part1_rows_tv:
+        lines.append(
+            f"| {row.get('set_id', '') or '--'} | {row['family']} | {row['reasoning_combo']} | {_fmt_tv(row['f0.5_mean'])} |"
+        )
+
+    lines += [
+        "",
+        "## Part 2 (Full 4500, Full Mirror + Reasoning; rule layer) ? CV (OOF)",
+        "| Model | Combo | Type | F0.5 (mean+/-std) |",
+        "|---|---|---|---:|",
+    ]
+    for row in part2_rows_cv:
+        lines.append(f"| {row['model_name']} | {row['reasoning_combo']} | {row['model_type']} | {_fmt_cv(row['f0.5_mean'], row['f0.5_std'])} |")
     if pred_combo_filter or pred_model_filter:
         combo_note = ",".join(pred_combo_filter) if pred_combo_filter else "ALL"
         model_note = ",".join(pred_model_filter) if pred_model_filter else "ALL"
@@ -1654,7 +1742,6 @@ def main() -> None:
             f"**Test predictions filtered to combos:** {combo_note}; **models:** {model_note}"
         )
 
-    # Mirror summary table (LR vs XGB) in the same order as the Part 2 table above
     combos_order = [
         "HQ",
         "A",
@@ -1665,30 +1752,47 @@ def main() -> None:
         "A+D+E+F",
         "A+B+C+D+E+F",
     ]
-    lines += ["", "### Mirror LR/XGB summary", "| Combo | LR F0.5 | XGB F0.5 |", "|---|---:|---:|"]
+    lines += ["", "### Mirror LR/XGB summary (CV)", "| Combo | LR F0.5 | XGB F0.5 |", "|---|---:|---:|"]
     for combo in combos_order:
-        lr = next((r for r in part2_rows if r["reasoning_combo"] == combo and r["model_type"] == "logistic"), None)
-        xgb = next((r for r in part2_rows if r["reasoning_combo"] == combo and r["model_type"] == "xgboost"), None)
-        lr_val = _fmt(lr["f0.5_mean"], lr["f0.5_std"]) if lr else "—"
-        xgb_val = _fmt(xgb["f0.5_mean"], xgb["f0.5_std"]) if xgb else "—"
+        lr = next((r for r in part2_rows_cv if r["reasoning_combo"] == combo and r["model_type"] == "logistic"), None)
+        xgb = next((r for r in part2_rows_cv if r["reasoning_combo"] == combo and r["model_type"] == "xgboost"), None)
+        lr_val = _fmt_cv(lr["f0.5_mean"], lr["f0.5_std"]) if lr else "?"
+        xgb_val = _fmt_cv(xgb["f0.5_mean"], xgb["f0.5_std"]) if xgb else "?"
         lines.append(f"| {combo} | {lr_val} | {xgb_val} |")
 
-    # Full Mirror parity check against llm_regression_report
+    lines += [
+        "",
+        "## Part 2 (Full 4500, Full Mirror + Reasoning; rule layer) ? Train/Val split (80/20)",
+        "| Model | Combo | Type | F0.5 (val) |",
+        "|---|---|---|---:|",
+    ]
+    for row in part2_rows_tv:
+        lines.append(f"| {row['model_name']} | {row['reasoning_combo']} | {row['model_type']} | {_fmt_tv(row['f0.5_mean'])} |")
+    lines += ["", "### Mirror LR/XGB summary (Train/Val)", "| Combo | LR F0.5 | XGB F0.5 |", "|---|---:|---:|"]
+    for combo in combos_order:
+        lr = next((r for r in part2_rows_tv if r["reasoning_combo"] == combo and r["model_type"] == "logistic"), None)
+        xgb = next((r for r in part2_rows_tv if r["reasoning_combo"] == combo and r["model_type"] == "xgboost"), None)
+        lr_val = _fmt_tv(lr["f0.5_mean"]) if lr else "--"
+        xgb_val = _fmt_tv(xgb["f0.5_mean"]) if xgb else "--"
+        lines.append(f"| {combo} | {lr_val} | {xgb_val} |")
+
+
+    # Full Mirror parity check against llm_regression_report (CV only)
     mirror_ref = _parse_full_mirror_report(BASE_DIR / "docs" / "llm_regression_report.md")
     if mirror_ref:
-        lines += ["", "### Full Mirror parity check (vs llm_regression_report)", "| Combo | Model | Paper F0.5 | Report F0.5 | Δ | Status |", "|---|---|---:|---:|---:|---|"]
-        for row in part2_rows:
+        lines += ["", "### Full Mirror parity check (vs llm_regression_report)", "| Combo | Model | Paper F0.5 | Report F0.5 | Delta | Status |", "|---|---|---:|---:|---:|---|"]
+        for row in part2_rows_cv:
             combo_key = row["reasoning_combo"] or "HQ"
             report_key = "n/a" if combo_key == "HQ" else combo_key
             ref = mirror_ref.get((row["model_type"], report_key))
             if ref is None:
-                lines.append(f"| {combo_key} | {row['model_type']} | {_fmt(row['f0.5_mean'], row['f0.5_std'])} | — | — | MISSING |")
+                lines.append(f"| {combo_key} | {row['model_type']} | {_fmt_cv(row['f0.5_mean'], row['f0.5_std'])} | -- | -- | MISSING |")
                 continue
             ref_mean, ref_std = ref
             delta = row["f0.5_mean"] - ref_mean
             status = "PASS" if abs(delta) <= 0.002 else "FAIL"
             lines.append(
-                f"| {combo_key} | {row['model_type']} | {_fmt(row['f0.5_mean'], row['f0.5_std'])} | {_fmt(ref_mean, ref_std)} | {delta:+.3f} | {status} |"
+                f"| {combo_key} | {row['model_type']} | {_fmt_cv(row['f0.5_mean'], row['f0.5_std'])} | {_fmt_cv(ref_mean, ref_std)} | {delta:+.3f} | {status} |"
             )
 
     lines += [
@@ -1697,7 +1801,7 @@ def main() -> None:
         "| Model | Full-train F0.5 |",
         "|---|---:|",
     ]
-    for row in results_rows:
+    for row in results_rows_cv:
         lines.append(f"| {row['model_name']} | {row['full_train_f0.5']:.3f} |")
 
     report_path = PAPER_DIR / "paper_pipeline_report.md"

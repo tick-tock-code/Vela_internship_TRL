@@ -1845,7 +1845,8 @@ def _parse_args() -> argparse.Namespace:
             Path(
                 r"C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder"
             )
-            / "2_Human_features_running_example_script"
+            / "Archive"
+            / "Old_Human_features_running_example_script"
             / "vcbench_lambda_features_minimal.py"
         ),
         help="Path to base feature script with _extract_human_features.",
