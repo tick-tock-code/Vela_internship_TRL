@@ -209,7 +209,7 @@ def _train_model_local(
     logistic_c: float = 1.0,
     logistic_l1_ratio: float | None = 0.5,
 ) -> tuple[np.ndarray, np.ndarray, Any]:
-    if model_type == "logistic":
+    if model_type in {"logistic", "elasticnet"}:
         penalty = logistic_penalty
         solver = "lbfgs"
         l1_ratio = None
@@ -293,7 +293,7 @@ def _preprocess_features(
             X_train = X_train.fillna(0.0)
             X_test = X_test.fillna(0.0)
     transform = transform.upper()
-    needs_scale = transform in {"PCA", "PLS"} or model_type in ("logistic", "mlp32", "mlp4", "mlp2")
+    needs_scale = transform in {"PCA", "PLS"} or model_type in ("logistic", "elasticnet", "mlp32", "mlp4", "mlp2")
     if needs_scale:
         X_train, X_test = _standardize_continuous(X_train, X_test, feature_names)
 
@@ -444,7 +444,7 @@ def _full_train_metrics(
         pls_components,
         sft_k,
     )
-    scores, _, _ = _train_model_local(
+    scores, _, model = _train_model_local(
         model_type,
         X_train.values.astype(float),
         y,
@@ -486,6 +486,80 @@ def _resolve_model_dir(transform_upper: str, sweep_mode: bool, output_suffix: st
         elif transform_upper == "SFT":
             base_dir = OUTPUT_DIR / "SFT_Sweep_reports"
     return base_dir / f"model_testing_models{output_suffix}"
+
+
+def _resolve_collinearity_dir(transform_upper: str, sweep_mode: bool, output_suffix: str) -> Path:
+    base_dir = OUTPUT_DIR
+    if sweep_mode:
+        if transform_upper == "PCA":
+            base_dir = OUTPUT_DIR / "PCA_Sweep_reports"
+        elif transform_upper == "PLS":
+            base_dir = OUTPUT_DIR / "PLS_Sweep_reports"
+        elif transform_upper == "SFT":
+            base_dir = OUTPUT_DIR / "SFT_Sweep_reports"
+    return base_dir / f"collinearity_reports{output_suffix}"
+
+
+def _build_collinearity_section(
+    summary_rows: list[dict[str, Any]],
+    corr_threshold: float,
+) -> list[str]:
+    if not summary_rows:
+        return []
+    def _fmt(val: float | None) -> str:
+        if val is None:
+            return "--"
+        if not np.isfinite(val):
+            return "inf"
+        return f"{val:.3f}"
+
+    # Pick a single top-risk row per combo to keep the table compact.
+    picked: dict[str, dict[str, Any]] = {}
+    for row in summary_rows:
+        combo = row.get("reasoning_combo", "HQ")
+        current = picked.get(combo)
+        score = row.get("max_vif") if not row.get("vif_skipped") else row.get("max_abs_corr")
+        if score is None:
+            score = 0.0
+        if current is None:
+            picked[combo] = row
+            continue
+        cur_score = current.get("max_vif") if not current.get("vif_skipped") else current.get("max_abs_corr")
+        if cur_score is None:
+            cur_score = 0.0
+        if float(score) > float(cur_score):
+            picked[combo] = row
+
+    lines = [
+        "",
+        "## Collinearity Diagnostics (Logistic only)",
+        "_Model-input stats use transformed features; raw stats use pre-transform standardized features._",
+        f"_Correlation threshold: {corr_threshold}_",
+        "",
+        "| Combo | Family | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num |",
+        "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for combo, row in sorted(picked.items()):
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    combo,
+                    str(row.get("family", "")),
+                    str(row.get("transform", "")),
+                    str(row.get("sweep_param", "")),
+                    _fmt(row.get("max_vif")),
+                    _fmt(row.get("max_abs_corr")),
+                    _fmt(row.get("cond_number")),
+                    _fmt(row.get("avg_sign_flip_rate")),
+                    _fmt(row.get("raw_max_vif")),
+                    _fmt(row.get("raw_max_abs_corr")),
+                    _fmt(row.get("raw_cond_number")),
+                ]
+            )
+            + " |"
+        )
+    return lines
 
 
 def _save_model_bundle(
@@ -544,6 +618,127 @@ def _compute_f05(y_true: np.ndarray, scores: np.ndarray, threshold: float) -> fl
     preds = (scores >= threshold).astype(int)
     return float(fbeta_score(y_true, preds, beta=0.5, zero_division=0))
 
+
+def _zscore_df(df: pd.DataFrame) -> pd.DataFrame:
+    num = df.apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    means = num.mean(axis=0)
+    stds = num.std(axis=0).replace(0, 1.0)
+    return (num - means) / stds
+
+
+def _corr_stats(
+    X: np.ndarray,
+    feature_names: list[str],
+    top_k: int,
+    threshold: float,
+) -> tuple[dict[str, float], pd.DataFrame]:
+    n_features = X.shape[1]
+    if n_features < 2:
+        stats = {"max_abs_corr": 0.0, "mean_abs_corr": 0.0, "count_ge_threshold": 0.0}
+        return stats, pd.DataFrame(columns=["feature_a", "feature_b", "corr"])
+    corr = np.corrcoef(X, rowvar=False)
+    corr = np.nan_to_num(corr, nan=0.0, posinf=0.0, neginf=0.0)
+    iu = np.triu_indices(n_features, k=1)
+    vals = np.abs(corr[iu])
+    max_abs = float(vals.max()) if vals.size else 0.0
+    mean_abs = float(vals.mean()) if vals.size else 0.0
+    count_ge = float(np.sum(vals >= threshold)) if vals.size else 0.0
+    stats = {"max_abs_corr": max_abs, "mean_abs_corr": mean_abs, "count_ge_threshold": count_ge}
+
+    if vals.size:
+        top_k = max(1, int(top_k))
+        top_idx = np.argsort(vals)[::-1][:top_k]
+        rows = []
+        for idx in top_idx:
+            i = int(iu[0][idx])
+            j = int(iu[1][idx])
+            rows.append(
+                {
+                    "feature_a": feature_names[i],
+                    "feature_b": feature_names[j],
+                    "corr": float(corr[i, j]),
+                }
+            )
+        pairs_df = pd.DataFrame(rows)
+    else:
+        pairs_df = pd.DataFrame(columns=["feature_a", "feature_b", "corr"])
+    return stats, pairs_df
+
+
+def _condition_number(X: np.ndarray) -> float:
+    n_features = X.shape[1]
+    if n_features < 2:
+        return 0.0
+    corr = np.corrcoef(X, rowvar=False)
+    corr = np.nan_to_num(corr, nan=0.0, posinf=0.0, neginf=0.0)
+    try:
+        return float(np.linalg.cond(corr))
+    except Exception:
+        return float("inf")
+
+
+def _vif_stats(
+    X: np.ndarray,
+    feature_names: list[str],
+    max_features: int,
+) -> tuple[pd.DataFrame, bool]:
+    n_features = X.shape[1]
+    if n_features < 2:
+        return pd.DataFrame(columns=["feature", "vif"]), False
+    if n_features > max_features:
+        return pd.DataFrame(columns=["feature", "vif"]), True
+
+    vifs: list[dict[str, float]] = []
+    for j in range(n_features):
+        y = X[:, j]
+        X_other = np.delete(X, j, axis=1)
+        if X_other.shape[1] == 0:
+            vifs.append({"feature": feature_names[j], "vif": float("inf")})
+            continue
+        try:
+            coef, _, _, _ = np.linalg.lstsq(X_other, y, rcond=None)
+            y_hat = X_other @ coef
+            ss_res = float(np.sum((y - y_hat) ** 2))
+            ss_tot = float(np.sum((y - np.mean(y)) ** 2))
+            if ss_tot <= 0:
+                r2 = 1.0
+            else:
+                r2 = max(0.0, min(1.0, 1.0 - ss_res / ss_tot))
+            vif = float("inf") if r2 >= 0.999999 else float(1.0 / (1.0 - r2))
+        except Exception:
+            vif = float("inf")
+        vifs.append({"feature": feature_names[j], "vif": vif})
+    return pd.DataFrame(vifs).sort_values("vif", ascending=False), False
+
+
+def _coef_stability(fold_artifacts: list[dict[str, Any]]) -> tuple[pd.DataFrame, float]:
+    coefs = [fa["model"].coef_[0] for fa in fold_artifacts]
+    coef_mat = np.vstack(coefs)
+    mean = coef_mat.mean(axis=0)
+    std = coef_mat.std(axis=0)
+    signs = np.sign(coef_mat)
+    sign_ref = np.sign(mean)
+    flip_rates = []
+    for j in range(coef_mat.shape[1]):
+        ref = sign_ref[j]
+        if ref == 0:
+            flips = np.mean(signs[:, j] != 0)
+        else:
+            flips = np.mean(signs[:, j] != ref)
+        flip_rates.append(float(flips))
+    coef_cv = np.where(np.abs(mean) > 0, std / np.abs(mean), np.inf)
+    features = fold_artifacts[0].get("feature_names", [])
+    df = pd.DataFrame(
+        {
+            "feature": features,
+            "coef_mean": mean,
+            "coef_std": std,
+            "sign_flip_rate": flip_rates,
+            "coef_cv": coef_cv,
+        }
+    ).sort_values("coef_std", ascending=False)
+    avg_flip = float(np.mean(flip_rates)) if flip_rates else 0.0
+    return df, avg_flip
 
 def _compute_perm_importance(
     model: Any,
@@ -663,6 +858,10 @@ def main() -> None:
     parser.add_argument("--logistic_c", type=float, default=0.3)
     parser.add_argument("--logistic_l1_ratio", type=float, default=0.5)
     parser.add_argument("--save_models", type=str, default="true")
+    parser.add_argument("--collinearity_report", type=str, default="true")
+    parser.add_argument("--collinearity_corr_topk", type=int, default=20)
+    parser.add_argument("--collinearity_corr_threshold", type=float, default=0.9)
+    parser.add_argument("--vif_max_features", type=int, default=200)
     args = parser.parse_args()
 
     _ensure_dir(OUTPUT_DIR)
@@ -677,6 +876,10 @@ def main() -> None:
     pca_var_sweep = str(args.pca_var_sweep).strip().lower() in {"1", "true", "yes"}
     transform_sweep = str(args.transform_sweep).strip().lower() in {"1", "true", "yes"}
     save_models = str(args.save_models).strip().lower() in {"1", "true", "yes"}
+    collinearity_report = str(args.collinearity_report).strip().lower() in {"1", "true", "yes"}
+    collinearity_corr_topk = int(args.collinearity_corr_topk)
+    collinearity_corr_threshold = float(args.collinearity_corr_threshold)
+    vif_max_features = int(args.vif_max_features)
     pls_components = int(args.pls_components)
     sft_k = int(args.sft_k)
     logistic_penalty = str(args.logistic_penalty).strip().lower()
@@ -708,7 +911,7 @@ def main() -> None:
             raise RuntimeError(f"Unknown feature transform: {t}")
     if use_pca and "PCA" not in transforms_raw:
         transforms_raw.append("PCA")
-    if (pca_var_sweep or transform_sweep) and "PCA" not in transforms_raw:
+    if pca_var_sweep and "PCA" not in transforms_raw:
         transforms_raw.append("PCA")
 
     # Load public data (full 4,500 founders)
@@ -763,9 +966,9 @@ def main() -> None:
     )
 
     if model_complexity == "simple":
-        model_types = ["logistic", "xgb1"]
+        model_types = ["logistic", "elasticnet"]
     else:
-        model_types = ["logistic", "xgb1", "xgb3", "mlp32", "mlp4", "mlp2"]
+        model_types = ["logistic", "elasticnet", "mlp32", "mlp4", "mlp2"]
 
     model_runs: list[ModelRun] = []
     for combo, combo_cols in combos.items():
@@ -855,10 +1058,13 @@ def main() -> None:
             if interp_on:
                 _ensure_dir(interp_dir)
             model_dir = _resolve_model_dir(transform_upper, True, output_suffix) if save_models else None
+            col_dir = _resolve_collinearity_dir(transform_upper, True, output_suffix) if collinearity_report else None
 
             results_rows: list[dict[str, Any]] = []
+            sweep_rows: list[dict[str, Any]] = []
             perm_results: dict[tuple[str, str], pd.DataFrame] = {}
             shap_results: dict[tuple[str, str], pd.DataFrame] = {}
+            col_summary_rows: list[dict[str, Any]] = []
 
             for sweep_value in variance_list:
                 pca_variance_value = PCA_VARIANCE_DEFAULT
@@ -885,7 +1091,7 @@ def main() -> None:
                         else base_df.copy()
                     )
 
-                    if run.model_type == "logistic" and logistic_tuning_mode == "per_model":
+                    if run.model_type == "elasticnet" and logistic_tuning_mode == "per_model":
                         best_mean = -1.0
                         best_std = 1e9
                         best_c = logistic_c
@@ -894,7 +1100,8 @@ def main() -> None:
                         best_threshold = None
                         best_folds = None
                         c_grid = logistic_c_grid
-                        l1_grid = logistic_l1_ratio_grid if logistic_penalty == "elasticnet" else [None]
+                        l1_grid = logistic_l1_ratio_grid
+                        penalty = "elasticnet"
                         for c_val in c_grid:
                             for l1_val in l1_grid:
                                 means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
@@ -909,9 +1116,35 @@ def main() -> None:
                                     pca_variance=pca_variance_value,
                                     pls_components=cur_pls_components,
                                     sft_k=cur_sft_k,
-                                    logistic_penalty=logistic_penalty,
+                                    logistic_penalty=penalty,
                                     logistic_c=c_val,
                                     logistic_l1_ratio=l1_val,
+                                )
+                                sweep_rows.append(
+                                    {
+                                        "family": run.family,
+                                        "model_name": run.name,
+                                        "model_type": run.model_type,
+                                        "reasoning_combo": combo,
+                                        "transform": transform_upper,
+                                        "sweep_param": str(sweep_value),
+                                        "logistic_penalty": penalty,
+                                        "logistic_C": c_val,
+                                        "logistic_l1_ratio": l1_val,
+                                        "f0.5_mean": means["f0.5"],
+                                        "f0.5_std": stds["f0.5"],
+                                        "roc_auc_mean": means["roc_auc"],
+                                        "roc_auc_std": stds["roc_auc"],
+                                        "pr_auc_mean": means["pr_auc"],
+                                        "pr_auc_std": stds["pr_auc"],
+                                        "precision_mean": means["precision"],
+                                        "precision_std": stds["precision"],
+                                        "recall_mean": means["recall"],
+                                        "recall_std": stds["recall"],
+                                        "acc_mean": means["accuracy"],
+                                        "acc_std": stds["accuracy"],
+                                        "threshold_oof": oof_threshold,
+                                    }
                                 )
                                 mean_f = means["f0.5"]
                                 std_f = stds["f0.5"]
@@ -933,6 +1166,7 @@ def main() -> None:
                         chosen_c = best_c
                         chosen_l1 = best_l1
                     else:
+                        penalty = "elasticnet" if run.model_type == "elasticnet" else "l2"
                         means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
                             train_df,
                             labels,
@@ -945,7 +1179,7 @@ def main() -> None:
                             pca_variance=pca_variance_value,
                             pls_components=cur_pls_components,
                             sft_k=cur_sft_k,
-                            logistic_penalty=logistic_penalty,
+                            logistic_penalty=penalty,
                             logistic_c=logistic_c,
                             logistic_l1_ratio=logistic_l1_ratio,
                         )
@@ -995,6 +1229,119 @@ def main() -> None:
                         shap_path = interp_dir / f"shap_hq_{combo}_{run.model_type}.csv"
                         perm_df.to_csv(perm_path, index=False)
                         shap_df.to_csv(shap_path, index=False)
+
+                    if collinearity_report and run.model_type == "logistic":
+                        X_model_df, _, model_feature_names, _ = _preprocess_features(
+                            train_df,
+                            train_df.copy(),
+                            run.feature_names,
+                            run.model_type,
+                            transform_upper,
+                            y_train=labels,
+                            pca_variance=pca_variance_value,
+                            pls_components=cur_pls_components,
+                            sft_k=cur_sft_k,
+                        )
+                        X_model_std = _zscore_df(X_model_df)
+                        X_model = X_model_std.values.astype(float)
+                        cond_num = _condition_number(X_model)
+                        corr_stats, corr_pairs = _corr_stats(
+                            X_model,
+                            model_feature_names,
+                            collinearity_corr_topk,
+                            collinearity_corr_threshold,
+                        )
+                        vif_df, vif_skipped = _vif_stats(
+                            X_model,
+                            model_feature_names,
+                            vif_max_features,
+                        )
+                        max_vif = float(vif_df["vif"].max()) if not vif_df.empty else None
+
+                        coef_df, avg_flip = _coef_stability(fold_artifacts)
+
+                        raw_df_std = _zscore_df(train_df[run.feature_names].copy())
+                        X_raw = raw_df_std.values.astype(float)
+                        raw_cond_num = _condition_number(X_raw)
+                        raw_corr_stats, raw_corr_pairs = _corr_stats(
+                            X_raw,
+                            run.feature_names,
+                            collinearity_corr_topk,
+                            collinearity_corr_threshold,
+                        )
+                        raw_vif_df, raw_vif_skipped = _vif_stats(
+                            X_raw,
+                            run.feature_names,
+                            vif_max_features,
+                        )
+                        raw_max_vif = float(raw_vif_df["vif"].max()) if not raw_vif_df.empty else None
+
+                        if col_dir is not None:
+                            subdir = (
+                                col_dir
+                                / _slugify(run.family)
+                                / _slugify(combo)
+                                / _slugify(run.model_type)
+                                / _slugify(transform_upper)
+                                / _slugify(str(sweep_value))
+                            )
+                            _ensure_dir(subdir)
+                            coef_df.to_csv(subdir / "coef_stats.csv", index=False)
+                            corr_pairs.to_csv(subdir / "corr_pairs.csv", index=False)
+                            raw_corr_pairs.to_csv(subdir / "raw_corr_pairs.csv", index=False)
+                            vif_df.to_csv(subdir / "vif.csv", index=False)
+                            raw_vif_df.to_csv(subdir / "raw_vif.csv", index=False)
+                            summary = {
+                                "family": run.family,
+                                "model_name": run.name,
+                                "model_type": run.model_type,
+                                "reasoning_combo": combo,
+                                "transform": transform_upper,
+                                "sweep_param": str(sweep_value),
+                                "n_features_model": int(X_model.shape[1]),
+                                "n_features_raw": int(X_raw.shape[1]),
+                                "cond_number": cond_num,
+                                "max_abs_corr": corr_stats["max_abs_corr"],
+                                "mean_abs_corr": corr_stats["mean_abs_corr"],
+                                "corr_count_ge_threshold": corr_stats["count_ge_threshold"],
+                                "max_vif": max_vif,
+                                "vif_skipped": bool(vif_skipped),
+                                "avg_sign_flip_rate": avg_flip,
+                                "raw_cond_number": raw_cond_num,
+                                "raw_max_abs_corr": raw_corr_stats["max_abs_corr"],
+                                "raw_mean_abs_corr": raw_corr_stats["mean_abs_corr"],
+                                "raw_corr_count_ge_threshold": raw_corr_stats["count_ge_threshold"],
+                                "raw_max_vif": raw_max_vif,
+                                "raw_vif_skipped": bool(raw_vif_skipped),
+                            }
+                            (subdir / "summary.json").write_text(
+                                json.dumps(summary, indent=2),
+                                encoding="utf-8",
+                            )
+
+                        col_summary_rows.append(
+                            {
+                                "family": run.family,
+                                "model_name": run.name,
+                                "model_type": run.model_type,
+                                "reasoning_combo": combo,
+                                "transform": transform_upper,
+                                "sweep_param": str(sweep_value),
+                                "cond_number": cond_num,
+                                "max_abs_corr": corr_stats["max_abs_corr"],
+                                "mean_abs_corr": corr_stats["mean_abs_corr"],
+                                "corr_count_ge_threshold": corr_stats["count_ge_threshold"],
+                                "max_vif": max_vif,
+                                "vif_skipped": bool(vif_skipped),
+                                "avg_sign_flip_rate": avg_flip,
+                                "raw_cond_number": raw_cond_num,
+                                "raw_max_abs_corr": raw_corr_stats["max_abs_corr"],
+                                "raw_mean_abs_corr": raw_corr_stats["mean_abs_corr"],
+                                "raw_corr_count_ge_threshold": raw_corr_stats["count_ge_threshold"],
+                                "raw_max_vif": raw_max_vif,
+                                "raw_vif_skipped": bool(raw_vif_skipped),
+                            }
+                        )
 
                     if save_models:
                         full_metrics, full_model, full_transformer, feature_names_out = _full_train_metrics(
@@ -1056,9 +1403,9 @@ def main() -> None:
                             "reasoning_combo": combo,
                             "transform": transform_upper,
                             "sweep_param": str(sweep_value),
-                            "logistic_penalty": logistic_penalty if run.model_type == "logistic" else "",
-                            "logistic_C": chosen_c if run.model_type == "logistic" else None,
-                            "logistic_l1_ratio": chosen_l1 if run.model_type == "logistic" else None,
+                            "logistic_penalty": penalty if run.model_type in {"logistic", "elasticnet"} else "",
+                            "logistic_C": chosen_c if run.model_type in {"logistic", "elasticnet"} else None,
+                            "logistic_l1_ratio": chosen_l1 if run.model_type == "elasticnet" else None,
                             "f0.5_mean": means["f0.5"],
                             "f0.5_std": stds["f0.5"],
                             "roc_auc_mean": means["roc_auc"],
@@ -1076,23 +1423,29 @@ def main() -> None:
                         }
                     )
             results_df = pd.DataFrame(results_rows)
+            sweep_df = pd.DataFrame(sweep_rows) if sweep_rows else None
             results_path = OUTPUT_DIR / f"model_testing_results{output_suffix}.csv"
             results_df.to_csv(results_path, index=False)
+            if sweep_df is not None:
+                sweep_dir = OUTPUT_DIR / "model_param_sweep"
+                _ensure_dir(sweep_dir)
+                sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+                sweep_df.to_csv(sweep_path, index=False)
             if transform_upper == "PCA" and (pca_var_sweep or transform_sweep):
                 sweep_dir = OUTPUT_DIR / "PCA_Sweep_reports"
                 _ensure_dir(sweep_dir)
                 sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
-                results_df.to_csv(sweep_path, index=False)
+                (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
             if transform_upper == "PLS" and transform_sweep:
                 sweep_dir = OUTPUT_DIR / "PLS_Sweep_reports"
                 _ensure_dir(sweep_dir)
                 sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
-                results_df.to_csv(sweep_path, index=False)
+                (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
             if transform_upper == "SFT" and transform_sweep:
                 sweep_dir = OUTPUT_DIR / "SFT_Sweep_reports"
                 _ensure_dir(sweep_dir)
                 sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
-                results_df.to_csv(sweep_path, index=False)
+                (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
 
             def _fmt(mean: float, std: float) -> str:
                 return f"{mean:.3f}+/-{std:.3f}"
@@ -1154,9 +1507,9 @@ def main() -> None:
                 return table
 
             model_variants_line = (
-                "Model variants: logistic, xgb1 (stump)."
+                "Model variants: logistic (l2), elasticnet."
                 if model_complexity == "simple"
-                else "Model variants: logistic, xgb1 (stump), xgb3 (depth=3), mlp32/mlp4/mlp2 (1 hidden layer)."
+                else "Model variants: logistic (l2), elasticnet, mlp32/mlp4/mlp2 (1 hidden layer)."
             )
             lines = [
                 "# Model Testing Report",
@@ -1314,7 +1667,12 @@ def main() -> None:
             if transform_upper == "SFT" and transform_sweep:
                 report_dir = OUTPUT_DIR / "SFT_Sweep_reports"
                 _ensure_dir(report_dir)
+            if collinearity_report and col_summary_rows:
+                col_path = report_dir / f"collinearity_summary{output_suffix}.csv"
+                pd.DataFrame(col_summary_rows).to_csv(col_path, index=False)
             report_path = report_dir / f"model_testing_report{output_suffix}.md"
+            if collinearity_report and col_summary_rows:
+                lines += _build_collinearity_section(col_summary_rows, collinearity_corr_threshold)
             report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
             notes_path = OUTPUT_DIR / "model_testing_notes.md"
@@ -1335,10 +1693,14 @@ def main() -> None:
                 if interp_on:
                     _ensure_dir(interp_dir)
                 model_dir = _resolve_model_dir(transform_upper, False, output_suffix) if save_models else None
+                col_dir = _resolve_collinearity_dir(transform_upper, False, output_suffix) if collinearity_report else None
 
                 results_rows: list[dict[str, Any]] = []
+                sweep_rows: list[dict[str, Any]] = []
+                sweep_param_value = "base"
                 perm_results: dict[tuple[str, str], pd.DataFrame] = {}
                 shap_results: dict[tuple[str, str], pd.DataFrame] = {}
+                col_summary_rows: list[dict[str, Any]] = []
 
                 for run in model_runs:
                     combo = run.reasoning_combo or "HQ"
@@ -1355,7 +1717,7 @@ def main() -> None:
                         else base_df.copy()
                     )
 
-                    if run.model_type == "logistic" and logistic_tuning_mode == "per_model":
+                    if run.model_type == "elasticnet" and logistic_tuning_mode == "per_model":
                         best_mean = -1.0
                         best_std = 1e9
                         best_c = logistic_c
@@ -1364,7 +1726,8 @@ def main() -> None:
                         best_threshold = None
                         best_folds = None
                         c_grid = logistic_c_grid
-                        l1_grid = logistic_l1_ratio_grid if logistic_penalty == "elasticnet" else [None]
+                        l1_grid = logistic_l1_ratio_grid
+                        penalty = "elasticnet"
                         for c_val in c_grid:
                             for l1_val in l1_grid:
                                 means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
@@ -1379,9 +1742,35 @@ def main() -> None:
                                     pca_variance=(pca_variance or PCA_VARIANCE_DEFAULT),
                                     pls_components=pls_components,
                                     sft_k=sft_k,
-                                    logistic_penalty=logistic_penalty,
+                                    logistic_penalty=penalty,
                                     logistic_c=c_val,
                                     logistic_l1_ratio=l1_val,
+                                )
+                                sweep_rows.append(
+                                    {
+                                        "family": run.family,
+                                        "model_name": run.name,
+                                        "model_type": run.model_type,
+                                        "reasoning_combo": combo,
+                                        "transform": transform_upper,
+                                        "sweep_param": sweep_param_value,
+                                        "logistic_penalty": penalty,
+                                        "logistic_C": c_val,
+                                        "logistic_l1_ratio": l1_val,
+                                        "f0.5_mean": means["f0.5"],
+                                        "f0.5_std": stds["f0.5"],
+                                        "roc_auc_mean": means["roc_auc"],
+                                        "roc_auc_std": stds["roc_auc"],
+                                        "pr_auc_mean": means["pr_auc"],
+                                        "pr_auc_std": stds["pr_auc"],
+                                        "precision_mean": means["precision"],
+                                        "precision_std": stds["precision"],
+                                        "recall_mean": means["recall"],
+                                        "recall_std": stds["recall"],
+                                        "acc_mean": means["accuracy"],
+                                        "acc_std": stds["accuracy"],
+                                        "threshold_oof": oof_threshold,
+                                    }
                                 )
                                 mean_f = means["f0.5"]
                                 std_f = stds["f0.5"]
@@ -1403,6 +1792,7 @@ def main() -> None:
                         chosen_c = best_c
                         chosen_l1 = best_l1
                     else:
+                        penalty = "elasticnet" if run.model_type == "elasticnet" else "l2"
                         means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
                             train_df,
                             labels,
@@ -1415,7 +1805,7 @@ def main() -> None:
                             pca_variance=(pca_variance or PCA_VARIANCE_DEFAULT),
                             pls_components=pls_components,
                             sft_k=sft_k,
-                            logistic_penalty=logistic_penalty,
+                            logistic_penalty=penalty,
                             logistic_c=logistic_c,
                             logistic_l1_ratio=logistic_l1_ratio,
                         )
@@ -1466,6 +1856,119 @@ def main() -> None:
                         perm_df.to_csv(perm_path, index=False)
                         shap_df.to_csv(shap_path, index=False)
 
+                    if collinearity_report and run.model_type == "logistic":
+                        X_model_df, _, model_feature_names, _ = _preprocess_features(
+                            train_df,
+                            train_df.copy(),
+                            run.feature_names,
+                            run.model_type,
+                            transform_upper,
+                            y_train=labels,
+                            pca_variance=(pca_variance or PCA_VARIANCE_DEFAULT),
+                            pls_components=pls_components,
+                            sft_k=sft_k,
+                        )
+                        X_model_std = _zscore_df(X_model_df)
+                        X_model = X_model_std.values.astype(float)
+                        cond_num = _condition_number(X_model)
+                        corr_stats, corr_pairs = _corr_stats(
+                            X_model,
+                            model_feature_names,
+                            collinearity_corr_topk,
+                            collinearity_corr_threshold,
+                        )
+                        vif_df, vif_skipped = _vif_stats(
+                            X_model,
+                            model_feature_names,
+                            vif_max_features,
+                        )
+                        max_vif = float(vif_df["vif"].max()) if not vif_df.empty else None
+
+                        coef_df, avg_flip = _coef_stability(fold_artifacts)
+
+                        raw_df_std = _zscore_df(train_df[run.feature_names].copy())
+                        X_raw = raw_df_std.values.astype(float)
+                        raw_cond_num = _condition_number(X_raw)
+                        raw_corr_stats, raw_corr_pairs = _corr_stats(
+                            X_raw,
+                            run.feature_names,
+                            collinearity_corr_topk,
+                            collinearity_corr_threshold,
+                        )
+                        raw_vif_df, raw_vif_skipped = _vif_stats(
+                            X_raw,
+                            run.feature_names,
+                            vif_max_features,
+                        )
+                        raw_max_vif = float(raw_vif_df["vif"].max()) if not raw_vif_df.empty else None
+
+                        if col_dir is not None:
+                            subdir = (
+                                col_dir
+                                / _slugify(run.family)
+                                / _slugify(combo)
+                                / _slugify(run.model_type)
+                                / _slugify(transform_upper)
+                                / _slugify(str(sweep_param_value))
+                            )
+                            _ensure_dir(subdir)
+                            coef_df.to_csv(subdir / "coef_stats.csv", index=False)
+                            corr_pairs.to_csv(subdir / "corr_pairs.csv", index=False)
+                            raw_corr_pairs.to_csv(subdir / "raw_corr_pairs.csv", index=False)
+                            vif_df.to_csv(subdir / "vif.csv", index=False)
+                            raw_vif_df.to_csv(subdir / "raw_vif.csv", index=False)
+                            summary = {
+                                "family": run.family,
+                                "model_name": run.name,
+                                "model_type": run.model_type,
+                                "reasoning_combo": combo,
+                                "transform": transform_upper,
+                                "sweep_param": str(sweep_param_value),
+                                "n_features_model": int(X_model.shape[1]),
+                                "n_features_raw": int(X_raw.shape[1]),
+                                "cond_number": cond_num,
+                                "max_abs_corr": corr_stats["max_abs_corr"],
+                                "mean_abs_corr": corr_stats["mean_abs_corr"],
+                                "corr_count_ge_threshold": corr_stats["count_ge_threshold"],
+                                "max_vif": max_vif,
+                                "vif_skipped": bool(vif_skipped),
+                                "avg_sign_flip_rate": avg_flip,
+                                "raw_cond_number": raw_cond_num,
+                                "raw_max_abs_corr": raw_corr_stats["max_abs_corr"],
+                                "raw_mean_abs_corr": raw_corr_stats["mean_abs_corr"],
+                                "raw_corr_count_ge_threshold": raw_corr_stats["count_ge_threshold"],
+                                "raw_max_vif": raw_max_vif,
+                                "raw_vif_skipped": bool(raw_vif_skipped),
+                            }
+                            (subdir / "summary.json").write_text(
+                                json.dumps(summary, indent=2),
+                                encoding="utf-8",
+                            )
+
+                        col_summary_rows.append(
+                            {
+                                "family": run.family,
+                                "model_name": run.name,
+                                "model_type": run.model_type,
+                                "reasoning_combo": combo,
+                                "transform": transform_upper,
+                                "sweep_param": str(sweep_param_value),
+                                "cond_number": cond_num,
+                                "max_abs_corr": corr_stats["max_abs_corr"],
+                                "mean_abs_corr": corr_stats["mean_abs_corr"],
+                                "corr_count_ge_threshold": corr_stats["count_ge_threshold"],
+                                "max_vif": max_vif,
+                                "vif_skipped": bool(vif_skipped),
+                                "avg_sign_flip_rate": avg_flip,
+                                "raw_cond_number": raw_cond_num,
+                                "raw_max_abs_corr": raw_corr_stats["max_abs_corr"],
+                                "raw_mean_abs_corr": raw_corr_stats["mean_abs_corr"],
+                                "raw_corr_count_ge_threshold": raw_corr_stats["count_ge_threshold"],
+                                "raw_max_vif": raw_max_vif,
+                                "raw_vif_skipped": bool(raw_vif_skipped),
+                            }
+                        )
+
                     if save_models:
                         full_metrics, full_model, full_transformer, feature_names_out = _full_train_metrics(
                             train_df,
@@ -1479,7 +1982,7 @@ def main() -> None:
                             pca_variance=(pca_variance or PCA_VARIANCE_DEFAULT),
                             pls_components=pls_components,
                             sft_k=sft_k,
-                            logistic_penalty=logistic_penalty,
+                            logistic_penalty=penalty,
                             logistic_c=chosen_c,
                             logistic_l1_ratio=chosen_l1,
                             return_model=True,
@@ -1490,14 +1993,14 @@ def main() -> None:
                                 run=run,
                                 combo=combo,
                                 transform=transform_upper,
-                                sweep_param="" if pca_variance is None else str(pca_variance),
+                                sweep_param=sweep_param_value,
                                 model=full_model,
                                 transformer=full_transformer,
                                 feature_names_in=run.feature_names,
                                 feature_names_out=feature_names_out,
                                 threshold_oof=oof_threshold,
                                 full_metrics=full_metrics,
-                                logistic_penalty=logistic_penalty,
+                                logistic_penalty=penalty,
                                 logistic_c=chosen_c,
                                 logistic_l1_ratio=chosen_l1,
                             )
@@ -1514,7 +2017,7 @@ def main() -> None:
                             pca_variance=(pca_variance or PCA_VARIANCE_DEFAULT),
                             pls_components=pls_components,
                             sft_k=sft_k,
-                            logistic_penalty=logistic_penalty,
+                            logistic_penalty=penalty,
                             logistic_c=chosen_c,
                             logistic_l1_ratio=chosen_l1,
                         )
@@ -1526,9 +2029,9 @@ def main() -> None:
                             "reasoning_combo": combo,
                             "transform": transform_upper,
                             "sweep_param": "" if pca_variance is None else str(pca_variance),
-                            "logistic_penalty": logistic_penalty if run.model_type == "logistic" else "",
-                            "logistic_C": chosen_c if run.model_type == "logistic" else None,
-                            "logistic_l1_ratio": chosen_l1 if run.model_type == "logistic" else None,
+                            "logistic_penalty": penalty if run.model_type in {"logistic", "elasticnet"} else "",
+                            "logistic_C": chosen_c if run.model_type in {"logistic", "elasticnet"} else None,
+                            "logistic_l1_ratio": chosen_l1 if run.model_type == "elasticnet" else None,
                             "f0.5_mean": means["f0.5"],
                             "f0.5_std": stds["f0.5"],
                             "roc_auc_mean": means["roc_auc"],
@@ -1546,24 +2049,30 @@ def main() -> None:
                         }
                     )
 
-            results_df = pd.DataFrame(results_rows)
-            results_path = OUTPUT_DIR / f"model_testing_results{output_suffix}.csv"
-            results_df.to_csv(results_path, index=False)
-            if transform_upper == "PCA" and (pca_var_sweep or transform_sweep):
-                sweep_dir = OUTPUT_DIR / "PCA_Sweep_reports"
-                _ensure_dir(sweep_dir)
-                sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
-                results_df.to_csv(sweep_path, index=False)
+                results_df = pd.DataFrame(results_rows)
+                sweep_df = pd.DataFrame(sweep_rows) if sweep_rows else None
+                results_path = OUTPUT_DIR / f"model_testing_results{output_suffix}.csv"
+                results_df.to_csv(results_path, index=False)
+                if sweep_df is not None:
+                    sweep_dir = OUTPUT_DIR / "model_param_sweep"
+                    _ensure_dir(sweep_dir)
+                    sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+                    sweep_df.to_csv(sweep_path, index=False)
+                if transform_upper == "PCA" and (pca_var_sweep or transform_sweep):
+                    sweep_dir = OUTPUT_DIR / "PCA_Sweep_reports"
+                    _ensure_dir(sweep_dir)
+                    sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+                    (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
             if transform_upper == "PLS" and transform_sweep:
                 sweep_dir = OUTPUT_DIR / "PLS_Sweep_reports"
                 _ensure_dir(sweep_dir)
                 sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
-                results_df.to_csv(sweep_path, index=False)
+                (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
             if transform_upper == "SFT" and transform_sweep:
                 sweep_dir = OUTPUT_DIR / "SFT_Sweep_reports"
                 _ensure_dir(sweep_dir)
                 sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
-                results_df.to_csv(sweep_path, index=False)
+                (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
 
             def _fmt(mean: float, std: float) -> str:
                 return f"{mean:.3f}+/-{std:.3f}"
@@ -1625,9 +2134,9 @@ def main() -> None:
                 return table
 
             model_variants_line = (
-                "Model variants: logistic, xgb1 (stump)."
+                "Model variants: logistic (l2), elasticnet."
                 if model_complexity == "simple"
-                else "Model variants: logistic, xgb1 (stump), xgb3 (depth=3), mlp32/mlp4/mlp2 (1 hidden layer)."
+                else "Model variants: logistic (l2), elasticnet, mlp32/mlp4/mlp2 (1 hidden layer)."
             )
             lines = [
                 "# Model Testing Report",
@@ -1741,7 +2250,12 @@ def main() -> None:
             if transform_upper == "SFT" and transform_sweep:
                 report_dir = OUTPUT_DIR / "SFT_Sweep_reports"
                 _ensure_dir(report_dir)
+            if collinearity_report and col_summary_rows:
+                col_path = report_dir / f"collinearity_summary{output_suffix}.csv"
+                pd.DataFrame(col_summary_rows).to_csv(col_path, index=False)
             report_path = report_dir / f"model_testing_report{output_suffix}.md"
+            if collinearity_report and col_summary_rows:
+                lines += _build_collinearity_section(col_summary_rows, collinearity_corr_threshold)
             report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
             notes_path = OUTPUT_DIR / "model_testing_notes.md"
