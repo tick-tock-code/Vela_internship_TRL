@@ -1,0 +1,23 @@
+{
+  "family": "hq_mirror",
+  "model_name": "Mirror HQ A+B+C+D+E+F (logistic)",
+  "model_type": "logistic",
+  "reasoning_combo": "A+B+C+D+E+F",
+  "transform": "PCA",
+  "sweep_param": "0.9",
+  "n_features_model": 3,
+  "n_features_raw": 49,
+  "cond_number": 1.0000000000000004,
+  "max_abs_corr": 2.6169577976316647e-15,
+  "mean_abs_corr": 1.1826585581129621e-15,
+  "corr_count_ge_threshold": 0.0,
+  "max_vif": 1.0000000000000002,
+  "vif_skipped": false,
+  "avg_sign_flip_rate": 0.0,
+  "raw_cond_number": 2.698910617561285e+18,
+  "raw_max_abs_corr": 1.0,
+  "raw_mean_abs_corr": 0.2782010021493656,
+  "raw_corr_count_ge_threshold": 17.0,
+  "raw_max_vif": Infinity,
+  "raw_vif_skipped": false
+}

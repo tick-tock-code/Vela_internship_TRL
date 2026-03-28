@@ -1,0 +1,12 @@
+2026-03-28 14:40:12,719	INFO	Starting model testing pipeline
+2026-03-28 14:40:12,719	INFO	Args: {'cv_folds': 5, 'engineered_family_id': None, 'engineered_set_id': 'set_05', 'exp_scope': 'reduced_exps', 'run_interpretability': 'false', 'use_pca': 'false', 'model_complexity': 'simple', 'pca_var_sweep': 'false', 'transform_sweep': 'false', 'feature_transforms': 'Base', 'pls_components': 10, 'sft_k': 30, 'logistic_penalty': 'l2', 'logistic_c_grid': '0.03,0.1,0.3,1', 'logistic_l1_ratio_grid': '0,0.2,0.5,0.8,1', 'logistic_tuning_mode': 'per_model', 'logistic_c': 0.3, 'logistic_l1_ratio': 0.5, 'elasticnet_sweep_only': 'true', 'save_models': 'true', 'collinearity_report': 'true', 'feature_pruning': 'aggressive_pruning', 'pruning_sweep': 'false', 'combo_filter': 'HQ,A,D,F,A+E,A+D,A+B+C+D+E+F', 'collinearity_corr_topk': 20, 'collinearity_corr_threshold': 0.9, 'vif_max_features': 200}
+2026-03-28 14:40:19,160	INFO	Feature transforms: BASE
+2026-03-28 14:40:19,161	INFO	Run transform start: BASE (interp_on=False)
+2026-03-28 14:40:19,162	INFO	Pruning level: aggressive_pruning
+2026-03-28 14:40:19,163	INFO	Transform=BASE sweep_value=None
+2026-03-28 14:40:19,163	INFO	Run start family=hq_mirror combo=HQ model=logistic transform=BASE sweep=None tuning=per_model
+2026-03-28 14:40:20,133	INFO	Run start family=hq_mirror combo=HQ model=elasticnet transform=BASE sweep=None tuning=per_model
+2026-03-28 14:40:20,133	INFO	Regularization sweep: model=elasticnet penalty=elasticnet C_grid=[0.03, 0.1, 0.3, 1.0] l1_grid=[0.0, 0.2, 0.5, 0.8, 1.0]
+2026-03-28 14:44:18,670	INFO	Run start family=hq_mirror combo=A model=logistic transform=BASE sweep=None tuning=per_model
+2026-03-28 14:44:19,664	INFO	Run start family=hq_mirror combo=A model=elasticnet transform=BASE sweep=None tuning=per_model
+2026-03-28 14:44:19,665	INFO	Regularization sweep: model=elasticnet penalty=elasticnet C_grid=[0.03, 0.1, 0.3, 1.0] l1_grid=[0.0, 0.2, 0.5, 0.8, 1.0]
