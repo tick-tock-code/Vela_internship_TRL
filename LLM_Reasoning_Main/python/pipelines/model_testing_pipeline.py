@@ -8,6 +8,7 @@ import logging
 import json
 import hashlib
 import warnings
+from datetime import datetime
 from dataclasses import dataclass
 from itertools import combinations
 from typing import Any
@@ -49,7 +50,7 @@ INTERP_COMBOS = {"HQ", "D", "A+B+C+D+E+F"}
 PCA_VARIANCE_DEFAULT = 0.999
 PCA_VARIANCE = PCA_VARIANCE_DEFAULT
 PCA_SWEEP_VALUES = [0.9, 0.95, 0.99, 0.999, 0.9999]
-PLS_COMPONENTS_DEFAULT = 10
+PLS_COMPONENTS_DEFAULT = 6
 SFT_K_DEFAULT = 30
 PLS_SWEEP_VALUES = [2, 4, 6, 8, 10]
 SFT_SWEEP_VALUES = [5, 10, 15, 20, 25, 30]
@@ -67,6 +68,17 @@ class ModelRun:
 
 def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
+
+def _resolve_run_output_dir(evidence_tag: str | None, group_by_evidence: bool) -> Path:
+    if not group_by_evidence:
+        return OUTPUT_DIR
+    date_prefix = datetime.now().strftime("%Y-%m-%d")
+    base_dir = OUTPUT_DIR / f"{date_prefix}_no_evidence_rating"
+    _ensure_dir(base_dir)
+    sub_dir = base_dir / ("no_evidence_rating" if evidence_tag else "normal")
+    _ensure_dir(sub_dir)
+    return sub_dir
 
 
 def _init_temp_logger(log_path: Path) -> None:
@@ -162,6 +174,7 @@ def _reindex_reasoning(
 def _build_reasoning_combos_numeric(
     reasoning_df: pd.DataFrame,
     experiment_ids: list[str],
+    exclude_evidence_support_rating: bool = False,
 ) -> dict[str, list[str]]:
     numeric_cols = {
         c
@@ -173,7 +186,16 @@ def _build_reasoning_combos_numeric(
     for exp_id in experiment_ids:
         if not exp_id:
             continue
-        cols = [c for c in reasoning_df.columns if c.startswith(f"{exp_id}_") and c in numeric_cols]
+        cols = [
+            c
+            for c in reasoning_df.columns
+            if c.startswith(f"{exp_id}_")
+            and c in numeric_cols
+            and (
+                not exclude_evidence_support_rating
+                or "evidence_support_rating" not in c.lower()
+            )
+        ]
         if cols:
             exp_to_cols[exp_id] = cols
     combos: dict[str, list[str]] = {}
@@ -234,6 +256,7 @@ def _train_model_local(
     logistic_penalty: str = "elasticnet",
     logistic_c: float = 1.0,
     logistic_l1_ratio: float | None = 0.5,
+    mlp_alpha: float = 0.01,
 ) -> tuple[np.ndarray, np.ndarray, Any]:
     if model_type in {"logistic", "elasticnet"}:
         penalty = logistic_penalty
@@ -265,6 +288,8 @@ def _train_model_local(
             activation="relu",
             random_state=random_state,
             max_iter=2000,
+            alpha=float(mlp_alpha),
+            early_stopping=False,
         )
         clf.fit(X_train, y_train)
         train_scores = clf.predict_proba(X_train)[:, 1]
@@ -276,6 +301,8 @@ def _train_model_local(
             activation="relu",
             random_state=random_state,
             max_iter=2000,
+            alpha=float(mlp_alpha),
+            early_stopping=False,
         )
         clf.fit(X_train, y_train)
         train_scores = clf.predict_proba(X_train)[:, 1]
@@ -287,6 +314,8 @@ def _train_model_local(
             activation="relu",
             random_state=random_state,
             max_iter=2000,
+            alpha=float(mlp_alpha),
+            early_stopping=False,
         )
         clf.fit(X_train, y_train)
         train_scores = clf.predict_proba(X_train)[:, 1]
@@ -378,6 +407,7 @@ def _oof_cv_metrics(
     logistic_penalty: str = "elasticnet",
     logistic_c: float = 1.0,
     logistic_l1_ratio: float | None = 0.5,
+    mlp_alpha: float = 0.01,
 ) -> tuple[dict[str, float], dict[str, float], float, list[dict[str, Any]]]:
     oof_scores: list[np.ndarray] = []
     oof_labels: list[np.ndarray] = []
@@ -408,6 +438,7 @@ def _oof_cv_metrics(
             logistic_penalty=logistic_penalty,
             logistic_c=logistic_c,
             logistic_l1_ratio=logistic_l1_ratio,
+            mlp_alpha=mlp_alpha,
         )
         if rule_mask is not None:
             train_scores = _apply_rule_override(train_scores, rule_mask[train_idx])
@@ -457,6 +488,7 @@ def _full_train_metrics(
     logistic_penalty: str = "elasticnet",
     logistic_c: float = 1.0,
     logistic_l1_ratio: float | None = 0.5,
+    mlp_alpha: float = 0.01,
     return_model: bool = False,
 ) -> dict[str, float] | tuple[dict[str, float], Any, Any | None, list[str]]:
     X_train, _, feature_names_out, transformer = _preprocess_features(
@@ -479,6 +511,7 @@ def _full_train_metrics(
         logistic_penalty=logistic_penalty,
         logistic_c=logistic_c,
         logistic_l1_ratio=logistic_l1_ratio,
+        mlp_alpha=mlp_alpha,
     )
     if rule_mask is not None:
         scores = _apply_rule_override(scores, rule_mask)
@@ -506,20 +539,28 @@ def _short_hash(text: str, length: int = 8) -> str:
     return hashlib.md5(text.encode("utf-8")).hexdigest()[:length]
 
 
+def _safe_output_suffix(base_dir: Path, output_suffix: str) -> str:
+    probe = base_dir / f"model_testing_report{output_suffix}.md"
+    if len(str(probe)) > 240:
+        return "_" + _short_hash(output_suffix)
+    return output_suffix
+
+
 def _resolve_model_dir(
     transform_upper: str,
     sweep_mode: bool,
     output_suffix: str,
+    base_output_dir: Path,
     pruning_sweep: bool = False,
 ) -> Path:
-    base_dir = OUTPUT_DIR / "pruning_sweep" if pruning_sweep else OUTPUT_DIR
+    base_dir = base_output_dir / "pruning_sweep" if pruning_sweep else base_output_dir
     if sweep_mode and not pruning_sweep:
         if transform_upper == "PCA":
-            base_dir = OUTPUT_DIR / "PCA_Sweep_reports"
+            base_dir = base_output_dir / "PCA_Sweep_reports"
         elif transform_upper == "PLS":
-            base_dir = OUTPUT_DIR / "PLS_Sweep_reports"
+            base_dir = base_output_dir / "PLS_Sweep_reports"
         elif transform_upper == "SFT":
-            base_dir = OUTPUT_DIR / "SFT_Sweep_reports"
+            base_dir = base_output_dir / "SFT_Sweep_reports"
     base = base_dir / f"model_testing_models{output_suffix}"
     if len(str(base)) > 200:
         digest = _short_hash(output_suffix)
@@ -532,17 +573,16 @@ def _resolve_report_dir(
     sweep_mode: bool,
     base_sweep_enabled: bool,
     prune_tag: str,
+    base_output_dir: Path,
     pruning_sweep: bool = False,
 ) -> Path:
     if pruning_sweep:
-        report_dir = OUTPUT_DIR / "pruning_sweep"
+        report_dir = base_output_dir / "pruning_sweep"
     else:
-        base_dir = OUTPUT_DIR / f"reports_prune_{prune_tag}"
+        base_dir = base_output_dir / f"reports_prune_{prune_tag}"
         _ensure_dir(base_dir)
         report_dir = base_dir
-        if transform_upper == "BASE" and base_sweep_enabled:
-            report_dir = base_dir / "base_sweep"
-        elif transform_upper == "PCA" and sweep_mode:
+        if transform_upper == "PCA" and sweep_mode:
             report_dir = base_dir / "PCA_Sweep_reports"
         elif transform_upper == "PLS" and sweep_mode:
             report_dir = base_dir / "PLS_Sweep_reports"
@@ -761,6 +801,54 @@ def _build_logistic_c_sweep_tables(
         row = [combo]
         for c in c_vals:
             match = combo_df[(combo_df["logistic_C"] == c)]
+            if match.empty:
+                row.append("--")
+            else:
+                r = match.iloc[0]
+                row.append(_fmt(float(r["f0.5_mean"]), float(r["f0.5_std"])))
+        lines.append("| " + " | ".join(row) + " |")
+    return lines
+
+
+def _build_mlp_sweep_tables(
+    sweep_df: pd.DataFrame,
+    family_key: str,
+    transform_upper: str,
+    sweep_param: str,
+    allowed_combos: list[str],
+    model_type: str,
+    header_title: str,
+) -> list[str]:
+    subset = sweep_df[
+        (sweep_df["family"] == family_key)
+        & (sweep_df["model_type"] == model_type)
+        & (sweep_df["transform"] == transform_upper)
+        & (sweep_df["sweep_param"] == sweep_param)
+    ]
+    if subset.empty:
+        return []
+
+    alpha_vals = sorted({float(v) for v in subset["mlp_alpha"].dropna().unique()})
+    if not alpha_vals:
+        return []
+
+    def _fmt(mean: float, std: float) -> str:
+        return f"{mean:.3f}+/-{std:.3f}"
+
+    def _md_separator(cols: int) -> str:
+        return "|" + "|".join(["---"] + ["---:" for _ in range(cols - 1)]) + "|"
+
+    lines = ["", header_title]
+    if sweep_param:
+        lines.append(f"_Sweep param: {sweep_param}_")
+    header = ["Combo"] + [str(a).replace(".", "p") for a in alpha_vals]
+    lines.append("| " + " | ".join(header) + " |")
+    lines.append(_md_separator(len(header)))
+    for combo in allowed_combos:
+        row = [combo]
+        combo_df = subset[subset["reasoning_combo"] == combo]
+        for a in alpha_vals:
+            match = combo_df[combo_df["mlp_alpha"] == a]
             if match.empty:
                 row.append("--")
             else:
@@ -1007,6 +1095,8 @@ def _compute_shap_importance(
         import shap  # type: ignore
     except Exception as exc:
         raise RuntimeError("shap is required for SHAP importance. Install with: pip install shap") from exc
+    if model_type == "elasticnet":
+        model_type = "logistic"
     rng = np.random.default_rng(seed)
     if X_val.shape[0] > SHAP_VAL_SAMPLE:
         idx = rng.choice(X_val.shape[0], SHAP_VAL_SAMPLE, replace=False)
@@ -1071,24 +1161,24 @@ def main() -> None:
     parser.add_argument("--engineered_set_id", type=str, default=ENGINEERED_SET_ID_DEFAULT)
     parser.add_argument("--exp_scope", type=str, default="full_exps")
     parser.add_argument("--run_interpretability", type=str, default="true")
-    parser.add_argument("--use_pca", type=str, default="false")
     parser.add_argument("--model_complexity", type=str, default="complex")
-    parser.add_argument("--pca_var_sweep", type=str, default="false")
     parser.add_argument("--transform_sweep", type=str, default="false")
-    parser.add_argument("--feature_transforms", type=str, default="Base")
+    parser.add_argument("--feature_transforms", type=str, default="Base,PLS")
     parser.add_argument("--pls_components", type=int, default=PLS_COMPONENTS_DEFAULT)
     parser.add_argument("--sft_k", type=int, default=SFT_K_DEFAULT)
     parser.add_argument("--logistic_penalty", type=str, default="l2")
     parser.add_argument("--logistic_c_grid", type=str, default="0.1,1,10")
     parser.add_argument("--logistic_l1_ratio_grid", type=str, default="0.2,0.8")
-    parser.add_argument("--logistic_tuning_mode", type=str, default="per_model")
-    parser.add_argument("--logistic_c", type=float, default=0.3)
+    parser.add_argument("--regularization_sweep", type=str, default="none")
+    parser.add_argument("--logistic_c", type=float, default=0.1)
     parser.add_argument("--logistic_l1_ratio", type=float, default=0.5)
-    parser.add_argument("--elasticnet_sweep_only", type=str, default="false")
+    parser.add_argument("--mlp_alpha_grid", type=str, default="0.001,0.01,0.1")
+    parser.add_argument("--mlp_alpha", type=float, default=0.01)
+    parser.add_argument("--exclude_evidence_support_rating", type=str, default="false")
     parser.add_argument("--resume", type=str, default="false")
     parser.add_argument("--save_models", type=str, default="true")
     parser.add_argument("--collinearity_report", type=str, default="true")
-    parser.add_argument("--feature_pruning", type=str, default="none")
+    parser.add_argument("--feature_pruning", type=str, default="aggressive_pruning")
     parser.add_argument("--pruning_sweep", type=str, default="false")
     parser.add_argument("--combo_filter", type=str, default="")
     parser.add_argument("--collinearity_corr_topk", type=int, default=20)
@@ -1113,14 +1203,12 @@ def main() -> None:
     LOGGER.info("Starting model testing pipeline")
     LOGGER.info("Args: %s", vars(args))
     exp_scope = str(args.exp_scope).strip().lower()
-    if exp_scope not in {"reduced_exps", "no_llm_exps", "full_exps"}:
-        raise RuntimeError("--exp_scope must be one of: reduced_exps, no_llm_exps, full_exps")
+    if exp_scope not in {"no_llm_exps", "full_exps", "minimal_exps"}:
+        raise RuntimeError("--exp_scope must be one of: no_llm_exps, full_exps, minimal_exps")
     include_llm_engineered = exp_scope == "full_exps"
-    reduced_exps = exp_scope == "reduced_exps"
+    minimal_exps = exp_scope == "minimal_exps"
     run_interpretability_default = str(args.run_interpretability).strip().lower() not in {"0", "false", "no"}
-    use_pca = str(args.use_pca).strip().lower() in {"1", "true", "yes"}
     model_complexity = str(args.model_complexity).strip().lower()
-    pca_var_sweep = str(args.pca_var_sweep).strip().lower() in {"1", "true", "yes"}
     transform_sweep = str(args.transform_sweep).strip().lower() in {"1", "true", "yes"}
     save_models = str(args.save_models).strip().lower() in {"1", "true", "yes"}
     collinearity_report = str(args.collinearity_report).strip().lower() in {"1", "true", "yes"}
@@ -1130,10 +1218,12 @@ def main() -> None:
     pls_components = int(args.pls_components)
     sft_k = int(args.sft_k)
     logistic_penalty = str(args.logistic_penalty).strip().lower()
-    logistic_tuning_mode = str(args.logistic_tuning_mode).strip().lower()
     logistic_c = float(args.logistic_c)
     logistic_l1_ratio = float(args.logistic_l1_ratio)
-    elasticnet_sweep_only = str(args.elasticnet_sweep_only).strip().lower() in {"1", "true", "yes"}
+    regularization_sweep = str(args.regularization_sweep).strip().lower()
+    exclude_evidence_support_rating = (
+        str(args.exclude_evidence_support_rating).strip().lower() in {"1", "true", "yes"}
+    )
     resume = str(args.resume).strip().lower() in {"1", "true", "yes"}
     feature_pruning = str(args.feature_pruning).strip().lower()
     pruning_sweep = str(args.pruning_sweep).strip().lower() in {"1", "true", "yes"}
@@ -1146,11 +1236,16 @@ def main() -> None:
         logistic_l1_ratio_grid = [float(v) for v in str(args.logistic_l1_ratio_grid).split(",") if v.strip()]
     except ValueError as exc:
         raise RuntimeError("--logistic_l1_ratio_grid must be a comma-separated list of floats") from exc
+    try:
+        mlp_alpha_grid = [float(v) for v in str(args.mlp_alpha_grid).split(",") if v.strip()]
+    except ValueError as exc:
+        raise RuntimeError("--mlp_alpha_grid must be a comma-separated list of floats") from exc
+    mlp_alpha = float(args.mlp_alpha)
 
     if logistic_penalty not in {"l1", "l2", "elasticnet"}:
         raise RuntimeError("--logistic_penalty must be one of: l1, l2, elasticnet")
-    if logistic_tuning_mode not in {"per_model", "fixed"}:
-        raise RuntimeError("--logistic_tuning_mode must be one of: per_model, fixed")
+    if regularization_sweep not in {"none", "elasticnet_only", "all", "mlp"}:
+        raise RuntimeError("--regularization_sweep must be one of: none, elasticnet_only, all, mlp")
     if feature_pruning not in {"none", "mild_pruning", "aggressive_pruning"}:
         raise RuntimeError("--feature_pruning must be one of: none, mild_pruning, aggressive_pruning")
 
@@ -1164,8 +1259,8 @@ def main() -> None:
         "sweep (none, mild, aggressive)" if pruning_sweep else feature_pruning
     )
 
-    if model_complexity not in {"simple", "complex"}:
-        raise RuntimeError("--model_complexity must be 'simple' or 'complex'")
+    if model_complexity not in {"simple", "complex", "mlp_only"}:
+        raise RuntimeError("--model_complexity must be 'simple', 'complex', or 'mlp_only'")
 
     transforms_raw = [t.strip().upper() for t in str(args.feature_transforms).split(",") if t.strip()]
     if not transforms_raw:
@@ -1173,10 +1268,6 @@ def main() -> None:
     for t in transforms_raw:
         if t not in {"BASE", "PCA", "PLS", "SFT"}:
             raise RuntimeError(f"Unknown feature transform: {t}")
-    if use_pca and "PCA" not in transforms_raw:
-        transforms_raw.append("PCA")
-    if pca_var_sweep and "PCA" not in transforms_raw:
-        transforms_raw.append("PCA")
     if pruning_sweep:
         transforms_raw = ["BASE"]
 
@@ -1197,10 +1288,36 @@ def main() -> None:
             except (TypeError, ValueError):
                 pass
 
-    if reduced_exps:
-        allowed_combos = ["HQ", "A", "B", "C", "D", "E", "F", "A+B+C+D+E+F"]
+    if minimal_exps:
+        allowed_combos = ["HQ", "A", "D", "F"]
+    elif exp_scope == "full_exps":
+        allowed_combos = [
+            "HQ",
+            "A",
+            "F",
+            "A+D",
+            "A+C+D+E",
+            "C+D+E+F",
+            "A+B+C+D+E+F",
+        ]
     else:
-        allowed_combos = ["HQ", "A", "B", "C", "D", "E", "F", "A+B+C+D+E+F"]
+        allowed_combos = [
+            "HQ",
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "A+B",
+            "A+E",
+            "A+D",
+            "A+D+E",
+            "A+C+D+E",
+            "D+E+F",
+            "C+D+E+F",
+            "A+B+C+D+E+F",
+        ]
     if combo_filter_raw:
         requested: list[str] = []
         for item in combo_filter_raw.split(","):
@@ -1216,12 +1333,22 @@ def main() -> None:
             if item not in seen:
                 allowed_combos.append(item)
                 seen.add(item)
-    combos = {"HQ": []}
-    combos.update(_build_reasoning_combos_numeric(full_reasoning_df, ["A", "B", "C", "D", "E", "F"]))
-    combos = {k: v for k, v in combos.items() if k in allowed_combos}
-    missing = [c for c in allowed_combos if c not in combos]
-    if missing:
-        raise RuntimeError(f"Missing required Full Mirror combos: {missing}. Check full_current reasoning columns.")
+    def _build_combos_for_run(exclude_evidence: bool) -> dict[str, list[str]]:
+        combos_local = {"HQ": []}
+        combos_local.update(
+            _build_reasoning_combos_numeric(
+                full_reasoning_df,
+                ["A", "B", "C", "D", "E", "F"],
+                exclude_evidence_support_rating=exclude_evidence,
+            )
+        )
+        combos_local = {k: v for k, v in combos_local.items() if k in allowed_combos}
+        missing = [c for c in allowed_combos if c not in combos_local]
+        if missing:
+            raise RuntimeError(
+                f"Missing required Full Mirror combos: {missing}. Check full_current reasoning columns."
+            )
+        return combos_local
 
     # HQ features + rule mask
     hq_script = BASE_DIR.parent / "High_Quality_human_features" / "features" / "extract_structured.py"
@@ -1267,9 +1394,11 @@ def main() -> None:
     )
 
     if model_complexity == "simple":
-        model_types = ["logistic", "elasticnet"]
+        model_types = ["logistic", "xgb1"]
+    elif model_complexity == "mlp_only":
+        model_types = ["mlp32", "mlp4", "mlp2"]
     else:
-        model_types = ["logistic", "elasticnet", "mlp32", "mlp4", "mlp2"]
+        model_types = ["logistic", "xgb1", "mlp4", "mlp2"]
 
     def _build_model_runs(
         hq_feature_list: list[str],
@@ -1320,12 +1449,20 @@ def main() -> None:
         interp_on: bool,
         prune_tag: str,
         sweep_token: str | None = None,
+        evidence_tag: str | None = None,
     ) -> str:
         parts: list[str] = []
         parts.append(f"exp_{exp_scope}")
-        parts.append("simple_models" if model_complexity == "simple" else "complex_models")
+        if model_complexity == "simple":
+            parts.append("simple_models")
+        elif model_complexity == "mlp_only":
+            parts.append("mlp_only")
+        else:
+            parts.append("complex_models")
         parts.append("interp_on" if interp_on else "interp_off")
         parts.append(f"prune_{prune_tag}")
+        if evidence_tag:
+            parts.append(evidence_tag)
         transform_upper = transform.upper()
         if transform_upper == "PCA":
             if sweep_token:
@@ -1341,15 +1478,12 @@ def main() -> None:
             parts.append("base")
         return "" if not parts else "_" + "_".join(parts)
 
-    def _run_for_transform(transform: str) -> None:
+    def _run_for_transform(transform: str, combos: dict[str, list[str]], evidence_tag: str | None) -> None:
         transform_upper = transform.upper()
         interp_on = run_interpretability_default and transform_upper not in {"PCA", "PLS"}
         LOGGER.info("Run transform start: %s (interp_on=%s)", transform_upper, interp_on)
         if transform_upper == "PCA":
-            if pca_var_sweep or transform_sweep:
-                variance_list = PCA_SWEEP_VALUES
-            else:
-                variance_list = [PCA_VARIANCE_DEFAULT]
+            variance_list = PCA_SWEEP_VALUES if transform_sweep else [PCA_VARIANCE_DEFAULT]
         elif transform_upper == "PLS":
             variance_list = PLS_SWEEP_VALUES if transform_sweep else [pls_components]
         elif transform_upper == "SFT":
@@ -1357,36 +1491,56 @@ def main() -> None:
         else:
             variance_list = [None]
 
-        sweep_mode = (transform_upper == "PCA" and (pca_var_sweep or transform_sweep)) or (
-            transform_upper in {"PLS", "SFT"} and transform_sweep
-        )
+        sweep_mode = (transform_upper in {"PCA", "PLS", "SFT"} and transform_sweep)
         pruning_tokens = [prune_token_map[level] for level in pruning_levels]
 
         sweep_token = "sweep" if (sweep_mode and transform_upper == "PCA") else None
         base_pca = None if sweep_mode else (PCA_VARIANCE_DEFAULT if transform_upper == "PCA" else None)
-        output_suffix = _build_suffix(transform_upper, base_pca, interp_on, prune_tag, sweep_token=sweep_token)
+        output_suffix = _build_suffix(
+            transform_upper,
+            base_pca,
+            interp_on,
+            prune_tag,
+            sweep_token=sweep_token,
+            evidence_tag=evidence_tag,
+        )
+        run_output_dir = _resolve_run_output_dir(
+            evidence_tag,
+            group_by_evidence=exclude_evidence_support_rating,
+        )
         report_dir = _resolve_report_dir(
             transform_upper,
             sweep_mode,
             base_sweep_enabled=(
-                transform_upper == "BASE" and logistic_tuning_mode == "per_model" and not pruning_sweep
+                transform_upper == "BASE"
+                and regularization_sweep != "none"
+                and not pruning_sweep
             ),
             prune_tag=prune_tag,
+            base_output_dir=run_output_dir,
             pruning_sweep=pruning_sweep,
         )
-        interp_dir = OUTPUT_DIR / f"interpretability{output_suffix}"
+        file_suffix_report = _safe_output_suffix(report_dir, output_suffix)
+        file_suffix_run = _safe_output_suffix(run_output_dir, output_suffix)
+        interp_dir = run_output_dir / f"interpretability{output_suffix}"
         if interp_on:
             _ensure_dir(interp_dir)
         model_dir = (
-            _resolve_model_dir(transform_upper, sweep_mode, output_suffix, pruning_sweep=pruning_sweep)
+            _resolve_model_dir(
+                transform_upper,
+                sweep_mode,
+                output_suffix,
+                base_output_dir=run_output_dir,
+                pruning_sweep=pruning_sweep,
+            )
             if save_models
             else None
         )
         col_dir = _resolve_collinearity_dir(report_dir, output_suffix) if collinearity_report else None
 
-        checkpoint_results_path = report_dir / f"checkpoint_results{output_suffix}.csv"
-        checkpoint_sweep_path = report_dir / f"checkpoint_sweep{output_suffix}.csv"
-        checkpoint_col_path = report_dir / f"checkpoint_collinearity{output_suffix}.csv"
+        checkpoint_results_path = report_dir / f"checkpoint_results{file_suffix_report}.csv"
+        checkpoint_sweep_path = report_dir / f"checkpoint_sweep{file_suffix_report}.csv"
+        checkpoint_col_path = report_dir / f"checkpoint_collinearity{file_suffix_report}.csv"
 
         results_rows: list[dict[str, Any]] = []
         sweep_rows: list[dict[str, Any]] = []
@@ -1454,13 +1608,13 @@ def main() -> None:
                         continue
                     combo = run.reasoning_combo or "HQ"
                     LOGGER.info(
-                        "Run start family=%s combo=%s model=%s transform=%s sweep=%s tuning=%s",
+                        "Run start family=%s combo=%s model=%s transform=%s sweep=%s reg_sweep=%s",
                         run.family,
                         combo,
                         run.model_type,
                         transform_upper,
                         sweep_param_value,
-                        logistic_tuning_mode,
+                        regularization_sweep,
                     )
                     run_key = (
                         run.family,
@@ -1485,12 +1639,21 @@ def main() -> None:
                         else base_df.copy()
                     )
 
+                    penalty = "elasticnet" if run.model_type == "elasticnet" else "l2"
+                    chosen_c = logistic_c
+                    chosen_l1 = logistic_l1_ratio
+                    chosen_mlp_alpha = mlp_alpha
                     if (
                         run.model_type in {"elasticnet", "logistic"}
-                        and logistic_tuning_mode == "per_model"
                         and transform_upper == "BASE"
                         and not pruning_sweep
-                        and (not elasticnet_sweep_only or run.model_type == "elasticnet")
+                        and (
+                            regularization_sweep == "all"
+                            or (
+                                regularization_sweep == "elasticnet_only"
+                                and run.model_type == "elasticnet"
+                            )
+                        )
                     ):
                             LOGGER.info(
                                 "Regularization sweep: model=%s penalty=%s C_grid=%s l1_grid=%s",
@@ -1515,37 +1678,83 @@ def main() -> None:
                                 penalty = "l2"
                             for c_val in c_grid:
                                 for l1_val in l1_grid:
-                                    means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
-                                        train_df,
-                                        labels,
-                                        run.feature_names,
+                                    LOGGER.info(
+                                        "Sweep step start: model=%s C=%s l1_ratio=%s",
                                         run.model_type,
-                                        full_splits,
-                                        rule_mask=run.rule_mask,
-                                        transform=transform_upper,
-                                        y_train=None,
-                                        pca_variance=pca_variance_value,
-                                        pls_components=cur_pls_components,
-                                        sft_k=cur_sft_k,
-                                        logistic_penalty=penalty,
-                                        logistic_c=c_val,
-                                        logistic_l1_ratio=l1_val,
+                                        c_val,
+                                        l1_val,
                                     )
-                                    sweep_rows.append(
-                                        {
-                                            "family": run.family,
-                                            "model_name": run.name,
-                                            "model_type": run.model_type,
-                                            "reasoning_combo": combo,
-                                            "transform": transform_upper,
-                                            "sweep_param": sweep_param_value,
-                                            "logistic_penalty": penalty,
-                                            "logistic_C": c_val,
-                                            "logistic_l1_ratio": l1_val,
-                                            "f0.5_mean": means["f0.5"],
-                                            "f0.5_std": stds["f0.5"],
-                                            "roc_auc_mean": means["roc_auc"],
-                                            "roc_auc_std": stds["roc_auc"],
+                                    try:
+                                        means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
+                                            train_df,
+                                            labels,
+                                            run.feature_names,
+                                            run.model_type,
+                                            full_splits,
+                                            rule_mask=run.rule_mask,
+                                            transform=transform_upper,
+                                            y_train=None,
+                                            pca_variance=pca_variance_value,
+                                            pls_components=cur_pls_components,
+                                            sft_k=cur_sft_k,
+                                            logistic_penalty=penalty,
+                                            logistic_c=c_val,
+                                            logistic_l1_ratio=l1_val,
+                                            mlp_alpha=mlp_alpha,
+                                        )
+                                    except Exception:
+                                        LOGGER.exception(
+                                            "Sweep step failed: model=%s C=%s l1_ratio=%s",
+                                            run.model_type,
+                                            c_val,
+                                            l1_val,
+                                        )
+                                        sweep_rows.append(
+                                            {
+                                                "family": run.family,
+                                                "model_name": run.name,
+                                                "model_type": run.model_type,
+                                                "reasoning_combo": combo,
+                                                "transform": transform_upper,
+                                                "sweep_param": sweep_param_value,
+                                                "logistic_penalty": penalty,
+                                                "logistic_C": c_val,
+                                                "logistic_l1_ratio": l1_val,
+                                                "mlp_alpha": None,
+                                                "f0.5_mean": None,
+                                                "f0.5_std": None,
+                                                "roc_auc_mean": None,
+                                                "roc_auc_std": None,
+                                                "pr_auc_mean": None,
+                                                "pr_auc_std": None,
+                                                "precision_mean": None,
+                                                "precision_std": None,
+                                                "recall_mean": None,
+                                                "recall_std": None,
+                                                "acc_mean": None,
+                                                "acc_std": None,
+                                                "threshold_oof": None,
+                                                "error": "exception",
+                                            }
+                                        )
+                                        pd.DataFrame(sweep_rows).to_csv(checkpoint_sweep_path, index=False)
+                                        continue
+                                        sweep_rows.append(
+                                            {
+                                                "family": run.family,
+                                                "model_name": run.name,
+                                                "model_type": run.model_type,
+                                                "reasoning_combo": combo,
+                                                "transform": transform_upper,
+                                                "sweep_param": sweep_param_value,
+                                                "logistic_penalty": penalty,
+                                                "logistic_C": c_val,
+                                                "logistic_l1_ratio": l1_val,
+                                                "mlp_alpha": None,
+                                                "f0.5_mean": means["f0.5"],
+                                                "f0.5_std": stds["f0.5"],
+                                                "roc_auc_mean": means["roc_auc"],
+                                                "roc_auc_std": stds["roc_auc"],
                                             "pr_auc_mean": means["pr_auc"],
                                             "pr_auc_std": stds["pr_auc"],
                                             "precision_mean": means["precision"],
@@ -1555,7 +1764,16 @@ def main() -> None:
                                             "acc_mean": means["accuracy"],
                                             "acc_std": stds["accuracy"],
                                             "threshold_oof": oof_threshold,
+                                            "error": "",
                                         }
+                                    )
+                                    pd.DataFrame(sweep_rows).to_csv(checkpoint_sweep_path, index=False)
+                                    LOGGER.info(
+                                        "Sweep step done: model=%s C=%s l1_ratio=%s f0.5=%.4f",
+                                        run.model_type,
+                                        c_val,
+                                        l1_val,
+                                        means["f0.5"],
                                     )
                                     mean_f = means["f0.5"]
                                     std_f = stds["f0.5"]
@@ -1576,6 +1794,135 @@ def main() -> None:
                             fold_artifacts = best_folds
                             chosen_c = best_c
                             chosen_l1 = best_l1
+                    elif (
+                        run.model_type in {"mlp32", "mlp4", "mlp2"}
+                        and transform_upper in {"BASE", "PLS"}
+                        and not pruning_sweep
+                        and regularization_sweep == "mlp"
+                    ):
+                            LOGGER.info(
+                                "MLP alpha sweep: model=%s alpha_grid=%s",
+                                run.model_type,
+                                mlp_alpha_grid,
+                            )
+                            best_mean = -1.0
+                            best_std = 1e9
+                            best_alpha = mlp_alpha
+                            best_metrics = None
+                            best_threshold = None
+                            best_folds = None
+                            for alpha_val in mlp_alpha_grid:
+                                LOGGER.info(
+                                    "Sweep step start: model=%s alpha=%s",
+                                    run.model_type,
+                                    alpha_val,
+                                )
+                                try:
+                                    means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
+                                        train_df,
+                                        labels,
+                                        run.feature_names,
+                                        run.model_type,
+                                        full_splits,
+                                        rule_mask=run.rule_mask,
+                                        transform=transform_upper,
+                                        y_train=None,
+                                        pca_variance=pca_variance_value,
+                                        pls_components=cur_pls_components,
+                                        sft_k=cur_sft_k,
+                                        logistic_penalty="l2",
+                                        logistic_c=logistic_c,
+                                        logistic_l1_ratio=logistic_l1_ratio,
+                                        mlp_alpha=alpha_val,
+                                    )
+                                except Exception:
+                                    LOGGER.exception(
+                                        "MLP sweep step failed: model=%s alpha=%s",
+                                        run.model_type,
+                                        alpha_val,
+                                    )
+                                    sweep_rows.append(
+                                        {
+                                            "family": run.family,
+                                            "model_name": run.name,
+                                            "model_type": run.model_type,
+                                            "reasoning_combo": combo,
+                                            "transform": transform_upper,
+                                            "sweep_param": sweep_param_value,
+                                            "logistic_penalty": None,
+                                            "logistic_C": None,
+                                            "logistic_l1_ratio": None,
+                                            "mlp_alpha": alpha_val,
+                                            "f0.5_mean": None,
+                                            "f0.5_std": None,
+                                            "roc_auc_mean": None,
+                                            "roc_auc_std": None,
+                                            "pr_auc_mean": None,
+                                            "pr_auc_std": None,
+                                            "precision_mean": None,
+                                            "precision_std": None,
+                                            "recall_mean": None,
+                                            "recall_std": None,
+                                            "acc_mean": None,
+                                            "acc_std": None,
+                                            "threshold_oof": None,
+                                            "error": "exception",
+                                        }
+                                    )
+                                    pd.DataFrame(sweep_rows).to_csv(checkpoint_sweep_path, index=False)
+                                    continue
+                                sweep_rows.append(
+                                    {
+                                        "family": run.family,
+                                        "model_name": run.name,
+                                        "model_type": run.model_type,
+                                        "reasoning_combo": combo,
+                                        "transform": transform_upper,
+                                        "sweep_param": sweep_param_value,
+                                        "logistic_penalty": None,
+                                        "logistic_C": None,
+                                        "logistic_l1_ratio": None,
+                                        "mlp_alpha": alpha_val,
+                                        "f0.5_mean": means["f0.5"],
+                                        "f0.5_std": stds["f0.5"],
+                                        "roc_auc_mean": means["roc_auc"],
+                                        "roc_auc_std": stds["roc_auc"],
+                                        "pr_auc_mean": means["pr_auc"],
+                                        "pr_auc_std": stds["pr_auc"],
+                                        "precision_mean": means["precision"],
+                                        "precision_std": stds["precision"],
+                                        "recall_mean": means["recall"],
+                                        "recall_std": stds["recall"],
+                                        "acc_mean": means["accuracy"],
+                                        "acc_std": stds["accuracy"],
+                                        "threshold_oof": oof_threshold,
+                                        "error": "",
+                                    }
+                                )
+                                pd.DataFrame(sweep_rows).to_csv(checkpoint_sweep_path, index=False)
+                                LOGGER.info(
+                                    "Sweep step done: model=%s alpha=%s f0.5=%.4f",
+                                    run.model_type,
+                                    alpha_val,
+                                    means["f0.5"],
+                                )
+                                mean_f = means["f0.5"]
+                                std_f = stds["f0.5"]
+                                if (mean_f > best_mean + 1e-12) or (
+                                    abs(mean_f - best_mean) <= 1e-12 and std_f < best_std
+                                ):
+                                    best_mean = mean_f
+                                    best_std = std_f
+                                    best_alpha = alpha_val
+                                    best_metrics = (means, stds)
+                                    best_threshold = oof_threshold
+                                    best_folds = fold_artifacts
+                            if best_metrics is None:
+                                raise RuntimeError("MLP sweep failed to produce metrics.")
+                            means, stds = best_metrics
+                            oof_threshold = float(best_threshold)
+                            fold_artifacts = best_folds
+                            chosen_mlp_alpha = best_alpha
                     else:
                         penalty = "elasticnet" if run.model_type == "elasticnet" else "l2"
                         means, stds, oof_threshold, fold_artifacts = _oof_cv_metrics(
@@ -1593,9 +1940,11 @@ def main() -> None:
                             logistic_penalty=penalty,
                             logistic_c=logistic_c,
                             logistic_l1_ratio=logistic_l1_ratio,
+                            mlp_alpha=mlp_alpha,
                         )
                         chosen_c = logistic_c
                         chosen_l1 = logistic_l1_ratio
+                        chosen_mlp_alpha = mlp_alpha
     
                     if interp_on and run.family == "hq_mirror" and combo in INTERP_COMBOS:
                         perm_fold_vals: list[np.ndarray] = []
@@ -1814,6 +2163,7 @@ def main() -> None:
                             logistic_penalty=penalty,
                             logistic_c=chosen_c,
                             logistic_l1_ratio=chosen_l1,
+                            mlp_alpha=chosen_mlp_alpha,
                         )
                     results_rows.append(
                         {
@@ -1826,6 +2176,7 @@ def main() -> None:
                             "logistic_penalty": penalty if run.model_type in {"logistic", "elasticnet"} else "",
                             "logistic_C": chosen_c if run.model_type in {"logistic", "elasticnet"} else None,
                             "logistic_l1_ratio": chosen_l1 if run.model_type == "elasticnet" else None,
+                            "mlp_alpha": chosen_mlp_alpha if run.model_type in {"mlp32", "mlp4", "mlp2"} else None,
                             "f0.5_mean": means["f0.5"],
                             "f0.5_std": stds["f0.5"],
                             "roc_auc_mean": means["roc_auc"],
@@ -1851,36 +2202,36 @@ def main() -> None:
         results_df = pd.DataFrame(results_rows)
         sweep_df = pd.DataFrame(sweep_rows) if sweep_rows else None
         results_path = (
-            report_dir / f"model_testing_results{output_suffix}.csv"
+            report_dir / f"model_testing_results{file_suffix_report}.csv"
             if pruning_sweep
-            else OUTPUT_DIR / f"model_testing_results{output_suffix}.csv"
+            else run_output_dir / f"model_testing_results{file_suffix_run}.csv"
         )
         results_df.to_csv(results_path, index=False)
         if pruning_sweep:
-            pruning_path = report_dir / f"model_testing_pruning_sweep{output_suffix}.csv"
+            pruning_path = report_dir / f"model_testing_pruning_sweep{file_suffix_report}.csv"
             results_df.to_csv(pruning_path, index=False)
         if sweep_df is not None:
             if transform_upper == "BASE":
-                sweep_dir = OUTPUT_DIR / "base_sweep"
+                sweep_dir = run_output_dir / "base_sweep"
             else:
-                sweep_dir = OUTPUT_DIR / "model_param_sweep"
+                sweep_dir = run_output_dir / "model_param_sweep"
             _ensure_dir(sweep_dir)
-            sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+            sweep_path = sweep_dir / f"model_testing_sweep{file_suffix_run}.csv"
             sweep_df.to_csv(sweep_path, index=False)
-        if transform_upper == "PCA" and (pca_var_sweep or transform_sweep):
-            sweep_dir = OUTPUT_DIR / "PCA_Sweep_reports"
+        if transform_upper == "PCA" and transform_sweep:
+            sweep_dir = run_output_dir / "PCA_Sweep_reports"
             _ensure_dir(sweep_dir)
-            sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+            sweep_path = sweep_dir / f"model_testing_sweep{file_suffix_run}.csv"
             (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
         if transform_upper == "PLS" and transform_sweep:
-            sweep_dir = OUTPUT_DIR / "PLS_Sweep_reports"
+            sweep_dir = run_output_dir / "PLS_Sweep_reports"
             _ensure_dir(sweep_dir)
-            sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+            sweep_path = sweep_dir / f"model_testing_sweep{file_suffix_run}.csv"
             (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
         if transform_upper == "SFT" and transform_sweep:
-            sweep_dir = OUTPUT_DIR / "SFT_Sweep_reports"
+            sweep_dir = run_output_dir / "SFT_Sweep_reports"
             _ensure_dir(sweep_dir)
-            sweep_path = sweep_dir / f"model_testing_sweep{output_suffix}.csv"
+            sweep_path = sweep_dir / f"model_testing_sweep{file_suffix_run}.csv"
             (sweep_df if sweep_df is not None else results_df).to_csv(sweep_path, index=False)
 
         def _fmt(mean: float, std: float) -> str:
@@ -1891,6 +2242,8 @@ def main() -> None:
             if multi_transform and transform_upper != "BASE"
             else model_types
         )
+        has_logistic = "logistic" in model_order
+        has_mlp = any(m in model_order for m in ("mlp32", "mlp4", "mlp2"))
 
         def _md_separator(cols: int) -> str:
             return "|" + "|".join(["---"] + ["---:" for _ in range(cols - 1)]) + "|"
@@ -1946,11 +2299,12 @@ def main() -> None:
                 table.append("| " + " | ".join([combo] + row_cells) + " |")
             return table
 
-        model_variants_line = (
-            "Model variants: logistic (l2), elasticnet."
-            if model_complexity == "simple"
-            else "Model variants: logistic (l2), elasticnet, mlp32/mlp4/mlp2 (1 hidden layer)."
-        )
+        if model_complexity == "simple":
+            model_variants_line = "Model variants: logistic (l2), xgb1."
+        elif model_complexity == "mlp_only":
+            model_variants_line = "Model variants: mlp32/mlp4/mlp2 (1 hidden layer)."
+        else:
+            model_variants_line = "Model variants: logistic (l2), xgb1, xgb3, mlp32/mlp4/mlp2 (1 hidden layer)."
         lines = [
             "# Model Testing Report",
             f"Generated: {pd.Timestamp.utcnow().isoformat()}Z",
@@ -2063,38 +2417,41 @@ def main() -> None:
                                 row_cells.append(f"{match['full_train_f0.5']:.3f}")
                         lines.append("| " + " | ".join([combo] + row_cells) + " |")
 
-            lines += ["", "## Selected Logistic Hyperparameters (HQ Mirror)"]
-            header = ["Combo"] + pruning_tokens
-            lines.append("| " + " | ".join(header) + " |")
-            lines.append(_md_separator(len(header)))
-            for combo in allowed_combos:
-                row = [combo]
-                for token in pruning_tokens:
-                    match = next(
-                        (
-                            r
-                            for r in results_rows
-                            if r["family"] == "hq_mirror"
-                            and r["reasoning_combo"] == combo
-                            and r["model_type"] == "logistic"
-                            and r.get("sweep_param") == token
-                        ),
-                        None,
-                    )
-                    if match is None:
-                        row.append("--")
-                    else:
-                        row.append(
-                            f"C={match.get('logistic_C')},l1={match.get('logistic_l1_ratio')}"
+            if has_logistic:
+                lines += ["", "## Selected Logistic Hyperparameters (HQ Mirror)"]
+                header = ["Combo"] + pruning_tokens
+                lines.append("| " + " | ".join(header) + " |")
+                lines.append(_md_separator(len(header)))
+                for combo in allowed_combos:
+                    row = [combo]
+                    for token in pruning_tokens:
+                        match = next(
+                            (
+                                r
+                                for r in results_rows
+                                if r["family"] == "hq_mirror"
+                                and r["reasoning_combo"] == combo
+                                and r["model_type"] == "logistic"
+                                and r.get("sweep_param") == token
+                            ),
+                            None,
                         )
-                lines.append("| " + " | ".join(row) + " |")
-        elif transform_upper in {"PCA", "PLS", "SFT"} and (
-            transform_sweep or (transform_upper == "PCA" and pca_var_sweep)
-        ):
-            lines += ["## Sweep Results"]
+                        if match is None:
+                            row.append("--")
+                        else:
+                            row.append(
+                                f"C={match.get('logistic_C')},l1={match.get('logistic_l1_ratio')}"
+                            )
+                    lines.append("| " + " | ".join(row) + " |")
+        elif transform_upper in {"PCA", "PLS", "SFT"} and transform_sweep:
+            lines += ["## Sweep Results (CV / Full)"]
             for model in model_order:
                 lines += ["", f"### {model.upper()}"]
-                header = ["Combo"] + [str(v).replace(".", "p") for v in variance_list]
+                header = ["Combo"]
+                for v in variance_list:
+                    token = str(v).replace(".", "p")
+                    header.append(f"{token} CV")
+                    header.append(f"{token} Full")
                 lines.append("| " + " | ".join(header) + " |")
                 lines.append(_md_separator(len(header)))
                 for combo in allowed_combos:
@@ -2111,13 +2468,21 @@ def main() -> None:
                             ),
                             None,
                         )
-                        row.append(_fmt(match["f0.5_mean"], match["f0.5_std"]) if match else "--")
+                        if match is None:
+                            row.extend(["--", "--"])
+                        else:
+                            row.append(_fmt(match["f0.5_mean"], match["f0.5_std"]))
+                            row.append(f"{match['full_train_f0.5']:.3f}")
                     lines.append("| " + " | ".join(row) + " |")
             if include_llm_engineered:
-                lines += ["", "## Engineered Sweep Results"]
+                lines += ["", "## Engineered Sweep Results (CV / Full)"]
                 for model in model_order:
                     lines += ["", f"### {model.upper()}"]
-                    header = ["Combo"] + [str(v).replace(".", "p") for v in variance_list]
+                    header = ["Combo"]
+                    for v in variance_list:
+                        token = str(v).replace(".", "p")
+                        header.append(f"{token} CV")
+                        header.append(f"{token} Full")
                     lines.append("| " + " | ".join(header) + " |")
                     lines.append(_md_separator(len(header)))
                     for combo in allowed_combos:
@@ -2134,33 +2499,38 @@ def main() -> None:
                                 ),
                                 None,
                             )
-                            row.append(_fmt(match["f0.5_mean"], match["f0.5_std"]) if match else "--")
+                            if match is None:
+                                row.extend(["--", "--"])
+                            else:
+                                row.append(_fmt(match["f0.5_mean"], match["f0.5_std"]))
+                                row.append(f"{match['full_train_f0.5']:.3f}")
                         lines.append("| " + " | ".join(row) + " |")
-            lines += ["", "## Selected Logistic Hyperparameters (HQ Mirror)"]
-            header = ["Combo"] + [str(v).replace(".", "p") for v in variance_list]
-            lines.append("| " + " | ".join(header) + " |")
-            lines.append(_md_separator(len(header)))
-            for combo in allowed_combos:
-                row = [combo]
-                for v in variance_list:
-                    match = next(
-                        (
-                            r
-                            for r in results_rows
-                            if r["family"] == "hq_mirror"
-                            and r["reasoning_combo"] == combo
-                            and r["model_type"] == "logistic"
-                            and r.get("sweep_param") == str(v)
-                        ),
-                        None,
-                    )
-                    if match is None:
-                        row.append("--")
-                    else:
-                        row.append(
-                            f"C={match.get('logistic_C')},l1={match.get('logistic_l1_ratio')}"
+            if has_logistic:
+                lines += ["", "## Selected Logistic Hyperparameters (HQ Mirror)"]
+                header = ["Combo"] + [str(v).replace(".", "p") for v in variance_list]
+                lines.append("| " + " | ".join(header) + " |")
+                lines.append(_md_separator(len(header)))
+                for combo in allowed_combos:
+                    row = [combo]
+                    for v in variance_list:
+                        match = next(
+                            (
+                                r
+                                for r in results_rows
+                                if r["family"] == "hq_mirror"
+                                and r["reasoning_combo"] == combo
+                                and r["model_type"] == "logistic"
+                                and r.get("sweep_param") == str(v)
+                            ),
+                            None,
                         )
-                lines.append("| " + " | ".join(row) + " |")
+                        if match is None:
+                            row.append("--")
+                        else:
+                            row.append(
+                                f"C={match.get('logistic_C')},l1={match.get('logistic_l1_ratio')}"
+                            )
+                    lines.append("| " + " | ".join(row) + " |")
         else:
             lines += _build_matrix_table("hq_mirror", "## HQ Mirror + Reasoning (rule layer)")
             if include_llm_engineered:
@@ -2178,31 +2548,57 @@ def main() -> None:
                     f"engineered_{engineered_set_id}",
                     f"### Engineered {engineered_set_id} + Reasoning",
                 )
-            lines += ["", "## Selected Logistic Hyperparameters (HQ Mirror)"]
-            lines.append("| Combo | Penalty | C | l1_ratio |")
-            lines.append("|---|---|---:|---:|")
-            for combo in allowed_combos:
-                match = next(
-                    (
-                        r
-                        for r in results_rows
-                        if r["family"] == "hq_mirror"
-                        and r["reasoning_combo"] == combo
-                        and r["model_type"] == "logistic"
-                    ),
-                    None,
-                )
-                if match is None:
-                    lines.append(f"| {combo} | -- | -- | -- |")
-                else:
-                    lines.append(
-                        f"| {combo} | {match.get('logistic_penalty','')} | {match.get('logistic_C')} | {match.get('logistic_l1_ratio')} |"
+            if has_logistic:
+                lines += ["", "## Selected Logistic Hyperparameters (HQ Mirror)"]
+                lines.append("| Combo | Penalty | C | l1_ratio |")
+                lines.append("|---|---|---:|---:|")
+                for combo in allowed_combos:
+                    match = next(
+                        (
+                            r
+                            for r in results_rows
+                            if r["family"] == "hq_mirror"
+                            and r["reasoning_combo"] == combo
+                            and r["model_type"] == "logistic"
+                        ),
+                        None,
                     )
+                    if match is None:
+                        lines.append(f"| {combo} | -- | -- | -- |")
+                    else:
+                        lines.append(
+                            f"| {combo} | {match.get('logistic_penalty','')} | {match.get('logistic_C')} | {match.get('logistic_l1_ratio')} |"
+                        )
+            if has_mlp:
+                mlp_models = [m for m in model_order if m in {"mlp32", "mlp4", "mlp2"}]
+                lines += ["", "## Selected MLP Alpha (HQ Mirror)"]
+                header = ["Combo"] + [m.upper() for m in mlp_models]
+                lines.append("| " + " | ".join(header) + " |")
+                lines.append(_md_separator(len(header)))
+                for combo in allowed_combos:
+                    row = [combo]
+                    for model in mlp_models:
+                        match = next(
+                            (
+                                r
+                                for r in results_rows
+                                if r["family"] == "hq_mirror"
+                                and r["reasoning_combo"] == combo
+                                and r["model_type"] == model
+                            ),
+                            None,
+                        )
+                        row.append(str(match.get("mlp_alpha")) if match else "--")
+                    lines.append("| " + " | ".join(row) + " |")
 
         if sweep_df is not None and not sweep_df.empty:
             sweep_params = sorted({str(v) for v in sweep_df["sweep_param"].unique()})
             has_elasticnet = not sweep_df[
                 (sweep_df["model_type"] == "elasticnet") & (sweep_df["transform"] == transform_upper)
+            ].empty
+            has_mlp_sweep = not sweep_df[
+                (sweep_df["model_type"].isin(["mlp32", "mlp4", "mlp2"]))
+                & (sweep_df["transform"] == transform_upper)
             ].empty
             if has_elasticnet:
                 lines += ["", "## ElasticNet Hyperparameter Sweep (C × l1_ratio)"]
@@ -2225,8 +2621,33 @@ def main() -> None:
                         allowed_combos,
                         f"### Engineered {engineered_set_id} (sweep={label})",
                     )
-            if elasticnet_sweep_only:
-                lines += ["", "## Logistic C Sweep", "_Disabled (elasticnet-only sweep enabled)._"]
+            if regularization_sweep == "mlp" and has_mlp_sweep:
+                lines += ["", "## MLP Alpha Sweep"]
+                mlp_models = [m for m in model_order if m in {"mlp32", "mlp4", "mlp2"}]
+                for sweep_param in sweep_params:
+                    label = "base" if sweep_param in {"", "None"} else sweep_param
+                    for model in mlp_models:
+                        lines += _build_mlp_sweep_tables(
+                            sweep_df,
+                            "hq_mirror",
+                            transform_upper,
+                            sweep_param,
+                            allowed_combos,
+                            model,
+                            f"### HQ Mirror {model.upper()} (sweep={label})",
+                        )
+                        if include_llm_engineered:
+                            lines += _build_mlp_sweep_tables(
+                                sweep_df,
+                                f"engineered_{engineered_set_id}",
+                                transform_upper,
+                                sweep_param,
+                                allowed_combos,
+                                model,
+                                f"### Engineered {engineered_set_id} {model.upper()} (sweep={label})",
+                            )
+            if regularization_sweep != "all":
+                lines += ["", "## Logistic C Sweep", "_Disabled (regularization_sweep != all)._"]
             else:
                 lines += ["", "## Logistic C Sweep"]
                 for sweep_param in sweep_params:
@@ -2279,12 +2700,12 @@ def main() -> None:
 
         report_dir = report_dir
         if collinearity_report and col_summary_rows:
-            col_path = report_dir / f"collinearity_summary{output_suffix}.csv"
+            col_path = report_dir / f"collinearity_summary{file_suffix_report}.csv"
             pd.DataFrame(col_summary_rows).to_csv(col_path, index=False)
-            col_md_path = report_dir / f"collinearity_report{output_suffix}.md"
+            col_md_path = report_dir / f"collinearity_report{file_suffix_report}.md"
             col_md_lines = _build_collinearity_full_table(col_summary_rows, collinearity_corr_threshold)
             col_md_path.write_text("\n".join(col_md_lines), encoding="utf-8")
-        report_path = report_dir / f"model_testing_report{output_suffix}.md"
+        report_path = report_dir / f"model_testing_report{file_suffix_report}.md"
         if collinearity_report and col_summary_rows:
             lines += _build_collinearity_section(col_summary_rows, collinearity_corr_threshold)
         report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -2304,9 +2725,15 @@ def main() -> None:
 
         print(f"Report saved: {report_path}")
         print(f"Results saved: {results_path}")
-    for transform in transforms:
-        print(f"Running transform: {transform}")
-        _run_for_transform(transform)
+    exclude_modes = [False, True] if exclude_evidence_support_rating else [False]
+    for exclude_evidence in exclude_modes:
+        evidence_tag = "no_evidence_rating" if exclude_evidence else None
+        combos = _build_combos_for_run(exclude_evidence)
+        if exclude_evidence:
+            LOGGER.info("Running pipeline with evidence_support_rating excluded from reasoning features.")
+        for transform in transforms:
+            print(f"Running transform: {transform}")
+            _run_for_transform(transform, combos, evidence_tag)
 
 
 if __name__ == "__main__":

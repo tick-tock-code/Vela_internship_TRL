@@ -1,0 +1,55 @@
+# Collinearity Diagnostics (Logistic only)
+_Correlation threshold: 0.9_
+
+| Family | Combo | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num | vif_skipped | raw_vif_skipped |
+|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| hq_mirror | A | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.180 | 10.986 | 0.934 | 118.570 | False | False |
+| hq_mirror | A | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.986 | 0.934 | 118.570 | False | False |
+| hq_mirror | A | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.050 | 10.986 | 0.934 | 118.570 | False | False |
+| hq_mirror | A | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.067 | 10.986 | 0.934 | 118.570 | False | False |
+| hq_mirror | A | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.175 | 10.986 | 0.934 | 118.570 | False | False |
+| hq_mirror | A+B+C+D+E+F | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.080 | 122.516 | 0.993 | 2902.664 | False | False |
+| hq_mirror | A+B+C+D+E+F | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 122.516 | 0.993 | 2902.664 | False | False |
+| hq_mirror | A+B+C+D+E+F | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.100 | 122.516 | 0.993 | 2902.664 | False | False |
+| hq_mirror | A+B+C+D+E+F | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.067 | 122.516 | 0.993 | 2902.664 | False | False |
+| hq_mirror | A+B+C+D+E+F | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.100 | 122.516 | 0.993 | 2902.664 | False | False |
+| hq_mirror | A+D | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.140 | 10.988 | 0.934 | 137.711 | False | False |
+| hq_mirror | A+D | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.988 | 0.934 | 137.711 | False | False |
+| hq_mirror | A+D | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.050 | 10.988 | 0.934 | 137.711 | False | False |
+| hq_mirror | A+D | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.100 | 10.988 | 0.934 | 137.711 | False | False |
+| hq_mirror | A+D | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.125 | 10.988 | 0.934 | 137.711 | False | False |
+| hq_mirror | A+E | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.220 | 10.994 | 0.934 | 147.309 | False | False |
+| hq_mirror | A+E | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.994 | 0.934 | 147.309 | False | False |
+| hq_mirror | A+E | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.200 | 10.994 | 0.934 | 147.309 | False | False |
+| hq_mirror | A+E | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.133 | 10.994 | 0.934 | 147.309 | False | False |
+| hq_mirror | A+E | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.225 | 10.994 | 0.934 | 147.309 | False | False |
+| hq_mirror | B | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.220 | 10.973 | 0.934 | 96.215 | False | False |
+| hq_mirror | B | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.973 | 0.934 | 96.215 | False | False |
+| hq_mirror | B | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.100 | 10.973 | 0.934 | 96.215 | False | False |
+| hq_mirror | B | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.200 | 10.973 | 0.934 | 96.215 | False | False |
+| hq_mirror | B | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.275 | 10.973 | 0.934 | 96.215 | False | False |
+| hq_mirror | C | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.120 | 10.973 | 0.934 | 102.674 | False | False |
+| hq_mirror | C | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.973 | 0.934 | 102.674 | False | False |
+| hq_mirror | C | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.100 | 10.973 | 0.934 | 102.674 | False | False |
+| hq_mirror | C | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.067 | 10.973 | 0.934 | 102.674 | False | False |
+| hq_mirror | C | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.125 | 10.973 | 0.934 | 102.674 | False | False |
+| hq_mirror | D | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.120 | 10.972 | 0.934 | 96.047 | False | False |
+| hq_mirror | D | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.972 | 0.934 | 96.047 | False | False |
+| hq_mirror | D | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.000 | 10.972 | 0.934 | 96.047 | False | False |
+| hq_mirror | D | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.067 | 10.972 | 0.934 | 96.047 | False | False |
+| hq_mirror | D | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.075 | 10.972 | 0.934 | 96.047 | False | False |
+| hq_mirror | E | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.120 | 10.978 | 0.934 | 101.613 | False | False |
+| hq_mirror | E | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.978 | 0.934 | 101.613 | False | False |
+| hq_mirror | E | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.000 | 10.978 | 0.934 | 101.613 | False | False |
+| hq_mirror | E | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.067 | 10.978 | 0.934 | 101.613 | False | False |
+| hq_mirror | E | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.100 | 10.978 | 0.934 | 101.613 | False | False |
+| hq_mirror | F | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.120 | 122.141 | 0.993 | 1384.393 | False | False |
+| hq_mirror | F | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 122.141 | 0.993 | 1384.393 | False | False |
+| hq_mirror | F | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.050 | 122.141 | 0.993 | 1384.393 | False | False |
+| hq_mirror | F | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.067 | 122.141 | 0.993 | 1384.393 | False | False |
+| hq_mirror | F | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.125 | 122.141 | 0.993 | 1384.393 | False | False |
+| hq_mirror | HQ | PLS | 10 | 1.000 | 0.000 | 1.000 | 0.200 | 10.969 | 0.934 | 82.070 | False | False |
+| hq_mirror | HQ | PLS | 2 | 1.000 | 0.000 | 1.000 | 0.000 | 10.969 | 0.934 | 82.070 | False | False |
+| hq_mirror | HQ | PLS | 4 | 1.000 | 0.000 | 1.000 | 0.100 | 10.969 | 0.934 | 82.070 | False | False |
+| hq_mirror | HQ | PLS | 6 | 1.000 | 0.000 | 1.000 | 0.100 | 10.969 | 0.934 | 82.070 | False | False |
+| hq_mirror | HQ | PLS | 8 | 1.000 | 0.000 | 1.000 | 0.150 | 10.969 | 0.934 | 82.070 | False | False |
