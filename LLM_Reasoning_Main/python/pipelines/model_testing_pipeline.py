@@ -70,12 +70,29 @@ def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def _resolve_run_output_dir(evidence_tag: str | None, group_by_evidence: bool) -> Path:
+def _resolve_run_root_dir(exp_scope: str) -> tuple[Path, bool]:
+    if exp_scope == "full_exps":
+        ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        root_dir = OUTPUT_DIR / f"{ts}_full_run"
+        _ensure_dir(root_dir)
+        return root_dir, True
+    return OUTPUT_DIR, False
+
+
+def _resolve_run_output_dir(
+    evidence_tag: str | None,
+    group_by_evidence: bool,
+    run_root: Path,
+    full_run_root: bool,
+) -> Path:
     if not group_by_evidence:
-        return OUTPUT_DIR
-    date_prefix = datetime.now().strftime("%Y-%m-%d")
-    base_dir = OUTPUT_DIR / f"{date_prefix}_no_evidence_rating"
-    _ensure_dir(base_dir)
+        return run_root
+    if full_run_root:
+        base_dir = run_root
+    else:
+        date_prefix = datetime.now().strftime("%Y-%m-%d")
+        base_dir = run_root / f"{date_prefix}_no_evidence_rating"
+        _ensure_dir(base_dir)
     sub_dir = base_dir / ("no_evidence_rating" if evidence_tag else "normal")
     _ensure_dir(sub_dir)
     return sub_dir
@@ -603,6 +620,7 @@ def _resolve_collinearity_dir(report_dir: Path, output_suffix: str) -> Path:
 def _build_collinearity_section(
     summary_rows: list[dict[str, Any]],
     corr_threshold: float,
+    all_models: bool = False,
 ) -> list[str]:
     if not summary_rows:
         return []
@@ -630,14 +648,15 @@ def _build_collinearity_section(
         if float(score) > float(cur_score):
             picked[combo] = row
 
+    title = "## Collinearity Diagnostics (All models)" if all_models else "## Collinearity Diagnostics (Logistic only)"
     lines = [
         "",
-        "## Collinearity Diagnostics (Logistic only)",
+        title,
         "_Model-input stats use transformed features; raw stats use pre-transform standardized features._",
         f"_Correlation threshold: {corr_threshold}_",
         "",
-        "| Combo | Family | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num |",
-        "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Combo | Family | Model | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num |",
+        "|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for combo, row in sorted(picked.items()):
         lines.append(
@@ -646,6 +665,7 @@ def _build_collinearity_section(
                 [
                     combo,
                     str(row.get("family", "")),
+                    str(row.get("model_type", "")),
                     str(row.get("transform", "")),
                     str(row.get("sweep_param", "")),
                     _fmt(row.get("max_vif")),
@@ -665,6 +685,7 @@ def _build_collinearity_section(
 def _build_collinearity_full_table(
     summary_rows: list[dict[str, Any]],
     corr_threshold: float,
+    all_models: bool = False,
 ) -> list[str]:
     if not summary_rows:
         return []
@@ -675,16 +696,23 @@ def _build_collinearity_full_table(
             return "inf"
         return f"{val:.3f}"
 
+    title = "# Collinearity Diagnostics (All models)" if all_models else "# Collinearity Diagnostics (Logistic only)"
     lines = [
-        "# Collinearity Diagnostics (Logistic only)",
+        title,
         f"_Correlation threshold: {corr_threshold}_",
         "",
-        "| Family | Combo | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num | vif_skipped | raw_vif_skipped |",
-        "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
+        "| Family | Combo | Model | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num | vif_skipped | raw_vif_skipped |",
+        "|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
     ]
     for row in sorted(
         summary_rows,
-        key=lambda r: (str(r.get("family", "")), str(r.get("reasoning_combo", "")), str(r.get("sweep_param", ""))),
+        key=lambda r: (
+            str(r.get("family", "")),
+            str(r.get("reasoning_combo", "")),
+            str(r.get("model_type", "")),
+            str(r.get("transform", "")),
+            str(r.get("sweep_param", "")),
+        ),
     ):
         lines.append(
             "| "
@@ -692,6 +720,7 @@ def _build_collinearity_full_table(
                 [
                     str(row.get("family", "")),
                     str(row.get("reasoning_combo", "")),
+                    str(row.get("model_type", "")),
                     str(row.get("transform", "")),
                     str(row.get("sweep_param", "")),
                     _fmt(row.get("max_vif")),
@@ -728,6 +757,11 @@ def _build_elasticnet_sweep_tables(
     if subset.empty:
         return []
 
+    def _display_combo(combo: str) -> str:
+        if family_key.startswith("engineered_") and combo == "HQ":
+            return "LLM-eng"
+        return combo
+
     c_vals = sorted({float(v) for v in subset["logistic_C"].dropna().unique()})
     l1_vals = sorted({float(v) for v in subset["logistic_l1_ratio"].dropna().unique()})
     if not c_vals or not l1_vals:
@@ -746,7 +780,7 @@ def _build_elasticnet_sweep_tables(
         combo_df = subset[subset["reasoning_combo"] == combo]
         if combo_df.empty:
             continue
-        lines += ["", f"### {combo}"]
+        lines += ["", f"### {_display_combo(combo)}"]
         header = ["l1_ratio \\ C"] + [str(c).replace(".", "p") for c in c_vals]
         lines.append("| " + " | ".join(header) + " |")
         lines.append(_md_separator(len(header)))
@@ -780,6 +814,11 @@ def _build_logistic_c_sweep_tables(
     if subset.empty:
         return []
 
+    def _display_combo(combo: str) -> str:
+        if family_key.startswith("engineered_") and combo == "HQ":
+            return "LLM-eng"
+        return combo
+
     c_vals = sorted({float(v) for v in subset["logistic_C"].dropna().unique()})
     if not c_vals:
         return []
@@ -798,7 +837,7 @@ def _build_logistic_c_sweep_tables(
     lines.append(_md_separator(len(header)))
     for combo in allowed_combos:
         combo_df = subset[subset["reasoning_combo"] == combo]
-        row = [combo]
+        row = [_display_combo(combo)]
         for c in c_vals:
             match = combo_df[(combo_df["logistic_C"] == c)]
             if match.empty:
@@ -828,6 +867,11 @@ def _build_mlp_sweep_tables(
     if subset.empty:
         return []
 
+    def _display_combo(combo: str) -> str:
+        if family_key.startswith("engineered_") and combo == "HQ":
+            return "LLM-eng"
+        return combo
+
     alpha_vals = sorted({float(v) for v in subset["mlp_alpha"].dropna().unique()})
     if not alpha_vals:
         return []
@@ -845,7 +889,7 @@ def _build_mlp_sweep_tables(
     lines.append("| " + " | ".join(header) + " |")
     lines.append(_md_separator(len(header)))
     for combo in allowed_combos:
-        row = [combo]
+        row = [_display_combo(combo)]
         combo_df = subset[subset["reasoning_combo"] == combo]
         for a in alpha_vals:
             match = combo_df[combo_df["mlp_alpha"] == a]
@@ -1174,6 +1218,7 @@ def main() -> None:
     parser.add_argument("--logistic_l1_ratio", type=float, default=0.5)
     parser.add_argument("--mlp_alpha_grid", type=str, default="0.001,0.01,0.1")
     parser.add_argument("--mlp_alpha", type=float, default=0.01)
+    parser.add_argument("--finalising_experiments", type=str, default="false")
     parser.add_argument("--exclude_evidence_support_rating", type=str, default="false")
     parser.add_argument("--resume", type=str, default="false")
     parser.add_argument("--save_models", type=str, default="true")
@@ -1205,6 +1250,9 @@ def main() -> None:
     exp_scope = str(args.exp_scope).strip().lower()
     if exp_scope not in {"no_llm_exps", "full_exps", "minimal_exps"}:
         raise RuntimeError("--exp_scope must be one of: no_llm_exps, full_exps, minimal_exps")
+    if finalising_experiments and exp_scope != "full_exps":
+        LOGGER.info("finalising_experiments=true: forcing exp_scope to full_exps")
+        exp_scope = "full_exps"
     include_llm_engineered = exp_scope == "full_exps"
     minimal_exps = exp_scope == "minimal_exps"
     run_interpretability_default = str(args.run_interpretability).strip().lower() not in {"0", "false", "no"}
@@ -1221,6 +1269,10 @@ def main() -> None:
     logistic_c = float(args.logistic_c)
     logistic_l1_ratio = float(args.logistic_l1_ratio)
     regularization_sweep = str(args.regularization_sweep).strip().lower()
+    finalising_experiments = (
+        str(args.finalising_experiments).strip().lower() in {"1", "true", "yes"}
+    )
+    collinearity_all_models = finalising_experiments
     exclude_evidence_support_rating = (
         str(args.exclude_evidence_support_rating).strip().lower() in {"1", "true", "yes"}
     )
@@ -1249,6 +1301,8 @@ def main() -> None:
     if feature_pruning not in {"none", "mild_pruning", "aggressive_pruning"}:
         raise RuntimeError("--feature_pruning must be one of: none, mild_pruning, aggressive_pruning")
 
+    run_root_dir, full_run_root = _resolve_run_root_dir(exp_scope)
+
     prune_token_map = {
         "none": "none",
         "mild_pruning": "mild",
@@ -1263,6 +1317,9 @@ def main() -> None:
         raise RuntimeError("--model_complexity must be 'simple', 'complex', or 'mlp_only'")
 
     transforms_raw = [t.strip().upper() for t in str(args.feature_transforms).split(",") if t.strip()]
+    if finalising_experiments:
+        transforms_raw = ["BASE", "PLS"]
+        transform_sweep = False
     if not transforms_raw:
         transforms_raw = ["BASE"]
     for t in transforms_raw:
@@ -1294,9 +1351,16 @@ def main() -> None:
         allowed_combos = [
             "HQ",
             "A",
+            "B",
+            "C",
+            "D",
+            "E",
             "F",
+            "A+E",
             "A+D",
+            "A+D+E",
             "A+C+D+E",
+            "D+F",
             "C+D+E+F",
             "A+B+C+D+E+F",
         ]
@@ -1393,7 +1457,9 @@ def main() -> None:
         use_fixed=True,
     )
 
-    if model_complexity == "simple":
+    if finalising_experiments:
+        model_types = ["logistic", "xgb1", "mlp4"]
+    elif model_complexity == "simple":
         model_types = ["logistic", "xgb1"]
     elif model_complexity == "mlp_only":
         model_types = ["mlp32", "mlp4", "mlp2"]
@@ -1478,7 +1544,130 @@ def main() -> None:
             parts.append("base")
         return "" if not parts else "_" + "_".join(parts)
 
-    def _run_for_transform(transform: str, combos: dict[str, list[str]], evidence_tag: str | None) -> None:
+    def _write_finalising_report(
+        results_by_transform: dict[str, list[dict[str, Any]]],
+        evidence_tag: str | None,
+        prune_tag_local: str,
+        include_engineered: bool,
+        engineered_set_id_local: str,
+    ) -> None:
+        def _fmt(mean: float | None, std: float | None) -> str:
+            if mean is None or std is None:
+                return "--"
+            return f"{mean:.3f}+/-{std:.3f}"
+
+        def _display_combo_label(family_key: str, combo: str) -> str:
+            if family_key.startswith("engineered_") and combo == "HQ":
+                return "LLM-eng"
+            return combo
+
+        run_output_dir = _resolve_run_output_dir(
+            evidence_tag,
+            group_by_evidence=exclude_evidence_support_rating,
+            run_root=run_root_dir,
+            full_run_root=full_run_root,
+        )
+        report_dir = run_output_dir / f"reports_prune_{prune_tag_local}"
+        _ensure_dir(report_dir)
+
+        combined_rows: list[dict[str, Any]] = []
+        for rows in results_by_transform.values():
+            combined_rows.extend(rows)
+        lookup: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+        for row in combined_rows:
+            key = (
+                str(row.get("family", "")),
+                str(row.get("reasoning_combo", "")),
+                str(row.get("model_type", "")),
+                str(row.get("transform", "")),
+            )
+            lookup[key] = row
+
+        lines = [
+            "# Model Testing Report (Finalising Experiments)",
+            f"Generated: {pd.Timestamp.utcnow().isoformat()}Z",
+            "",
+            "Models: LR (BASE), XGB1 (BASE), MLP4 (PLS).",
+            f"Feature pruning: {feature_pruning_label}.",
+            "",
+        ]
+
+        lines += ["## HQ Mirror + Reasoning"]
+        header = ["Combo", "LR (BASE)", "XGB1 (BASE)", "MLP4 (PLS)"]
+        lines.append("| " + " | ".join(header) + " |")
+        lines.append("|---|---:|---:|---:|")
+        for combo in allowed_combos:
+            lr_row = lookup.get(("hq_mirror", combo, "logistic", "BASE"))
+            xgb_row = lookup.get(("hq_mirror", combo, "xgb1", "BASE"))
+            mlp_row = lookup.get(("hq_mirror", combo, "mlp4", "PLS"))
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        combo,
+                        _fmt(
+                            lr_row.get("f0.5_mean") if lr_row else None,
+                            lr_row.get("f0.5_std") if lr_row else None,
+                        ),
+                        _fmt(
+                            xgb_row.get("f0.5_mean") if xgb_row else None,
+                            xgb_row.get("f0.5_std") if xgb_row else None,
+                        ),
+                        _fmt(
+                            mlp_row.get("f0.5_mean") if mlp_row else None,
+                            mlp_row.get("f0.5_std") if mlp_row else None,
+                        ),
+                    ]
+                )
+                + " |"
+            )
+
+        if include_engineered:
+            family_key = f"engineered_{engineered_set_id_local}"
+            lines += ["", "## LLM-Engineered + Reasoning"]
+            header = ["Combo", "LR (BASE)", "XGB1 (BASE)", "LR (PLS)", "XGB1 (PLS)"]
+            lines.append("| " + " | ".join(header) + " |")
+            lines.append("|---|---:|---:|---:|---:|")
+            for combo in allowed_combos:
+                lr_base = lookup.get((family_key, combo, "logistic", "BASE"))
+                xgb_base = lookup.get((family_key, combo, "xgb1", "BASE"))
+                lr_pls = lookup.get((family_key, combo, "logistic", "PLS"))
+                xgb_pls = lookup.get((family_key, combo, "xgb1", "PLS"))
+                lines.append(
+                    "| "
+                    + " | ".join(
+                        [
+                            _display_combo_label(family_key, combo),
+                            _fmt(
+                                lr_base.get("f0.5_mean") if lr_base else None,
+                                lr_base.get("f0.5_std") if lr_base else None,
+                            ),
+                            _fmt(
+                                xgb_base.get("f0.5_mean") if xgb_base else None,
+                                xgb_base.get("f0.5_std") if xgb_base else None,
+                            ),
+                            _fmt(
+                                lr_pls.get("f0.5_mean") if lr_pls else None,
+                                lr_pls.get("f0.5_std") if lr_pls else None,
+                            ),
+                            _fmt(
+                                xgb_pls.get("f0.5_mean") if xgb_pls else None,
+                                xgb_pls.get("f0.5_std") if xgb_pls else None,
+                            ),
+                        ]
+                    )
+                    + " |"
+                )
+
+        report_path = report_dir / "model_testing_report_finalising_experiments.md"
+        report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        LOGGER.info("Finalising report saved: %s", report_path)
+
+    def _run_for_transform(
+        transform: str,
+        combos: dict[str, list[str]],
+        evidence_tag: str | None,
+    ) -> list[dict[str, Any]]:
         transform_upper = transform.upper()
         interp_on = run_interpretability_default and transform_upper not in {"PCA", "PLS"}
         LOGGER.info("Run transform start: %s (interp_on=%s)", transform_upper, interp_on)
@@ -1507,6 +1696,8 @@ def main() -> None:
         run_output_dir = _resolve_run_output_dir(
             evidence_tag,
             group_by_evidence=exclude_evidence_support_rating,
+            run_root=run_root_dir,
+            full_run_root=full_run_root,
         )
         report_dir = _resolve_report_dir(
             transform_upper,
@@ -1548,7 +1739,8 @@ def main() -> None:
         shap_results: dict[tuple[str, str], pd.DataFrame] = {}
         col_summary_rows: list[dict[str, Any]] = []
         completed_run_keys: set[tuple[str, str, str, str, str]] = set()
-        completed_col_keys: set[tuple[str, str, str, str]] = set()
+        completed_col_keys: set[tuple[str, ...]] = set()
+        feature_col_cache: dict[tuple[str, str, str, str, str], dict[str, Any]] = {}
 
         if resume:
             if checkpoint_results_path.exists():
@@ -1568,15 +1760,27 @@ def main() -> None:
                 sweep_rows = pd.read_csv(checkpoint_sweep_path).to_dict("records")
             if checkpoint_col_path.exists():
                 col_summary_rows = pd.read_csv(checkpoint_col_path).to_dict("records")
-                completed_col_keys = {
-                    (
-                        str(r.get("family", "")),
-                        str(r.get("reasoning_combo", "")),
-                        str(r.get("transform", "")),
-                        str(r.get("sweep_param", "")),
-                    )
-                    for r in col_summary_rows
-                }
+                if collinearity_all_models:
+                    completed_col_keys = {
+                        (
+                            str(r.get("family", "")),
+                            str(r.get("reasoning_combo", "")),
+                            str(r.get("model_type", "")),
+                            str(r.get("transform", "")),
+                            str(r.get("sweep_param", "")),
+                        )
+                        for r in col_summary_rows
+                    }
+                else:
+                    completed_col_keys = {
+                        (
+                            str(r.get("family", "")),
+                            str(r.get("reasoning_combo", "")),
+                            str(r.get("transform", "")),
+                            str(r.get("sweep_param", "")),
+                        )
+                        for r in col_summary_rows
+                    }
             LOGGER.info(
                 "Resume enabled: %s runs, %s sweep rows, %s collinearity rows loaded.",
                 len(completed_run_keys),
@@ -1990,56 +2194,100 @@ def main() -> None:
                         perm_df.to_csv(perm_path, index=False)
                         shap_df.to_csv(shap_path, index=False)
     
-                    if collinearity_report and run.model_type == "logistic":
-                        col_key = (run.family, combo, transform_upper, str(sweep_param_value))
+                    if collinearity_report and (collinearity_all_models or run.model_type == "logistic"):
+                        if collinearity_all_models:
+                            col_key = (
+                                run.family,
+                                combo,
+                                run.model_type,
+                                transform_upper,
+                                str(sweep_param_value),
+                            )
+                        else:
+                            col_key = (run.family, combo, transform_upper, str(sweep_param_value))
                         if resume and col_key in completed_col_keys:
                             LOGGER.info("Skipping collinearity (already computed): %s", col_key)
                         else:
-                            X_model_df, _, model_feature_names, _ = _preprocess_features(
-                                train_df,
-                                train_df.copy(),
-                                run.feature_names,
-                                run.model_type,
+                            preproc_group = "xgb" if run.model_type in {"xgb1", "xgb3"} else "scaled"
+                            cache_key = (
+                                run.family,
+                                combo,
                                 transform_upper,
-                                y_train=labels,
-                                pca_variance=pca_variance_value,
-                                pls_components=cur_pls_components,
-                                sft_k=cur_sft_k,
+                                str(sweep_param_value),
+                                preproc_group,
                             )
-                            X_model_std = _zscore_df(X_model_df)
-                            X_model = X_model_std.values.astype(float)
-                            cond_num = _condition_number(X_model)
-                            corr_stats, corr_pairs = _corr_stats(
-                                X_model,
-                                model_feature_names,
-                                collinearity_corr_topk,
-                                collinearity_corr_threshold,
-                            )
-                            vif_df, vif_skipped = _vif_stats(
-                                X_model,
-                                model_feature_names,
-                                vif_max_features,
-                            )
-                            max_vif = float(vif_df["vif"].max()) if not vif_df.empty else None
-        
-                            coef_df, avg_flip = _coef_stability(fold_artifacts)
-        
-                            raw_df_std = _zscore_df(train_df[run.feature_names].copy())
-                            X_raw = raw_df_std.values.astype(float)
-                            raw_cond_num = _condition_number(X_raw)
-                            raw_corr_stats, raw_corr_pairs = _corr_stats(
-                                X_raw,
-                                run.feature_names,
-                                collinearity_corr_topk,
-                                collinearity_corr_threshold,
-                            )
-                            raw_vif_df, raw_vif_skipped = _vif_stats(
-                                X_raw,
-                                run.feature_names,
-                                vif_max_features,
-                            )
-                            raw_max_vif = float(raw_vif_df["vif"].max()) if not raw_vif_df.empty else None
-        
+                            cache = feature_col_cache.get(cache_key)
+                            if cache is None:
+                                X_model_df, _, model_feature_names, _ = _preprocess_features(
+                                    train_df,
+                                    train_df.copy(),
+                                    run.feature_names,
+                                    run.model_type,
+                                    transform_upper,
+                                    y_train=labels,
+                                    pca_variance=pca_variance_value,
+                                    pls_components=cur_pls_components,
+                                    sft_k=cur_sft_k,
+                                )
+                                X_model_std = _zscore_df(X_model_df)
+                                X_model = X_model_std.values.astype(float)
+                                cond_num = _condition_number(X_model)
+                                corr_stats, corr_pairs = _corr_stats(
+                                    X_model,
+                                    model_feature_names,
+                                    collinearity_corr_topk,
+                                    collinearity_corr_threshold,
+                                )
+                                vif_df, vif_skipped = _vif_stats(
+                                    X_model,
+                                    model_feature_names,
+                                    vif_max_features,
+                                )
+                                max_vif = float(vif_df["vif"].max()) if not vif_df.empty else None
+
+                                raw_df_std = _zscore_df(train_df[run.feature_names].copy())
+                                X_raw = raw_df_std.values.astype(float)
+                                raw_cond_num = _condition_number(X_raw)
+                                raw_corr_stats, raw_corr_pairs = _corr_stats(
+                                    X_raw,
+                                    run.feature_names,
+                                    collinearity_corr_topk,
+                                    collinearity_corr_threshold,
+                                )
+                                raw_vif_df, raw_vif_skipped = _vif_stats(
+                                    X_raw,
+                                    run.feature_names,
+                                    vif_max_features,
+                                )
+                                raw_max_vif = float(raw_vif_df["vif"].max()) if not raw_vif_df.empty else None
+
+                                cache = {
+                                    "model_feature_names": model_feature_names,
+                                    "n_features_model": int(X_model.shape[1]),
+                                    "cond_num": cond_num,
+                                    "corr_stats": corr_stats,
+                                    "corr_pairs": corr_pairs,
+                                    "vif_df": vif_df,
+                                    "vif_skipped": bool(vif_skipped),
+                                    "max_vif": max_vif,
+                                    "n_features_raw": int(X_raw.shape[1]),
+                                    "raw_cond_num": raw_cond_num,
+                                    "raw_corr_stats": raw_corr_stats,
+                                    "raw_corr_pairs": raw_corr_pairs,
+                                    "raw_vif_df": raw_vif_df,
+                                    "raw_vif_skipped": bool(raw_vif_skipped),
+                                    "raw_max_vif": raw_max_vif,
+                                }
+                                feature_col_cache[cache_key] = cache
+
+                            if run.model_type == "logistic":
+                                coef_df, avg_flip = _coef_stability(fold_artifacts)
+                            else:
+                                coef_df = pd.DataFrame(
+                                    columns=["feature", "coef_mean", "coef_std", "sign_flip_rate", "coef_cv"]
+                                )
+                                avg_flip = None
+
                             if col_dir is not None:
                                 family_slug = _slugify(run.family)
                                 combo_slug = _slugify(combo)
@@ -2055,10 +2303,10 @@ def main() -> None:
                                     subdir = col_dir / family_slug / combo_slug / model_slug / transform_slug / sweep_slug
                                 _ensure_dir(subdir)
                                 coef_df.to_csv(subdir / "coef_stats.csv", index=False)
-                                corr_pairs.to_csv(subdir / "corr_pairs.csv", index=False)
-                                raw_corr_pairs.to_csv(subdir / "raw_corr_pairs.csv", index=False)
-                                vif_df.to_csv(subdir / "vif.csv", index=False)
-                                raw_vif_df.to_csv(subdir / "raw_vif.csv", index=False)
+                                cache["corr_pairs"].to_csv(subdir / "corr_pairs.csv", index=False)
+                                cache["raw_corr_pairs"].to_csv(subdir / "raw_corr_pairs.csv", index=False)
+                                cache["vif_df"].to_csv(subdir / "vif.csv", index=False)
+                                cache["raw_vif_df"].to_csv(subdir / "raw_vif.csv", index=False)
                                 summary = {
                                     "family": run.family,
                                     "model_name": run.name,
@@ -2066,27 +2314,27 @@ def main() -> None:
                                     "reasoning_combo": combo,
                                     "transform": transform_upper,
                                     "sweep_param": sweep_param_value,
-                                    "n_features_model": int(X_model.shape[1]),
-                                    "n_features_raw": int(X_raw.shape[1]),
-                                    "cond_number": cond_num,
-                                    "max_abs_corr": corr_stats["max_abs_corr"],
-                                    "mean_abs_corr": corr_stats["mean_abs_corr"],
-                                    "corr_count_ge_threshold": corr_stats["count_ge_threshold"],
-                                    "max_vif": max_vif,
-                                    "vif_skipped": bool(vif_skipped),
+                                    "n_features_model": cache["n_features_model"],
+                                    "n_features_raw": cache["n_features_raw"],
+                                    "cond_number": cache["cond_num"],
+                                    "max_abs_corr": cache["corr_stats"]["max_abs_corr"],
+                                    "mean_abs_corr": cache["corr_stats"]["mean_abs_corr"],
+                                    "corr_count_ge_threshold": cache["corr_stats"]["count_ge_threshold"],
+                                    "max_vif": cache["max_vif"],
+                                    "vif_skipped": cache["vif_skipped"],
                                     "avg_sign_flip_rate": avg_flip,
-                                    "raw_cond_number": raw_cond_num,
-                                    "raw_max_abs_corr": raw_corr_stats["max_abs_corr"],
-                                    "raw_mean_abs_corr": raw_corr_stats["mean_abs_corr"],
-                                    "raw_corr_count_ge_threshold": raw_corr_stats["count_ge_threshold"],
-                                    "raw_max_vif": raw_max_vif,
-                                    "raw_vif_skipped": bool(raw_vif_skipped),
+                                    "raw_cond_number": cache["raw_cond_num"],
+                                    "raw_max_abs_corr": cache["raw_corr_stats"]["max_abs_corr"],
+                                    "raw_mean_abs_corr": cache["raw_corr_stats"]["mean_abs_corr"],
+                                    "raw_corr_count_ge_threshold": cache["raw_corr_stats"]["count_ge_threshold"],
+                                    "raw_max_vif": cache["raw_max_vif"],
+                                    "raw_vif_skipped": cache["raw_vif_skipped"],
                                 }
                                 (subdir / "summary.json").write_text(
                                     json.dumps(summary, indent=2),
                                     encoding="utf-8",
                                 )
-        
+
                             col_summary_rows.append(
                                 {
                                     "family": run.family,
@@ -2095,22 +2343,22 @@ def main() -> None:
                                     "reasoning_combo": combo,
                                     "transform": transform_upper,
                                     "sweep_param": sweep_param_value,
-                                    "cond_number": cond_num,
-                                    "max_abs_corr": corr_stats["max_abs_corr"],
-                                    "mean_abs_corr": corr_stats["mean_abs_corr"],
-                                    "corr_count_ge_threshold": corr_stats["count_ge_threshold"],
-                                    "max_vif": max_vif,
-                                    "vif_skipped": bool(vif_skipped),
+                                    "cond_number": cache["cond_num"],
+                                    "max_abs_corr": cache["corr_stats"]["max_abs_corr"],
+                                    "mean_abs_corr": cache["corr_stats"]["mean_abs_corr"],
+                                    "corr_count_ge_threshold": cache["corr_stats"]["count_ge_threshold"],
+                                    "max_vif": cache["max_vif"],
+                                    "vif_skipped": cache["vif_skipped"],
                                     "avg_sign_flip_rate": avg_flip,
-                                    "raw_cond_number": raw_cond_num,
-                                    "raw_max_abs_corr": raw_corr_stats["max_abs_corr"],
-                                    "raw_mean_abs_corr": raw_corr_stats["mean_abs_corr"],
-                                    "raw_corr_count_ge_threshold": raw_corr_stats["count_ge_threshold"],
-                                    "raw_max_vif": raw_max_vif,
-                                    "raw_vif_skipped": bool(raw_vif_skipped),
+                                    "raw_cond_number": cache["raw_cond_num"],
+                                    "raw_max_abs_corr": cache["raw_corr_stats"]["max_abs_corr"],
+                                    "raw_mean_abs_corr": cache["raw_corr_stats"]["mean_abs_corr"],
+                                    "raw_corr_count_ge_threshold": cache["raw_corr_stats"]["count_ge_threshold"],
+                                    "raw_max_vif": cache["raw_max_vif"],
+                                    "raw_vif_skipped": cache["raw_vif_skipped"],
                                 }
                             )
-        
+
                             completed_col_keys.add(col_key)
                     if save_models:
                         full_metrics, full_model, full_transformer, feature_names_out = _full_train_metrics(
@@ -2248,6 +2496,11 @@ def main() -> None:
         def _md_separator(cols: int) -> str:
             return "|" + "|".join(["---"] + ["---:" for _ in range(cols - 1)]) + "|"
 
+        def _display_combo_label(family_key: str, combo: str) -> str:
+            if family_key.startswith("engineered_") and combo == "HQ":
+                return "LLM-eng"
+            return combo
+
         def _build_matrix_table(family_key: str, title: str) -> list[str]:
             header = ["Combo"] + [m.upper() for m in model_order]
             table = [title, "| " + " | ".join(header) + " |", _md_separator(len(header))]
@@ -2268,7 +2521,7 @@ def main() -> None:
                         row_cells.append("--")
                     else:
                         row_cells.append(_fmt(match["f0.5_mean"], match["f0.5_std"]))
-                table.append("| " + " | ".join([combo] + row_cells) + " |")
+                table.append("| " + " | ".join([_display_combo_label(family_key, combo)] + row_cells) + " |")
             return table
 
         def _build_cv_full_table(family_key: str, title: str) -> list[str]:
@@ -2296,7 +2549,7 @@ def main() -> None:
                     else:
                         row_cells.append(_fmt(match["f0.5_mean"], match["f0.5_std"]))
                         row_cells.append(f"{match['full_train_f0.5']:.3f}")
-                table.append("| " + " | ".join([combo] + row_cells) + " |")
+                table.append("| " + " | ".join([_display_combo_label(family_key, combo)] + row_cells) + " |")
             return table
 
         if model_complexity == "simple":
@@ -2304,7 +2557,7 @@ def main() -> None:
         elif model_complexity == "mlp_only":
             model_variants_line = "Model variants: mlp32/mlp4/mlp2 (1 hidden layer)."
         else:
-            model_variants_line = "Model variants: logistic (l2), xgb1, xgb3, mlp32/mlp4/mlp2 (1 hidden layer)."
+            model_variants_line = "Model variants: logistic (l2), xgb1, mlp4/mlp2 (1 hidden layer)."
         lines = [
             "# Model Testing Report",
             f"Generated: {pd.Timestamp.utcnow().isoformat()}Z",
@@ -2703,11 +2956,19 @@ def main() -> None:
             col_path = report_dir / f"collinearity_summary{file_suffix_report}.csv"
             pd.DataFrame(col_summary_rows).to_csv(col_path, index=False)
             col_md_path = report_dir / f"collinearity_report{file_suffix_report}.md"
-            col_md_lines = _build_collinearity_full_table(col_summary_rows, collinearity_corr_threshold)
+            col_md_lines = _build_collinearity_full_table(
+                col_summary_rows,
+                collinearity_corr_threshold,
+                all_models=collinearity_all_models,
+            )
             col_md_path.write_text("\n".join(col_md_lines), encoding="utf-8")
         report_path = report_dir / f"model_testing_report{file_suffix_report}.md"
         if collinearity_report and col_summary_rows:
-            lines += _build_collinearity_section(col_summary_rows, collinearity_corr_threshold)
+            lines += _build_collinearity_section(
+                col_summary_rows,
+                collinearity_corr_threshold,
+                all_models=collinearity_all_models,
+            )
         report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         LOGGER.info("Report saved: %s", report_path)
         LOGGER.info("Results saved: %s", results_path)
@@ -2725,15 +2986,27 @@ def main() -> None:
 
         print(f"Report saved: {report_path}")
         print(f"Results saved: {results_path}")
+        return results_rows
     exclude_modes = [False, True] if exclude_evidence_support_rating else [False]
     for exclude_evidence in exclude_modes:
         evidence_tag = "no_evidence_rating" if exclude_evidence else None
         combos = _build_combos_for_run(exclude_evidence)
         if exclude_evidence:
             LOGGER.info("Running pipeline with evidence_support_rating excluded from reasoning features.")
+        finalising_results: dict[str, list[dict[str, Any]]] = {}
         for transform in transforms:
             print(f"Running transform: {transform}")
-            _run_for_transform(transform, combos, evidence_tag)
+            run_rows = _run_for_transform(transform, combos, evidence_tag)
+            if finalising_experiments:
+                finalising_results[transform.upper()] = run_rows
+        if finalising_experiments:
+            _write_finalising_report(
+                finalising_results,
+                evidence_tag,
+                prune_tag,
+                include_llm_engineered,
+                engineered_set_id,
+            )
 
 
 if __name__ == "__main__":

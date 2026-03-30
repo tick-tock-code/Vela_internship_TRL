@@ -22,7 +22,7 @@
   {
     "name": "has_graduate_degree",
     "description": "Founder holds at least one graduate degree",
-    "expression": "lambda founder: any(e.get('degree', '')).lower() in ['mba', 'ms', 'phd', 'fellowship', 'master', 'jd', 'mba'] for e in founder.get('educations', [])"
+    "expression": "lambda founder: any(e.get('degree', '').lower() in ['mba', 'ms', 'phd', 'fellowship', 'master', 'jd'] for e in founder.get('educations', []))"
   },
   {
     "name": "has_long_term_experience",
