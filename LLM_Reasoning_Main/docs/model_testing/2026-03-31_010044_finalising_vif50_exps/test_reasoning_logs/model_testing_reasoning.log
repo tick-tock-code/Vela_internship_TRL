@@ -1,0 +1,2 @@
+[2026-03-31T01:00:57.264220] Cached reasoning needs repair/missing experiments. missing_exps=['C'] nan_flags={'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False}
+[2026-03-31T01:00:57.266144] Repairing/adding test reasoning for exp C (target_batches=all)

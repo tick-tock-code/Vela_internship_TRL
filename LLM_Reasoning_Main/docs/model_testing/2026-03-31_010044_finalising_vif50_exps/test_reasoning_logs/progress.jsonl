@@ -1,0 +1,146 @@
+{"index": -1, "stage": "start_run", "experiment": "C", "processed": 0, "total": 4500, "batch_size": 20, "n_batches": 225, "timestamp": 1774915257.304533}
+{"index": 0, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 0, "batch_start": 0, "batch_end": 19, "batch_size": 20, "timestamp": 1774915257.4662528}
+{"index": 10, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 10, "batch_start": 200, "batch_end": 219, "batch_size": 20, "timestamp": 1774915257.4667797}
+{"index": 20, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 20, "batch_start": 400, "batch_end": 419, "batch_size": 20, "timestamp": 1774915257.4670644}
+{"index": 30, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 30, "batch_start": 600, "batch_end": 619, "batch_size": 20, "timestamp": 1774915257.5952253}
+{"index": 40, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 40, "batch_start": 800, "batch_end": 819, "batch_size": 20, "timestamp": 1774915257.5957239}
+{"index": 50, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 50, "batch_start": 1000, "batch_end": 1019, "batch_size": 20, "timestamp": 1774915257.595996}
+{"index": 60, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 60, "batch_start": 1200, "batch_end": 1219, "batch_size": 20, "timestamp": 1774915257.5962815}
+{"index": 70, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 70, "batch_start": 1400, "batch_end": 1419, "batch_size": 20, "timestamp": 1774915257.5965824}
+{"index": 80, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 80, "batch_start": 1600, "batch_end": 1619, "batch_size": 20, "timestamp": 1774915257.5968268}
+{"index": 90, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 90, "batch_start": 1800, "batch_end": 1819, "batch_size": 20, "timestamp": 1774915257.5970907}
+{"index": 100, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 100, "batch_start": 2000, "batch_end": 2019, "batch_size": 20, "timestamp": 1774915257.5973027}
+{"index": 110, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 110, "batch_start": 2200, "batch_end": 2219, "batch_size": 20, "timestamp": 1774915257.5975099}
+{"index": 120, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 120, "batch_start": 2400, "batch_end": 2419, "batch_size": 20, "timestamp": 1774915257.5977225}
+{"index": 130, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 130, "batch_start": 2600, "batch_end": 2619, "batch_size": 20, "timestamp": 1774915257.5979424}
+{"index": 140, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 140, "batch_start": 2800, "batch_end": 2819, "batch_size": 20, "timestamp": 1774915257.5981543}
+{"index": 150, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 150, "batch_start": 3000, "batch_end": 3019, "batch_size": 20, "timestamp": 1774915257.5983696}
+{"index": 160, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 160, "batch_start": 3200, "batch_end": 3219, "batch_size": 20, "timestamp": 1774915257.5986319}
+{"index": 170, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 170, "batch_start": 3400, "batch_end": 3419, "batch_size": 20, "timestamp": 1774915257.5988429}
+{"index": 180, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 180, "batch_start": 3600, "batch_end": 3619, "batch_size": 20, "timestamp": 1774915257.5991302}
+{"index": 190, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 190, "batch_start": 3800, "batch_end": 3819, "batch_size": 20, "timestamp": 1774915257.5994081}
+{"index": 200, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 200, "batch_start": 4000, "batch_end": 4019, "batch_size": 20, "timestamp": 1774915257.5996993}
+{"index": 210, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 210, "batch_start": 4200, "batch_end": 4219, "batch_size": 20, "timestamp": 1774915257.5999193}
+{"index": 220, "stage": "start_call", "experiment": "C", "processed": 0, "total": 4500, "batch_index": 220, "batch_start": 4400, "batch_end": 4419, "batch_size": 20, "timestamp": 1774915257.6001303}
+{"index": 0, "stage": "window_start", "experiment": "C", "window": 0, "concurrency": 10, "batch_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "timestamp": 1774915257.6003644}
+{"index": 0, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 5.0, "timestamp": 1774915266.6309369}
+{"index": 0, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 8, "failed_batch_ids": [3, 7, 5, 2, 0, 9, 6, 1, 8, 4], "timestamp": 1774915271.6318364}
+{"index": 1, "stage": "window_start", "experiment": "C", "window": 1, "concurrency": 8, "batch_ids": [3, 7, 5, 2, 0, 9, 6, 1], "timestamp": 1774915271.6324985}
+{"index": 1, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 5.0, "timestamp": 1774915278.916265}
+{"index": 1, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 6, "failed_batch_ids": [7, 2, 1, 3, 5, 0, 9, 6], "timestamp": 1774915283.917023}
+{"index": 2, "stage": "window_start", "experiment": "C", "window": 2, "concurrency": 6, "batch_ids": [7, 2, 1, 3, 5, 0], "timestamp": 1774915283.9178116}
+{"index": 2, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 8, "timestamp": 1774915291.2983534}
+{"index": 2, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 4, "failed_batch_ids": [3, 2, 5, 0, 7, 1], "timestamp": 1774915299.2993433}
+{"index": 3, "stage": "window_start", "experiment": "C", "window": 3, "concurrency": 4, "batch_ids": [3, 2, 5, 0], "timestamp": 1774915299.3002622}
+{"index": 3, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 16, "timestamp": 1774915306.4959936}
+{"index": 3, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 2, "failed_batch_ids": [2, 0, 5, 3], "timestamp": 1774915322.4968839}
+{"index": 4, "stage": "window_start", "experiment": "C", "window": 4, "concurrency": 2, "batch_ids": [2, 0], "timestamp": 1774915322.497934}
+{"index": 4, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915329.8228643}
+{"index": 4, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [0, 2], "timestamp": 1774915361.8244264}
+{"index": 5, "stage": "window_start", "experiment": "C", "window": 5, "concurrency": 1, "batch_ids": [0], "timestamp": 1774915361.8256676}
+{"index": 5, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915368.827911}
+{"index": 5, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915400.828827}
+{"index": 6, "stage": "window_start", "experiment": "C", "window": 6, "concurrency": 1, "batch_ids": [2], "timestamp": 1774915400.829821}
+{"index": 6, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915407.8951523}
+{"index": 6, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915439.8961315}
+{"index": 7, "stage": "window_start", "experiment": "C", "window": 7, "concurrency": 1, "batch_ids": [5], "timestamp": 1774915439.8970988}
+{"index": 7, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915447.2217252}
+{"index": 7, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [5], "timestamp": 1774915479.222664}
+{"index": 8, "stage": "window_start", "experiment": "C", "window": 8, "concurrency": 1, "batch_ids": [5], "timestamp": 1774915479.223695}
+{"index": 8, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915486.4279137}
+{"index": 8, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915518.428986}
+{"index": 9, "stage": "window_start", "experiment": "C", "window": 9, "concurrency": 1, "batch_ids": [3], "timestamp": 1774915518.4299808}
+{"index": 9, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915525.8018744}
+{"index": 9, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [3], "timestamp": 1774915557.8028417}
+{"index": 10, "stage": "window_start", "experiment": "C", "window": 10, "concurrency": 1, "batch_ids": [3], "timestamp": 1774915557.8041518}
+{"index": 10, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915565.0748734}
+{"index": 10, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915597.0760565}
+{"index": 11, "stage": "window_start", "experiment": "C", "window": 11, "concurrency": 1, "batch_ids": [7], "timestamp": 1774915597.0770812}
+{"index": 11, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915604.253311}
+{"index": 11, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [7], "timestamp": 1774915636.2540772}
+{"index": 12, "stage": "window_start", "experiment": "C", "window": 12, "concurrency": 1, "batch_ids": [7], "timestamp": 1774915636.2551196}
+{"index": 12, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915643.2891588}
+{"index": 12, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [7], "timestamp": 1774915675.2901525}
+{"index": 13, "stage": "window_start", "experiment": "C", "window": 13, "concurrency": 1, "batch_ids": [7], "timestamp": 1774915675.2911754}
+{"index": 13, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915682.3047984}
+{"index": 13, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915714.3059154}
+{"index": 14, "stage": "window_start", "experiment": "C", "window": 14, "concurrency": 1, "batch_ids": [1], "timestamp": 1774915714.3070235}
+{"index": 14, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915721.2450047}
+{"index": 14, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [1], "timestamp": 1774915753.2457979}
+{"index": 15, "stage": "window_start", "experiment": "C", "window": 15, "concurrency": 1, "batch_ids": [1], "timestamp": 1774915753.2468076}
+{"index": 15, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915760.6972694}
+{"index": 15, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [1], "timestamp": 1774915792.6980803}
+{"index": 16, "stage": "window_start", "experiment": "C", "window": 16, "concurrency": 1, "batch_ids": [1], "timestamp": 1774915792.6990993}
+{"index": 16, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915799.907246}
+{"index": 16, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915831.908053}
+{"index": 17, "stage": "window_start", "experiment": "C", "window": 17, "concurrency": 1, "batch_ids": [9], "timestamp": 1774915831.9090047}
+{"index": 17, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915839.239836}
+{"index": 17, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [9], "timestamp": 1774915871.2412472}
+{"index": 18, "stage": "window_start", "experiment": "C", "window": 18, "concurrency": 1, "batch_ids": [9], "timestamp": 1774915871.2421787}
+{"index": 18, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915878.634733}
+{"index": 18, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [9], "timestamp": 1774915910.6353889}
+{"index": 19, "stage": "window_start", "experiment": "C", "window": 19, "concurrency": 1, "batch_ids": [9], "timestamp": 1774915910.6374652}
+{"index": 19, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915917.9559002}
+{"index": 19, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [9], "timestamp": 1774915949.9572659}
+{"index": 20, "stage": "window_start", "experiment": "C", "window": 20, "concurrency": 1, "batch_ids": [9], "timestamp": 1774915949.958272}
+{"index": 20, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915957.1712086}
+{"index": 20, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774915989.17196}
+{"index": 21, "stage": "window_start", "experiment": "C", "window": 21, "concurrency": 1, "batch_ids": [6], "timestamp": 1774915989.1748934}
+{"index": 21, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774915996.4461184}
+{"index": 21, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [6], "timestamp": 1774916028.4468577}
+{"index": 22, "stage": "window_start", "experiment": "C", "window": 22, "concurrency": 1, "batch_ids": [6], "timestamp": 1774916028.4480596}
+{"index": 22, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916035.9354239}
+{"index": 22, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [6], "timestamp": 1774916067.9361598}
+{"index": 23, "stage": "window_start", "experiment": "C", "window": 23, "concurrency": 1, "batch_ids": [6], "timestamp": 1774916067.937195}
+{"index": 23, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916075.0073714}
+{"index": 23, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [6], "timestamp": 1774916107.0083263}
+{"index": 24, "stage": "window_start", "experiment": "C", "window": 24, "concurrency": 1, "batch_ids": [6], "timestamp": 1774916107.0101573}
+{"index": 24, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916113.9430146}
+{"index": 24, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774916145.9437945}
+{"index": 25, "stage": "window_start", "experiment": "C", "window": 25, "concurrency": 1, "batch_ids": [8], "timestamp": 1774916145.9448357}
+{"index": 25, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916152.8813803}
+{"index": 25, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [8], "timestamp": 1774916184.8822775}
+{"index": 26, "stage": "window_start", "experiment": "C", "window": 26, "concurrency": 1, "batch_ids": [8], "timestamp": 1774916184.8848283}
+{"index": 26, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916192.1244621}
+{"index": 26, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [8], "timestamp": 1774916224.125347}
+{"index": 27, "stage": "window_start", "experiment": "C", "window": 27, "concurrency": 1, "batch_ids": [8], "timestamp": 1774916224.1277707}
+{"index": 27, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916231.2804036}
+{"index": 27, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [8], "timestamp": 1774916263.2813401}
+{"index": 28, "stage": "window_start", "experiment": "C", "window": 28, "concurrency": 1, "batch_ids": [8], "timestamp": 1774916263.282279}
+{"index": 28, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916270.4797049}
+{"index": 28, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [8], "timestamp": 1774916302.4806156}
+{"index": 29, "stage": "window_start", "experiment": "C", "window": 29, "concurrency": 1, "batch_ids": [8], "timestamp": 1774916302.4815338}
+{"index": 29, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916309.6015077}
+{"index": 29, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774916341.6023529}
+{"index": 30, "stage": "window_start", "experiment": "C", "window": 30, "concurrency": 1, "batch_ids": [4], "timestamp": 1774916341.6033535}
+{"index": 30, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916348.6575856}
+{"index": 30, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [4], "timestamp": 1774916380.658862}
+{"index": 31, "stage": "window_start", "experiment": "C", "window": 31, "concurrency": 1, "batch_ids": [4], "timestamp": 1774916380.659754}
+{"index": 31, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916387.950767}
+{"index": 31, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [4], "timestamp": 1774916419.9521887}
+{"index": 32, "stage": "window_start", "experiment": "C", "window": 32, "concurrency": 1, "batch_ids": [4], "timestamp": 1774916419.9532576}
+{"index": 32, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916427.1535926}
+{"index": 32, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [4], "timestamp": 1774916459.1549296}
+{"index": 33, "stage": "window_start", "experiment": "C", "window": 33, "concurrency": 1, "batch_ids": [4], "timestamp": 1774916459.1565452}
+{"index": 33, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916466.0308695}
+{"index": 33, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [4], "timestamp": 1774916498.0316641}
+{"index": 34, "stage": "window_start", "experiment": "C", "window": 34, "concurrency": 1, "batch_ids": [4], "timestamp": 1774916498.0327475}
+{"index": 34, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916505.1441545}
+{"index": 34, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [], "timestamp": 1774916537.1455276}
+{"index": 35, "stage": "window_start", "experiment": "C", "window": 35, "concurrency": 1, "batch_ids": [10], "timestamp": 1774916537.146394}
+{"index": 35, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916544.3686273}
+{"index": 35, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [10], "timestamp": 1774916576.369766}
+{"index": 36, "stage": "window_start", "experiment": "C", "window": 36, "concurrency": 1, "batch_ids": [10], "timestamp": 1774916576.3705673}
+{"index": 36, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916583.8915446}
+{"index": 36, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [10], "timestamp": 1774916615.8924727}
+{"index": 37, "stage": "window_start", "experiment": "C", "window": 37, "concurrency": 1, "batch_ids": [10], "timestamp": 1774916615.8935082}
+{"index": 37, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916623.016767}
+{"index": 37, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [10], "timestamp": 1774916655.017833}
+{"index": 38, "stage": "window_start", "experiment": "C", "window": 38, "concurrency": 1, "batch_ids": [10], "timestamp": 1774916655.0191617}
+{"index": 38, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916662.1916108}
+{"index": 38, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [10], "timestamp": 1774916694.1929314}
+{"index": 39, "stage": "window_start", "experiment": "C", "window": 39, "concurrency": 1, "batch_ids": [10], "timestamp": 1774916694.1939516}
+{"index": 39, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916701.1212938}
+{"index": 39, "stage": "rate_limit_fallback", "experiment": "C", "concurrency_next": 1, "failed_batch_ids": [10], "timestamp": 1774916733.1225007}
+{"index": 40, "stage": "window_start", "experiment": "C", "window": 40, "concurrency": 1, "batch_ids": [10], "timestamp": 1774916733.1234622}
+{"index": 40, "stage": "rate_limit_sleep", "experiment": "C", "sleep_seconds": 32, "timestamp": 1774916740.5214448}

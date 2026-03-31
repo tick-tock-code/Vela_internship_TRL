@@ -1,0 +1,9 @@
+{
+  "model_type": "mlp4",
+  "seed": 42,
+  "threshold": 0.24000000000000005,
+  "feature_names_hash": "992eeb6ec09610020e4fe64a590e09d169e1f0b521845730e47b68d0e267ca53",
+  "train_matrix_hash": "d36aeac6a553e1466497a8c898eff9f9976fdf7e2ebfcf85b8e9f12a004ce536",
+  "label_hash": "24ebf37c39d2755e10a9ee64562be9ad0fdb806039b6e0405d85501833dd7f12",
+  "model_hash": "b34c9659ee4eb5e65054c87dba8e422868be5c12e3ab93280009aff8f68fe651"
+}

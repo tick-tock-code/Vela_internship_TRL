@@ -23751,3 +23751,489 @@
 {"index": 191, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774150219.799526}
 {"index": 204, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774150257.7072659}
 {"index": 206, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774150258.2527618}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.1102052}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.1118326}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.1121085}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.1265333}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.143088}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.203493}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.204202}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.2043}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.250054}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919680.2960718}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.4346104}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.4648056}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.525982}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.52612}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.541214}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.5565948}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.5566974}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.5641901}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.632912}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919682.6942742}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.8109624}
+{"index": 9, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.8126326}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.826525}
+{"index": 8, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.827321}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.8735077}
+{"index": 1, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.8743246}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.8888505}
+{"index": 6, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.889845}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.9047544}
+{"index": 2, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.9055266}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.9355707}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.9365036}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.9650803}
+{"index": 4, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.9659584}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919685.9803107}
+{"index": 7, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919685.981543}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919686.0570567}
+{"index": 5, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919686.0579524}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919686.2286959}
+{"index": 3, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774919686.229437}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.6194205}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.6349669}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.635051}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.6496377}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.695367}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.7244973}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.7708073}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919692.8015854}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919694.8686743}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919694.8688374}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919694.9535563}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919695.1070354}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919695.1505027}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919695.1992197}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919695.1993222}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919695.2146227}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.3058915}
+{"index": 9, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.3068385}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.321089}
+{"index": 2, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.3220549}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.4589472}
+{"index": 1, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.4598045}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.5212817}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.5218678}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.5219712}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.522365}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.5224586}
+{"index": 8, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.524267}
+{"index": 7, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.5255315}
+{"index": 6, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.526058}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919698.6433465}
+{"index": 4, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774919698.6442578}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919705.0765982}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919705.0834835}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919705.084238}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919705.0981371}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919705.1152105}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919705.17511}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919707.4047165}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919707.5118678}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919707.5120811}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919707.5126817}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919707.589379}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919707.6031704}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919710.7449896}
+{"index": 9, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774919710.7463725}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919710.7889812}
+{"index": 2, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774919710.7901323}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919710.8510108}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919710.8511822}
+{"index": 7, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774919710.8524673}
+{"index": 1, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774919710.8543663}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919710.9194045}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774919710.9206436}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919710.9741728}
+{"index": 8, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774919710.9754188}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919720.2625072}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919720.2778463}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919720.3995955}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919720.476126}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919722.6015682}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919722.7396655}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919722.7397702}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919722.8473787}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919725.974106}
+{"index": 7, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774919725.9750977}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919726.09503}
+{"index": 9, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774919726.0959122}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919726.1859195}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919726.1864188}
+{"index": 1, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774919726.186761}
+{"index": 2, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774919726.1874993}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919743.5651376}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919743.5963764}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919745.8557596}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919746.116458}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919749.2699564}
+{"index": 7, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774919749.2711475}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919749.6546316}
+{"index": 9, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774919749.6555445}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919783.073211}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919785.475866}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919788.8396885}
+{"index": 7, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774919788.8407078}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919822.130989}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919824.382889}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919827.7131717}
+{"index": 9, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774919827.714209}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919861.1458292}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919863.4213662}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919866.784584}
+{"index": 1, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774919866.7855575}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919900.2799716}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919902.7697098}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919906.145178}
+{"index": 1, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774919906.1461563}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919939.460635}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919941.9135675}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919945.259231}
+{"index": 2, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774919945.2604005}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774919978.597995}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774919980.9193022}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774919984.2893252}
+{"index": 2, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774919984.290407}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920017.7024024}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920020.0484483}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920023.377307}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774920023.3783045}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920056.6491876}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920059.0858064}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920062.4065182}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774920062.4075804}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920095.8034952}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920098.1322281}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920101.5171833}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774920101.518134}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920134.8522463}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920137.1752932}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920140.4141178}
+{"index": 8, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774920140.4151347}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920173.7359066}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920176.0325391}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920179.518712}
+{"index": 8, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774920179.519848}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920212.983387}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920215.3550367}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920218.8961837}
+{"index": 8, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774920218.897524}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920252.13439}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920254.430992}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920257.8359733}
+{"index": 6, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774920257.837036}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920291.2458835}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920293.6537185}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920297.1003678}
+{"index": 6, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774920297.101388}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920330.5789146}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920333.052678}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920336.355537}
+{"index": 6, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774920336.3565488}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920369.744691}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920371.9949389}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920375.3376133}
+{"index": 6, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774920375.3386905}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920408.8097005}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920411.0740929}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920414.421493}
+{"index": 4, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774920414.4224823}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920447.8048155}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920450.1816063}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920453.6367357}
+{"index": 4, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774920453.6377633}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920486.9700158}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920489.44899}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920492.7597458}
+{"index": 4, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774920492.760665}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920526.202125}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920528.5187333}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920531.8955479}
+{"index": 4, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774920531.8972065}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920565.3690975}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920567.8850584}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920571.3183262}
+{"index": 5, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920571.3195674}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920604.752112}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920607.0566475}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920610.3969347}
+{"index": 5, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774920610.3994668}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920643.6996872}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920646.200011}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920649.66266}
+{"index": 5, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774920649.6638057}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920683.0579052}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920685.582507}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920689.0654893}
+{"index": 5, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774920689.0678916}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920722.4818342}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920724.9595764}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920728.365207}
+{"index": 5, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774920728.3663118}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920761.7780914}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920764.2311788}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920767.6379232}
+{"index": 3, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920767.6389947}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920801.0606995}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920803.48939}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920806.8707087}
+{"index": 3, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774920806.871704}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920840.2593963}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920842.68681}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920846.1483943}
+{"index": 3, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774920846.1493375}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920879.6384373}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920881.9218857}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920885.372066}
+{"index": 3, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774920885.3731415}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.3641536}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.3988605}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.4589362}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.4590237}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.4895396}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.551172}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.5667672}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.6125278}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.6432683}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920970.6753724}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920972.6390505}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920972.707753}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920972.7773254}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920972.849113}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920972.9910898}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920973.007092}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920973.007239}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920973.0472074}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920973.0532877}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920973.0535598}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.0284407}
+{"index": 9, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.030039}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.1357672}
+{"index": 8, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.1366277}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.1508148}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.151827}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.2597313}
+{"index": 3, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.2605913}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.2937334}
+{"index": 2, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.2945356}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.3737247}
+{"index": 7, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.3745546}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.3982663}
+{"index": 5, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.3991187}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.4440086}
+{"index": 4, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.444825}
+{"index": 6, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.4587612}
+{"index": 6, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.4596927}
+{"index": 1, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920976.462737}
+{"index": 1, "error": "Connection error.", "stage": "retryable_error", "attempt": 1, "timestamp": 1774920976.4633427}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.7419868}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.8579133}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.8664076}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.8665326}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.8669066}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.8971019}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.942438}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920982.9732234}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.0443747}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.1835618}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.1990259}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.2160535}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.293797}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.3362606}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.3363664}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920985.3364484}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.4233296}
+{"index": 3, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.4243054}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.562238}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.5631037}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.5915995}
+{"index": 9, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.592423}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.6393669}
+{"index": 8, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.6402981}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.669775}
+{"index": 4, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.6706846}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.7005398}
+{"index": 2, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.7014933}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.731356}
+{"index": 7, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.7322073}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774920988.7398071}
+{"index": 5, "error": "Connection error.", "stage": "retryable_error", "attempt": 2, "timestamp": 1774920988.7407281}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920995.101852}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920995.1325064}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920995.132604}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920995.1629028}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920995.1784506}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774920995.2240863}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920997.4085383}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920997.4086566}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920997.4717839}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920997.5049055}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920997.6185343}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774920997.688148}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921000.739626}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921000.7397287}
+{"index": 3, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921000.74059}
+{"index": 2, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921000.74189}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921000.7869265}
+{"index": 4, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921000.7878532}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921000.9111178}
+{"index": 8, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921000.9120657}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921000.940112}
+{"index": 9, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921000.941001}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921000.9591632}
+{"index": 0, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921000.960203}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921010.3827777}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921010.398208}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921010.4441392}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921010.491157}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921012.635426}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921012.8835044}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921012.8837025}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921012.8992887}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921015.963362}
+{"index": 3, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921015.9644132}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921016.213999}
+{"index": 4, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921016.2148125}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921016.2447033}
+{"index": 2, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921016.2455401}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921016.424996}
+{"index": 8, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921016.4258566}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921033.7887442}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921033.891369}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921036.0386767}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921036.3478754}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921039.5822852}
+{"index": 4, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921039.5835443}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921039.643905}
+{"index": 3, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921039.6449902}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921073.18073}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921075.7385795}
+{"index": 4, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921079.021582}
+{"index": 4, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921079.0228891}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921112.4997492}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921114.8466005}
+{"index": 3, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921118.1948533}
+{"index": 3, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921118.1958163}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921151.6908}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921154.0111804}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921157.480667}
+{"index": 2, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921157.4816341}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921190.9436696}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921193.2502766}
+{"index": 2, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921196.558305}
+{"index": 2, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921196.5593674}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921229.9180138}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921232.3374252}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921235.5770555}
+{"index": 8, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921235.57807}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921269.012274}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921271.3780134}
+{"index": 8, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921274.901834}
+{"index": 8, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921274.9029403}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921308.268437}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921310.6594245}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921314.0590827}
+{"index": 9, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921314.0600388}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921347.5320888}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921349.9830937}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921353.4765642}
+{"index": 9, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921353.4787745}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921386.775962}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921389.328938}
+{"index": 9, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921392.7823813}
+{"index": 9, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921392.7833152}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921426.2620754}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921428.805482}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921432.2191484}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921432.2201207}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921465.5595827}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921467.904401}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921471.2754095}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921471.2763877}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921504.7856364}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921507.0953145}
+{"index": 0, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921510.3910875}
+{"index": 0, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921510.3921194}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921543.996225}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921546.3909552}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921549.7094707}
+{"index": 7, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921549.7104652}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921583.148022}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921585.5065532}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921588.9115782}
+{"index": 7, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921588.912559}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921622.3072207}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921624.66096}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921627.9758573}
+{"index": 7, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921627.9768565}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921661.539891}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921663.8202407}
+{"index": 7, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921667.218128}
+{"index": 7, "error": "Connection error.", "stage": "retryable_exceeded_drop", "attempt": 6, "requeue": 2, "timestamp": 1774921667.2190738}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921700.6025825}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921703.1191897}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921706.3833454}
+{"index": 5, "error": "Connection error.", "stage": "retryable_error", "attempt": 3, "timestamp": 1774921706.3843381}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921739.77377}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921742.0419679}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921745.467096}
+{"index": 5, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 4, "requeue": 1, "timestamp": 1774921745.468677}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 1, "timestamp": 1774921778.7782626}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 2, "timestamp": 1774921781.1077101}
+{"index": 5, "error": "Connection error.", "stage": "llm_call", "attempt": 3, "timestamp": 1774921784.407207}
+{"index": 5, "error": "Connection error.", "stage": "retryable_exceeded_requeue", "attempt": 5, "requeue": 2, "timestamp": 1774921784.4080443}
+{"index": 0, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922328.8647795}
+{"index": 18, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922364.6450622}
+{"index": 12, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922365.891104}
+{"index": 16, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922365.960796}
+{"index": 13, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922367.8303432}
+{"index": 18, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922383.6873484}
+{"index": 20, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922403.6375895}
+{"index": 22, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922408.1665754}
+{"index": 20, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922423.7905564}
+{"index": 36, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922467.2158697}
+{"index": 20, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922468.8202758}
+{"index": 30, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922469.8130693}
+{"index": 40, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922507.5972724}
+{"index": 42, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922513.6612265}
+{"index": 54, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922556.4798434}
+{"index": 55, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922558.3419623}
+{"index": 51, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922564.0120316}
+{"index": 51, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922588.9364648}
+{"index": 66, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922607.7173288}
+{"index": 60, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922610.2674677}
+{"index": 71, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922650.9773965}
+{"index": 76, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922651.724969}
+{"index": 74, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922655.1408312}
+{"index": 82, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922696.5073538}
+{"index": 87, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922737.9228077}
+{"index": 96, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922742.6204402}
+{"index": 105, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922781.4811842}
+{"index": 97, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922781.6447952}
+{"index": 105, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922799.395776}
+{"index": 112, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922819.3115497}
+{"index": 115, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922822.367847}
+{"index": 124, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922861.1687849}
+{"index": 125, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922864.5218823}
+{"index": 129, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922901.2001538}
+{"index": 130, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922905.2068298}
+{"index": 129, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922922.6314988}
+{"index": 130, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922925.0431771}
+{"index": 141, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922948.515794}
+{"index": 140, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922952.7789915}
+{"index": 141, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774922969.5265226}
+{"index": 145, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774922994.9513535}
+{"index": 162, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923030.5146081}
+{"index": 154, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923033.4200351}
+{"index": 157, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923033.8926878}
+{"index": 162, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774923053.7862012}
+{"index": 166, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923072.989465}
+{"index": 191, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923203.205911}
+{"index": 208, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923264.0267367}
+{"index": 221, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923297.092032}
+{"index": 218, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923300.19262}
+{"index": 219, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923301.6599784}
+{"index": 212, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923306.9244368}
+{"index": 221, "error": "Inline repair requeue (NaNs detected)", "stage": "inline_repair", "attempt": 1, "strict_retry": true, "timestamp": 1774923317.9131095}
+{"index": 223, "error": "Invalid batch response (missing keys or length mismatch)", "stage": "initial_parse", "timestamp": 1774923345.798155}

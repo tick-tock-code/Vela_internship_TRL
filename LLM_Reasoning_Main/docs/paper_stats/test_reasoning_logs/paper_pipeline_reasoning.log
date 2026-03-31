@@ -67,3 +67,10 @@
 [2026-03-22T03:43:24.022366] Using cached test reasoning (clean, no missing experiments).
 [2026-03-26T01:15:50.621496] Using cached test reasoning (clean, no missing experiments).
 [2026-03-26T01:17:01.172650] Using cached test reasoning (clean, no missing experiments).
+[2026-03-31T02:14:38.060316] Cached reasoning needs repair/missing experiments. missing_exps=['C'] nan_flags={'C': False}
+[2026-03-31T02:14:38.063450] Repairing/adding test reasoning for exp C (target_batches=all)
+[2026-03-31T02:36:08.761477] Cached reasoning needs repair/missing experiments. missing_exps=['C'] nan_flags={'C': False}
+[2026-03-31T02:36:08.763450] Repairing/adding test reasoning for exp C (target_batches=all)
+[2026-03-31T02:58:27.960151] Cached reasoning needs repair/missing experiments. missing_exps=['C'] nan_flags={'C': False}
+[2026-03-31T02:58:27.962413] Repairing/adding test reasoning for exp C (target_batches=all)
+[2026-03-31T03:16:07.338179] Repaired/merged test reasoning written.

@@ -1,237 +1,28 @@
-2026-03-30 17:03:33,970	INFO	Starting model testing pipeline
-2026-03-30 17:03:33,970	INFO	Args: {'cv_folds': 5, 'engineered_family_id': None, 'engineered_set_id': 'set_05', 'exp_scope': 'full_exps', 'run_interpretability': 'false', 'model_complexity': 'complex', 'transform_sweep': 'false', 'feature_transforms': 'Base,PLS', 'pls_components': 6, 'sft_k': 30, 'logistic_penalty': 'l2', 'logistic_c_grid': '0.1,1,10', 'logistic_l1_ratio_grid': '0.2,0.8', 'regularization_sweep': 'none', 'logistic_c': 0.1, 'logistic_l1_ratio': 0.5, 'mlp_alpha_grid': '0.001,0.01,0.1', 'mlp_alpha': 0.01, 'exclude_evidence_support_rating': 'false', 'resume': 'false', 'save_models': 'true', 'collinearity_report': 'false', 'feature_pruning': 'aggressive_pruning', 'pruning_sweep': 'false', 'combo_filter': '', 'collinearity_corr_topk': 20, 'collinearity_corr_threshold': 0.9, 'vif_max_features': 200}
-2026-03-30 17:03:40,229	INFO	Feature transforms: BASE, PLS
-2026-03-30 17:03:40,230	INFO	Run transform start: BASE (interp_on=False)
-2026-03-30 17:03:40,231	INFO	Pruning level: aggressive_pruning
-2026-03-30 17:03:40,233	INFO	Transform=BASE sweep_value=None
-2026-03-30 17:03:40,233	INFO	Run start family=hq_mirror combo=HQ model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:40,957	INFO	Run start family=engineered_set_05 combo=HQ model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:41,209	INFO	Run start family=hq_mirror combo=HQ model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:42,365	INFO	Run start family=engineered_set_05 combo=HQ model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:43,158	INFO	Run start family=hq_mirror combo=HQ model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:50,160	INFO	Run start family=engineered_set_05 combo=HQ model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:52,591	INFO	Run start family=hq_mirror combo=HQ model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:03:57,082	INFO	Run start family=engineered_set_05 combo=HQ model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:01,613	INFO	Run start family=hq_mirror combo=A model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:02,495	INFO	Run start family=engineered_set_05 combo=A model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:02,856	INFO	Run start family=hq_mirror combo=A model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:03,841	INFO	Run start family=engineered_set_05 combo=A model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:04,871	INFO	Run start family=hq_mirror combo=A model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:11,202	INFO	Run start family=engineered_set_05 combo=A model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:16,282	INFO	Run start family=hq_mirror combo=A model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:23,201	INFO	Run start family=engineered_set_05 combo=A model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:28,237	INFO	Run start family=hq_mirror combo=B model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:29,053	INFO	Run start family=engineered_set_05 combo=B model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:29,356	INFO	Run start family=hq_mirror combo=B model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:30,241	INFO	Run start family=engineered_set_05 combo=B model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:31,065	INFO	Run start family=hq_mirror combo=B model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:37,154	INFO	Run start family=engineered_set_05 combo=B model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:40,171	INFO	Run start family=hq_mirror combo=B model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:44,779	INFO	Run start family=engineered_set_05 combo=B model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:47,190	INFO	Run start family=hq_mirror combo=C model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:48,278	INFO	Run start family=engineered_set_05 combo=C model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:48,611	INFO	Run start family=hq_mirror combo=C model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:49,495	INFO	Run start family=engineered_set_05 combo=C model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:50,319	INFO	Run start family=hq_mirror combo=C model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:55,568	INFO	Run start family=engineered_set_05 combo=C model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:04:58,170	INFO	Run start family=hq_mirror combo=C model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:01,389	INFO	Run start family=engineered_set_05 combo=C model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:04,170	INFO	Run start family=hq_mirror combo=D model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:05,085	INFO	Run start family=engineered_set_05 combo=D model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:05,439	INFO	Run start family=hq_mirror combo=D model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:06,350	INFO	Run start family=engineered_set_05 combo=D model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:07,154	INFO	Run start family=hq_mirror combo=D model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:12,696	INFO	Run start family=engineered_set_05 combo=D model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:16,697	INFO	Run start family=hq_mirror combo=D model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:21,246	INFO	Run start family=engineered_set_05 combo=D model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:24,107	INFO	Run start family=hq_mirror combo=E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:25,154	INFO	Run start family=engineered_set_05 combo=E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:25,530	INFO	Run start family=hq_mirror combo=E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:26,470	INFO	Run start family=engineered_set_05 combo=E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:27,335	INFO	Run start family=hq_mirror combo=E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:33,014	INFO	Run start family=engineered_set_05 combo=E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:36,066	INFO	Run start family=hq_mirror combo=E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:39,351	INFO	Run start family=engineered_set_05 combo=E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:42,286	INFO	Run start family=hq_mirror combo=F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:43,173	INFO	Run start family=engineered_set_05 combo=F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:43,490	INFO	Run start family=hq_mirror combo=F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:44,507	INFO	Run start family=engineered_set_05 combo=F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:45,458	INFO	Run start family=hq_mirror combo=F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:05:53,049	INFO	Run start family=engineered_set_05 combo=F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:00,516	INFO	Run start family=hq_mirror combo=F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:04,741	INFO	Run start family=engineered_set_05 combo=F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:11,683	INFO	Run start family=hq_mirror combo=A+D model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:12,637	INFO	Run start family=engineered_set_05 combo=A+D model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:13,058	INFO	Run start family=hq_mirror combo=A+D model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:14,075	INFO	Run start family=engineered_set_05 combo=A+D model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:14,998	INFO	Run start family=hq_mirror combo=A+D model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:25,104	INFO	Run start family=engineered_set_05 combo=A+D model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:31,412	INFO	Run start family=hq_mirror combo=A+D model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:37,421	INFO	Run start family=engineered_set_05 combo=A+D model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:44,234	INFO	Run start family=hq_mirror combo=A+E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:45,539	INFO	Run start family=engineered_set_05 combo=A+E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:45,977	INFO	Run start family=hq_mirror combo=A+E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:46,918	INFO	Run start family=engineered_set_05 combo=A+E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:47,838	INFO	Run start family=hq_mirror combo=A+E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:53,791	INFO	Run start family=engineered_set_05 combo=A+E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:06:58,887	INFO	Run start family=hq_mirror combo=A+E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:03,100	INFO	Run start family=engineered_set_05 combo=A+E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:09,903	INFO	Run start family=hq_mirror combo=D+F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:10,841	INFO	Run start family=engineered_set_05 combo=D+F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:11,208	INFO	Run start family=hq_mirror combo=D+F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:12,519	INFO	Run start family=engineered_set_05 combo=D+F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:13,965	INFO	Run start family=hq_mirror combo=D+F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:23,299	INFO	Run start family=engineered_set_05 combo=D+F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:35,296	INFO	Run start family=hq_mirror combo=D+F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:42,191	INFO	Run start family=engineered_set_05 combo=D+F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:56,378	INFO	Run start family=hq_mirror combo=A+D+E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:57,724	INFO	Run start family=engineered_set_05 combo=A+D+E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:58,209	INFO	Run start family=hq_mirror combo=A+D+E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:07:59,377	INFO	Run start family=engineered_set_05 combo=A+D+E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:00,449	INFO	Run start family=hq_mirror combo=A+D+E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:09,701	INFO	Run start family=engineered_set_05 combo=A+D+E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:17,405	INFO	Run start family=hq_mirror combo=A+D+E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:26,495	INFO	Run start family=engineered_set_05 combo=A+D+E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:33,933	INFO	Run start family=hq_mirror combo=A+C+D+E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:35,446	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:36,464	INFO	Run start family=hq_mirror combo=A+C+D+E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:37,729	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:38,749	INFO	Run start family=hq_mirror combo=A+C+D+E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:44,230	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:48,832	INFO	Run start family=hq_mirror combo=A+C+D+E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:53,140	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:58,186	INFO	Run start family=hq_mirror combo=C+D+E+F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:08:59,555	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:00,050	INFO	Run start family=hq_mirror combo=C+D+E+F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:01,081	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:02,054	INFO	Run start family=hq_mirror combo=C+D+E+F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:10,514	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:17,739	INFO	Run start family=hq_mirror combo=C+D+E+F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:19,894	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:25,307	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:26,969	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=logistic transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:27,673	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:28,807	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=xgb1 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:29,874	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:36,769	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=mlp4 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:42,323	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:49,339	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=mlp2 transform=BASE sweep=None reg_sweep=none
-2026-03-30 17:09:55,835	INFO	Report saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-30_170333_full_run\reports_prune_aggressive\model_testing_report_exp_full_exps_complex_models_interp_off_prune_aggressive_base.md
-2026-03-30 17:09:55,836	INFO	Results saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-30_170333_full_run\model_testing_results_exp_full_exps_complex_models_interp_off_prune_aggressive_base.csv
-2026-03-30 17:09:55,840	INFO	Run transform start: PLS (interp_on=False)
-2026-03-30 17:09:55,842	INFO	Pruning level: aggressive_pruning
-2026-03-30 17:09:55,844	INFO	Transform=PLS sweep_value=6
-2026-03-30 17:09:55,844	INFO	Run start family=hq_mirror combo=HQ model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:09:56,183	INFO	Run start family=engineered_set_05 combo=HQ model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:09:56,505	INFO	Run start family=hq_mirror combo=HQ model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:09:57,399	INFO	Run start family=engineered_set_05 combo=HQ model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:09:58,266	INFO	Run start family=hq_mirror combo=HQ model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:00,413	INFO	Run start family=engineered_set_05 combo=HQ model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:02,904	INFO	Run start family=hq_mirror combo=HQ model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:05,071	INFO	Run start family=engineered_set_05 combo=HQ model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:07,282	INFO	Run start family=hq_mirror combo=A model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:07,639	INFO	Run start family=engineered_set_05 combo=A model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:07,979	INFO	Run start family=hq_mirror combo=A model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:08,877	INFO	Run start family=engineered_set_05 combo=A model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:09,783	INFO	Run start family=hq_mirror combo=A model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:12,484	INFO	Run start family=engineered_set_05 combo=A model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:15,256	INFO	Run start family=hq_mirror combo=A model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:17,649	INFO	Run start family=engineered_set_05 combo=A model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:19,896	INFO	Run start family=hq_mirror combo=B model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:20,255	INFO	Run start family=engineered_set_05 combo=B model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:20,568	INFO	Run start family=hq_mirror combo=B model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:21,755	INFO	Run start family=engineered_set_05 combo=B model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:22,699	INFO	Run start family=hq_mirror combo=B model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:25,074	INFO	Run start family=engineered_set_05 combo=B model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:27,821	INFO	Run start family=hq_mirror combo=B model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:30,009	INFO	Run start family=engineered_set_05 combo=B model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:32,463	INFO	Run start family=hq_mirror combo=C model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:32,807	INFO	Run start family=engineered_set_05 combo=C model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:33,151	INFO	Run start family=hq_mirror combo=C model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:34,117	INFO	Run start family=engineered_set_05 combo=C model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:35,032	INFO	Run start family=hq_mirror combo=C model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:37,806	INFO	Run start family=engineered_set_05 combo=C model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:40,602	INFO	Run start family=hq_mirror combo=C model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:43,018	INFO	Run start family=engineered_set_05 combo=C model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:45,613	INFO	Run start family=hq_mirror combo=D model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:45,949	INFO	Run start family=engineered_set_05 combo=D model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:46,271	INFO	Run start family=hq_mirror combo=D model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:47,215	INFO	Run start family=engineered_set_05 combo=D model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:48,124	INFO	Run start family=hq_mirror combo=D model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:50,206	INFO	Run start family=engineered_set_05 combo=D model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:52,644	INFO	Run start family=hq_mirror combo=D model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:54,884	INFO	Run start family=engineered_set_05 combo=D model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:57,272	INFO	Run start family=hq_mirror combo=E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:57,609	INFO	Run start family=engineered_set_05 combo=E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:57,923	INFO	Run start family=hq_mirror combo=E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:58,872	INFO	Run start family=engineered_set_05 combo=E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:10:59,782	INFO	Run start family=hq_mirror combo=E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:02,055	INFO	Run start family=engineered_set_05 combo=E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:04,715	INFO	Run start family=hq_mirror combo=E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:07,374	INFO	Run start family=engineered_set_05 combo=E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:09,966	INFO	Run start family=hq_mirror combo=F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:10,324	INFO	Run start family=engineered_set_05 combo=F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:10,678	INFO	Run start family=hq_mirror combo=F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:11,602	INFO	Run start family=engineered_set_05 combo=F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:12,461	INFO	Run start family=hq_mirror combo=F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:15,357	INFO	Run start family=engineered_set_05 combo=F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:18,153	INFO	Run start family=hq_mirror combo=F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:20,526	INFO	Run start family=engineered_set_05 combo=F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:22,890	INFO	Run start family=hq_mirror combo=A+D model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:23,245	INFO	Run start family=engineered_set_05 combo=A+D model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:23,591	INFO	Run start family=hq_mirror combo=A+D model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:24,504	INFO	Run start family=engineered_set_05 combo=A+D model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:25,378	INFO	Run start family=hq_mirror combo=A+D model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:28,092	INFO	Run start family=engineered_set_05 combo=A+D model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:30,988	INFO	Run start family=hq_mirror combo=A+D model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:33,321	INFO	Run start family=engineered_set_05 combo=A+D model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:35,408	INFO	Run start family=hq_mirror combo=A+E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:35,754	INFO	Run start family=engineered_set_05 combo=A+E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:36,085	INFO	Run start family=hq_mirror combo=A+E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:36,998	INFO	Run start family=engineered_set_05 combo=A+E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:37,898	INFO	Run start family=hq_mirror combo=A+E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:40,613	INFO	Run start family=engineered_set_05 combo=A+E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:43,666	INFO	Run start family=hq_mirror combo=A+E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:46,057	INFO	Run start family=engineered_set_05 combo=A+E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:48,068	INFO	Run start family=hq_mirror combo=D+F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:48,422	INFO	Run start family=engineered_set_05 combo=D+F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:48,777	INFO	Run start family=hq_mirror combo=D+F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:49,685	INFO	Run start family=engineered_set_05 combo=D+F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:50,564	INFO	Run start family=hq_mirror combo=D+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:53,868	INFO	Run start family=engineered_set_05 combo=D+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:11:57,684	INFO	Run start family=hq_mirror combo=D+F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:01,098	INFO	Run start family=engineered_set_05 combo=D+F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:03,524	INFO	Run start family=hq_mirror combo=A+D+E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:03,875	INFO	Run start family=engineered_set_05 combo=A+D+E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:04,241	INFO	Run start family=hq_mirror combo=A+D+E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:05,167	INFO	Run start family=engineered_set_05 combo=A+D+E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:06,076	INFO	Run start family=hq_mirror combo=A+D+E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:08,677	INFO	Run start family=engineered_set_05 combo=A+D+E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:11,958	INFO	Run start family=hq_mirror combo=A+D+E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:14,366	INFO	Run start family=engineered_set_05 combo=A+D+E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:16,454	INFO	Run start family=hq_mirror combo=A+C+D+E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:16,788	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:17,120	INFO	Run start family=hq_mirror combo=A+C+D+E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:17,970	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:18,838	INFO	Run start family=hq_mirror combo=A+C+D+E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:21,484	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:24,642	INFO	Run start family=hq_mirror combo=A+C+D+E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:27,194	INFO	Run start family=engineered_set_05 combo=A+C+D+E model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:29,347	INFO	Run start family=hq_mirror combo=C+D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:29,715	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:30,103	INFO	Run start family=hq_mirror combo=C+D+E+F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:30,952	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:31,887	INFO	Run start family=hq_mirror combo=C+D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:35,532	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:39,036	INFO	Run start family=hq_mirror combo=C+D+E+F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:42,129	INFO	Run start family=engineered_set_05 combo=C+D+E+F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:44,761	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:45,151	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:45,580	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:46,609	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=xgb1 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:47,514	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:50,551	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:54,147	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:12:57,740	INFO	Run start family=engineered_set_05 combo=A+B+C+D+E+F model=mlp2 transform=PLS sweep=6 reg_sweep=none
-2026-03-30 17:13:02,739	INFO	Report saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-30_170333_full_run\reports_prune_aggressive\model_testing_report_exp_full_exps_complex_models_interp_off_prune_aggressive_pls.md
-2026-03-30 17:13:02,739	INFO	Results saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-30_170333_full_run\model_testing_results_exp_full_exps_complex_models_interp_off_prune_aggressive_pls.csv
+2026-03-31 11:33:59,961	INFO	Starting model testing pipeline
+2026-03-31 11:33:59,961	INFO	Args: {'cv_folds': 5, 'engineered_family_id': None, 'engineered_set_id': 'set_05', 'exp_scope': 'vif50_exps', 'run_interpretability': 'false', 'model_complexity': 'complex', 'transform_sweep': 'false', 'feature_transforms': 'Base,PLS', 'pls_components': 6, 'sft_k': 30, 'logistic_penalty': 'l2', 'logistic_c_grid': '0.1,1,10', 'logistic_l1_ratio_grid': '0.2,0.8', 'regularization_sweep': 'none', 'logistic_c': 0.1, 'logistic_l1_ratio': 0.5, 'mlp_alpha_grid': '0.001,0.01,0.1', 'mlp_alpha': 0.01, 'finalising_experiments': 'false', 'generating_test_predictions': 'true', 'test_csv': 'C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\LLM_Reasoning_Main\\test_dataset\\vcbench_final_private (success column removed) - vcbench_final_private.csv', 'test_reasoning_parquet': 'C:\\Users\\joelb\\OneDrive\\Vela_partnerships_project\\Project_folder\\LLM_Reasoning_Main\\test_dataset\\llm_reasoning_private.parquet', 'exclude_evidence_support_rating': 'false', 'resume': 'false', 'save_models': 'true', 'collinearity_report': 'true', 'feature_pruning': 'aggressive_pruning', 'pruning_sweep': 'false', 'combo_filter': '', 'collinearity_corr_topk': 20, 'collinearity_corr_threshold': 0.9, 'vif_max_features': 200}
+2026-03-31 11:34:12,781	INFO	Feature transforms: BASE, PLS
+2026-03-31 11:34:12,783	INFO	Run transform start: BASE (interp_on=False)
+2026-03-31 11:34:12,784	INFO	Pruning level: aggressive_pruning
+2026-03-31 11:34:12,786	INFO	Transform=BASE sweep_value=None
+2026-03-31 11:34:12,786	INFO	Run start family=hq_mirror combo=HQ model=logistic transform=BASE sweep=None reg_sweep=none
+2026-03-31 11:34:13,697	INFO	Run start family=hq_mirror combo=A model=logistic transform=BASE sweep=None reg_sweep=none
+2026-03-31 11:34:14,836	INFO	Run start family=hq_mirror combo=A+C model=logistic transform=BASE sweep=None reg_sweep=none
+2026-03-31 11:34:16,294	INFO	Finalising mode: standard report skipped.
+2026-03-31 11:34:16,294	INFO	Results saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-31_113359_finalising_vif50_exps\model_testing_results_exp_vif50_exps_complex_models_interp_off_prune_aggressive_base.csv
+2026-03-31 11:34:16,299	INFO	Run transform start: PLS (interp_on=False)
+2026-03-31 11:34:16,299	INFO	Pruning level: aggressive_pruning
+2026-03-31 11:34:16,301	INFO	Transform=PLS sweep_value=6
+2026-03-31 11:34:16,301	INFO	Run start family=hq_mirror combo=A model=logistic transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:16,777	INFO	Run start family=hq_mirror combo=A model=mlp4 transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:20,324	INFO	Run start family=hq_mirror combo=F model=logistic transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:20,762	INFO	Run start family=hq_mirror combo=F model=mlp4 transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:23,885	INFO	Run start family=hq_mirror combo=D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:24,468	INFO	Run start family=hq_mirror combo=D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:28,012	INFO	Run start family=hq_mirror combo=C+D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:28,525	INFO	Run start family=hq_mirror combo=C+D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:31,941	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=logistic transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:32,650	INFO	Run start family=hq_mirror combo=A+B+C+D+E+F model=mlp4 transform=PLS sweep=6 reg_sweep=none
+2026-03-31 11:34:35,885	INFO	Finalising mode: standard report skipped.
+2026-03-31 11:34:35,885	INFO	Results saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-31_113359_finalising_vif50_exps\model_testing_results_exp_vif50_exps_complex_models_interp_off_prune_aggressive_pls.csv
+2026-03-31 11:34:35,889	INFO	Finalising report saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-31_113359_finalising_vif50_exps\model_testing_report_finalising_experiments.md
+2026-03-31 11:34:35,913	INFO	Test predictions saved: C:\Users\joelb\OneDrive\Vela_partnerships_project\Project_folder\LLM_Reasoning_Main\docs\model_testing\2026-03-31_113359_finalising_vif50_exps\model_testing_test_predictions.csv

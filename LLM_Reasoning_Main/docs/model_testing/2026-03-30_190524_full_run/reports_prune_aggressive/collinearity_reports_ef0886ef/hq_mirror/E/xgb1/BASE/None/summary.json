@@ -1,0 +1,23 @@
+{
+  "family": "hq_mirror",
+  "model_name": "Mirror HQ E (xgb1)",
+  "model_type": "xgb1",
+  "reasoning_combo": "E",
+  "transform": "BASE",
+  "sweep_param": "None",
+  "n_features_model": 23,
+  "n_features_raw": 23,
+  "cond_number": 101.61300607013584,
+  "max_abs_corr": 0.9342841546827967,
+  "mean_abs_corr": 0.192806040524569,
+  "corr_count_ge_threshold": 3.0,
+  "max_vif": 10.978198480823814,
+  "vif_skipped": false,
+  "avg_sign_flip_rate": null,
+  "raw_cond_number": 101.61300607013584,
+  "raw_max_abs_corr": 0.9342841546827967,
+  "raw_mean_abs_corr": 0.192806040524569,
+  "raw_corr_count_ge_threshold": 3.0,
+  "raw_max_vif": 10.978198480823814,
+  "raw_vif_skipped": false
+}

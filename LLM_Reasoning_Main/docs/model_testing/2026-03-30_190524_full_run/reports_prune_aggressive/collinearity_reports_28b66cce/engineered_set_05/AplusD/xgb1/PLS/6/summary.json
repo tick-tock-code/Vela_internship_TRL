@@ -1,0 +1,23 @@
+{
+  "family": "engineered_set_05",
+  "model_name": "Engineered set_05 A+D (xgb1)",
+  "model_type": "xgb1",
+  "reasoning_combo": "A+D",
+  "transform": "PLS",
+  "sweep_param": "6",
+  "n_features_model": 6,
+  "n_features_raw": 24,
+  "cond_number": 1.000000000000002,
+  "max_abs_corr": 1.6144750202950932e-15,
+  "mean_abs_corr": 7.191599813746613e-16,
+  "corr_count_ge_threshold": 0.0,
+  "max_vif": 1.0000000000000002,
+  "vif_skipped": false,
+  "avg_sign_flip_rate": null,
+  "raw_cond_number": 2.0452815918924944e+17,
+  "raw_max_abs_corr": 1.0,
+  "raw_mean_abs_corr": 0.15145809972362304,
+  "raw_corr_count_ge_threshold": 3.0,
+  "raw_max_vif": Infinity,
+  "raw_vif_skipped": false
+}

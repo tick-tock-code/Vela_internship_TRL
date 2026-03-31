@@ -1,0 +1,23 @@
+{
+  "family": "engineered_set_05",
+  "model_name": "Engineered set_05 A+C+D+E (mlp4)",
+  "model_type": "mlp4",
+  "reasoning_combo": "A+C+D+E",
+  "transform": "PLS",
+  "sweep_param": "6",
+  "n_features_model": 6,
+  "n_features_raw": 30,
+  "cond_number": 1.0000000000000022,
+  "max_abs_corr": 2.317673849139691e-15,
+  "mean_abs_corr": 5.474073196411408e-16,
+  "corr_count_ge_threshold": 0.0,
+  "max_vif": 1.0000000000000002,
+  "vif_skipped": false,
+  "avg_sign_flip_rate": null,
+  "raw_cond_number": 3.4269827465177594e+17,
+  "raw_max_abs_corr": 1.0,
+  "raw_mean_abs_corr": 0.21141894969710046,
+  "raw_corr_count_ge_threshold": 5.0,
+  "raw_max_vif": Infinity,
+  "raw_vif_skipped": false
+}

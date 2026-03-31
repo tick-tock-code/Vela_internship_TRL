@@ -6,6 +6,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import argparse
 import logging
 import json
+import math
+import io
+import os
+import shutil
 import hashlib
 import warnings
 from datetime import datetime
@@ -27,7 +31,13 @@ from sklearn.neural_network import MLPClassifier
 from think_reason_learn.datasets import load_vcbench
 from think_reason_learn.features import FeatureEvaluator
 from think_reason_learn.features._types import Rule
-from think_reason_learn.datasets._vcbench import VCBENCH_HELPERS
+from think_reason_learn.datasets._vcbench import VCBENCH_HELPERS, _safe_json_parse
+from lib.llm_reasoning_features import (
+    ReasoningConfig,
+    build_experiment_key_map,
+    generate_reasoning_features,
+    _refresh_llm_from_env,
+)
 
 from lib.cv_folds import load_or_create_folds
 from pipelines.vcbench_pipeline import (
@@ -38,9 +48,13 @@ from pipelines.vcbench_pipeline import (
     _select_threshold,
     _standardize_continuous,
 )
-from lib.paths import BASE_DIR
+from lib.paths import BASE_DIR, PROJECT_ROOT, CONFIG_DIR, PROMPT_DIR
 
 OUTPUT_DIR = BASE_DIR / "docs" / "model_testing"
+TEST_DIR = BASE_DIR / "test_dataset"
+DEFAULT_TEST_CSV = TEST_DIR / "vcbench_final_private (success column removed) - vcbench_final_private.csv"
+DEFAULT_TEST_REASONING = TEST_DIR / "llm_reasoning_private.parquet"
+TEST_PARSE_VERSION = "vcbench_safe_json_parse_v1"
 LOGGER = logging.getLogger("model_testing_pipeline")
 ENGINEERED_SET_ID_DEFAULT = "set_05"
 PERM_REPEATS = 3
@@ -54,6 +68,19 @@ PLS_COMPONENTS_DEFAULT = 6
 SFT_K_DEFAULT = 30
 PLS_SWEEP_VALUES = [2, 4, 6, 8, 10]
 SFT_SWEEP_VALUES = [5, 10, 15, 20, 25, 30]
+FINAL_BASE_COMBOS = ["HQ", "A", "A+C"]
+FINAL_PLS_COMBOS = ["A", "F", "D+E+F", "A+B+C+D+E+F", "C+D+E+F"]
+FINAL_PRED_COLUMNS = {
+    ("logistic", "BASE", "HQ"): "LR_BASE_HQ",
+    ("logistic", "BASE", "A"): "LR_BASE_A",
+    ("logistic", "BASE", "A+C"): "LR_BASE_A_C",
+    ("logistic", "PLS", "F"): "LR_PLS_F",
+    ("logistic", "PLS", "A"): "LR_PLS_A",
+    ("logistic", "PLS", "D+E+F"): "LR_PLS_DEF",
+    ("logistic", "PLS", "A+B+C+D+E+F"): "LR_PLS_ABCDEF",
+    ("mlp4", "PLS", "C+D+E+F"): "MLP4_PLS_CDEF",
+    ("mlp4", "PLS", "A+B+C+D+E+F"): "MLP4_PLS_ABCDEF",
+}
 
 
 @dataclass
@@ -70,13 +97,486 @@ def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def _resolve_run_root_dir(exp_scope: str) -> tuple[Path, bool]:
-    if exp_scope == "full_exps":
-        ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        root_dir = OUTPUT_DIR / f"{ts}_full_run"
-        _ensure_dir(root_dir)
-        return root_dir, True
-    return OUTPUT_DIR, False
+def _load_env_if_present() -> None:
+    env_path = PROJECT_ROOT / ".env"
+    if not env_path.exists():
+        return
+    try:
+        from think_reason_learn.core import _config as trl_config
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            key = key.strip().lstrip("\ufeff")
+            val = val.strip().strip('"').strip("'")
+            if key and (key not in os.environ or not os.environ.get(key)):
+                os.environ[key] = val
+            if key in ("OPENAI_API_KEY", "GOOGLE_AI_API_KEY", "XAI_API_KEY", "ANTHROPIC_API_KEY"):
+                if hasattr(trl_config, "settings") and not getattr(trl_config.settings, key, ""):
+                    setattr(trl_config.settings, key, val)
+        from think_reason_learn.core.llms._ask import LLM
+        from think_reason_learn.core._singleton import SingletonMeta
+        SingletonMeta._instances.pop(LLM, None)
+        import think_reason_learn.core.llms as trl_llms
+        trl_llms.llm = trl_llms.LLM()
+    except Exception:
+        return
+
+
+def _make_unique_ids(records: list[dict[str, Any]], prefix: str) -> list[str]:
+    seen: set[str] = set()
+    ids: list[str] = []
+    for i, rec in enumerate(records):
+        raw = rec.get("founder_uuid")
+        cand: str | None = None
+        if raw is not None:
+            cand = str(raw).strip()
+            if cand.lower() in {"", "none", "nan"}:
+                cand = None
+        if cand is None or cand in seen:
+            cand = f"{prefix}_{i}"
+        seen.add(cand)
+        ids.append(cand)
+    return ids
+
+
+def _records_hash(records: list[dict[str, Any]]) -> str:
+    def _default(obj: Any) -> Any:
+        if isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        if isinstance(obj, (np.ndarray,)):
+            return obj.tolist()
+        return str(obj)
+
+    payload = json.dumps(records, sort_keys=True, default=_default, ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _load_test_records(test_csv: Path) -> tuple[list[dict[str, Any]], pd.DataFrame]:
+    df = pd.read_csv(test_csv)
+    has_prose = "anonymised_prose" in df.columns
+    records: list[dict[str, Any]] = []
+    for _, row in df.iterrows():
+        rec: dict[str, Any] = {
+            "founder_uuid": row.get("founder_uuid", None),
+            "industry": row.get("industry", "") or "",
+            "educations": _safe_json_parse(row.get("educations_json", "")),
+            "jobs": _safe_json_parse(row.get("jobs_json", "")),
+            "ipos": _safe_json_parse(row.get("ipos", "")),
+            "acquisitions": _safe_json_parse(row.get("acquisitions", "")),
+        }
+        if has_prose:
+            rec["anonymised_prose"] = row.get("anonymised_prose", "") or ""
+        records.append(rec)
+    return records, df
+
+
+def _load_reasoning_cache(
+    df: pd.DataFrame,
+    exp_ids: list[str],
+) -> tuple[pd.DataFrame, dict[str, list[str]]]:
+    _, mapping = build_experiment_key_map(CONFIG_DIR / "experiments.json")
+    needed = {exp: mapping.get(exp, []) for exp in exp_ids}
+    id_col = "founder_uuid" if "founder_uuid" in df.columns else "row_index"
+
+    def _is_numeric(col: str) -> bool:
+        return (not col.endswith("_justification")) and (not col.endswith("_underrated_aspects"))
+
+    cols = [id_col] + [
+        c
+        for exp in exp_ids
+        for c in needed.get(exp, [])
+        if _is_numeric(c) and c in df.columns and pd.api.types.is_numeric_dtype(df[c])
+    ]
+    missing = [c for c in cols if c not in df.columns]
+    if missing:
+        raise RuntimeError(f"Reasoning cache missing columns: {missing}")
+    return df[cols].copy(), needed
+
+
+def _ensure_test_reasoning(
+    records: list[dict[str, Any]],
+    test_reasoning_path: Path,
+    core_prompt_path: Path,
+    experiments_path: Path,
+    exp_ids: list[str],
+    log_dir: Path,
+    model: str,
+    providers: dict[str, bool],
+    google_model: str | None,
+    records_hash: str,
+    parse_version: str,
+) -> pd.DataFrame:
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / "model_testing_reasoning.log"
+
+    def _log(msg: str) -> None:
+        ts = datetime.now().isoformat()
+        line = f"[{ts}] {msg}"
+        print(line)
+        try:
+            with log_path.open("a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except Exception:
+            pass
+
+    meta_path = test_reasoning_path.parent / "llm_reasoning_private_meta.json"
+    regen_all = False
+    force_meta_write = False
+    if test_reasoning_path.exists():
+        if not meta_path.exists():
+            force_meta_write = True
+            regen_all = False
+            _log(
+                "Test reasoning meta missing; will reuse cached reasoning and rebuild meta. "
+                f"parse_version={parse_version}"
+            )
+        else:
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            except Exception:
+                meta = {}
+            if (
+                meta.get("parse_version") != parse_version
+                or meta.get("records_hash") != records_hash
+            ):
+                regen_all = True
+
+    if regen_all and test_reasoning_path.exists():
+        _log(
+            "Regenerating test reasoning: metadata mismatch or missing. "
+            f"parse_version={parse_version}"
+        )
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = test_reasoning_path.parent / f"{test_reasoning_path.stem}.bak_{ts}{test_reasoning_path.suffix}"
+        test_reasoning_path.replace(backup_path)
+        if meta_path.exists():
+            meta_backup = meta_path.parent / f"{meta_path.stem}.bak_{ts}{meta_path.suffix}"
+            meta_path.replace(meta_backup)
+        stale_root = test_reasoning_path.parent / f"_stale_{ts}"
+        stale_root.mkdir(parents=True, exist_ok=True)
+        for exp_id in exp_ids:
+            exp_dir = test_reasoning_path.parent / f"exp_{exp_id}"
+            if exp_dir.exists():
+                dest = stale_root / exp_dir.name
+                _log(f"Archiving stale test reasoning dir: {exp_dir} -> {dest}")
+                try:
+                    shutil.move(str(exp_dir), str(dest))
+                except Exception as exc:
+                    _log(f"WARNING: failed to archive {exp_dir}: {exc}")
+
+    if test_reasoning_path.exists() and not regen_all:
+        df = pd.read_parquet(test_reasoning_path)
+        missing_exps = [exp for exp in exp_ids if not any(c.startswith(f"{exp}_") for c in df.columns)]
+        if not missing_exps:
+            _load_reasoning_cache(df, exp_ids)
+        _, exp_key_map = build_experiment_key_map(CONFIG_DIR / "experiments.json")
+        exp_nan_flags: dict[str, bool] = {}
+        for exp_id in exp_ids:
+            exp_cols = [
+                c
+                for c in exp_key_map.get(exp_id, [])
+                if c in df.columns and pd.api.types.is_numeric_dtype(df[c])
+            ]
+            exp_nan_flags[exp_id] = bool(exp_cols and df[exp_cols].isna().any().any())
+        any_nan = any(exp_nan_flags.values())
+
+        if not missing_exps and not any_nan:
+            _log("Using cached test reasoning (clean, no missing experiments).")
+            meta_payload = {
+                "parse_version": parse_version,
+                "records_hash": records_hash,
+                "n_records": len(records),
+                "experiments": exp_ids,
+                "saved_at": datetime.now().isoformat(),
+            }
+            if force_meta_write or not meta_path.exists():
+                meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
+            return df
+        _log(
+            "Cached reasoning needs repair/missing experiments. "
+            f"missing_exps={missing_exps} nan_flags={exp_nan_flags}"
+        )
+        batch_size = 20
+        labels = np.zeros(len(records), dtype=int)
+        output_dir = test_reasoning_path.parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+        merged_df: pd.DataFrame | None = None
+        id_col: str | None = None
+        exp_list = missing_exps if missing_exps else exp_ids
+        if missing_exps:
+            merged_df = df.copy()
+            id_col = "founder_uuid" if "founder_uuid" in df.columns else "row_index"
+        for exp_id in exp_list:
+            exp_missing = exp_id in missing_exps
+            exp_cols = [
+                c
+                for c in exp_key_map.get(exp_id, [])
+                if c in df.columns and pd.api.types.is_numeric_dtype(df[c])
+            ]
+            exp_nan_rows: list[int] = []
+            if not exp_missing and exp_cols:
+                exp_nan_rows = (
+                    df[exp_cols].isna().any(axis=1).to_numpy().nonzero()[0].tolist()
+                )
+            if not exp_missing and not exp_nan_rows:
+                _log(f"Skipping exp {exp_id}: no NaNs detected.")
+                continue
+            batch_ids = (
+                sorted({int(idx // batch_size) for idx in exp_nan_rows})
+                if exp_nan_rows
+                else None
+            )
+            _log(
+                f"Repairing/adding test reasoning for exp {exp_id} "
+                f"(target_batches={len(batch_ids) if batch_ids else 'all'})"
+            )
+            exp_dir = output_dir / f"exp_{exp_id}"
+            exp_dir.mkdir(parents=True, exist_ok=True)
+            exp_meta = exp_dir / "llm_reasoning_private_manifest.json"
+            cfg_repair = ReasoningConfig(
+                model=model,
+                dataset_size="full",
+                random_state=42,
+                core_prompt_path=core_prompt_path,
+                experiments_path=experiments_path,
+                providers=providers,
+                google_model=google_model,
+                batch_size=batch_size,
+                concurrency=10,
+                experiments=[exp_id],
+                dry_run=False,
+                log_dir=log_dir,
+                log_every=10,
+                repair_nan=True,
+                inline_repair=True,
+                rate_limit_fallback_sequence=[8, 6, 4, 2, 1],
+                repair_existing=bool(batch_ids),
+                target_batch_indices=batch_ids,
+            )
+            try:
+                df_exp, _ = generate_reasoning_features(
+                    records,
+                    labels,
+                    cfg_repair,
+                    output_dir=exp_dir,
+                    metadata_path=exp_meta,
+                    existing_df=df if batch_ids else None,
+                )
+            except Exception as exc:
+                _log(f"ERROR: exp {exp_id} repair failed: {exc}")
+                raise
+            df_exp, _ = _load_reasoning_cache(df_exp, [exp_id])
+            if id_col is None:
+                id_col = "founder_uuid" if "founder_uuid" in df_exp.columns else "row_index"
+            exp_df = df_exp[[id_col] + [c for c in df_exp.columns if c != id_col]].copy()
+            if merged_df is None:
+                merged_df = exp_df
+            else:
+                overlap = [c for c in exp_df.columns if c != id_col and c in merged_df.columns]
+                if overlap:
+                    merged_df = merged_df.drop(columns=overlap, errors="ignore")
+                merged_df = merged_df.merge(exp_df, on=id_col, how="left")
+        if merged_df is not None:
+            merged_df.to_parquet(test_reasoning_path, index=False)
+            _log("Repaired/merged test reasoning written.")
+            meta_payload = {
+                "parse_version": parse_version,
+                "records_hash": records_hash,
+                "n_records": len(records),
+                "experiments": exp_ids,
+                "saved_at": datetime.now().isoformat(),
+            }
+            meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
+            return merged_df
+
+    labels = np.zeros(len(records), dtype=int)
+    output_dir = test_reasoning_path.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+    merged_df: pd.DataFrame | None = None
+    id_col: str | None = None
+
+    for exp_id in exp_ids:
+        _log(f"Generating test reasoning for exp {exp_id} (full run)")
+        cfg = ReasoningConfig(
+            model=model,
+            dataset_size="full",
+            random_state=42,
+            core_prompt_path=core_prompt_path,
+            experiments_path=experiments_path,
+            providers=providers,
+            google_model=google_model,
+            batch_size=20,
+            concurrency=10,
+            experiments=[exp_id],
+            dry_run=False,
+            log_dir=log_dir,
+            log_every=10,
+            repair_nan=True,
+            inline_repair=True,
+            rate_limit_fallback_sequence=[8, 6, 4, 2, 1],
+        )
+        exp_dir = output_dir / f"exp_{exp_id}"
+        exp_dir.mkdir(parents=True, exist_ok=True)
+        exp_meta = exp_dir / "llm_reasoning_private_manifest.json"
+        try:
+            df_exp, _ = generate_reasoning_features(
+                records,
+                labels,
+                cfg,
+                output_dir=exp_dir,
+                metadata_path=exp_meta,
+            )
+        except Exception as exc:
+            _log(f"ERROR: exp {exp_id} generation failed: {exc}")
+            raise
+        numeric_cols = [c for c in df_exp.columns if c not in ("founder_uuid", "row_index", "success")]
+        if numeric_cols and df_exp[numeric_cols].isna().any().any():
+            nan_rows = df_exp[numeric_cols].isna().any(axis=1).to_numpy().nonzero()[0].tolist()
+            if nan_rows:
+                batch_size = max(1, int(cfg.batch_size))
+                batch_ids = sorted({int(idx // batch_size) for idx in nan_rows})
+                cfg_repair = ReasoningConfig(
+                    model=model,
+                    dataset_size="full",
+                    random_state=42,
+                    core_prompt_path=core_prompt_path,
+                    experiments_path=experiments_path,
+                    providers=providers,
+                    google_model=google_model,
+                    batch_size=cfg.batch_size,
+                    concurrency=cfg.concurrency,
+                    experiments=[exp_id],
+                    dry_run=False,
+                    log_dir=log_dir,
+                    log_every=10,
+                    repair_nan=True,
+                    inline_repair=True,
+                    rate_limit_fallback_sequence=[8, 6, 4, 2, 1],
+                    repair_existing=True,
+                    target_batch_indices=batch_ids,
+                )
+                try:
+                    df_exp, _ = generate_reasoning_features(
+                        records,
+                        labels,
+                        cfg_repair,
+                        output_dir=exp_dir,
+                        metadata_path=exp_meta,
+                        existing_df=df_exp,
+                    )
+                except Exception as exc:
+                    _log(f"ERROR: exp {exp_id} repair failed: {exc}")
+                    raise
+        df_exp, _ = _load_reasoning_cache(df_exp, [exp_id])
+        if id_col is None:
+            id_col = "founder_uuid" if "founder_uuid" in df_exp.columns else "row_index"
+        exp_df = df_exp[[id_col] + [c for c in df_exp.columns if c != id_col]].copy()
+        if merged_df is None:
+            merged_df = exp_df
+        else:
+            merged_df = merged_df.merge(exp_df, on=id_col, how="left")
+
+    if merged_df is None:
+        raise RuntimeError("Failed to generate test reasoning features.")
+    merged_df.to_parquet(test_reasoning_path, index=False)
+    _log("Test reasoning generation complete (merged parquet written).")
+    meta_payload = {
+        "parse_version": parse_version,
+        "records_hash": records_hash,
+        "n_records": len(records),
+        "experiments": exp_ids,
+        "saved_at": datetime.now().isoformat(),
+    }
+    meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
+    return merged_df
+
+
+def _hash_array(arr: np.ndarray) -> str:
+    return hashlib.sha256(arr.tobytes()).hexdigest()
+
+
+def _hash_feature_names(feature_names: list[str]) -> str:
+    payload = json.dumps(feature_names, ensure_ascii=True, sort_keys=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _hash_model(model: Any) -> str:
+    buff = io.BytesIO()
+    joblib.dump(model, buff)
+    return hashlib.sha256(buff.getvalue()).hexdigest()
+
+
+def _build_model_manifest(
+    model: Any,
+    model_type: str,
+    seed: int,
+    threshold: float,
+    feature_names: list[str],
+    train_matrix: np.ndarray,
+    labels: np.ndarray,
+) -> dict[str, Any]:
+    return {
+        "model_type": model_type,
+        "seed": seed,
+        "threshold": float(threshold),
+        "feature_names_hash": _hash_feature_names(feature_names),
+        "train_matrix_hash": _hash_array(train_matrix),
+        "label_hash": _hash_array(labels.astype(int)),
+        "model_hash": _hash_model(model),
+    }
+
+
+def _verify_model_manifest(
+    manifest: dict[str, Any],
+    model: Any,
+    model_type: str,
+    seed: int,
+    threshold: float,
+    feature_names: list[str],
+    train_matrix: np.ndarray,
+    labels: np.ndarray,
+) -> list[str]:
+    errors: list[str] = []
+    if manifest.get("model_type") != model_type:
+        errors.append("model_type mismatch")
+    if int(manifest.get("seed", -1)) != int(seed):
+        errors.append("seed mismatch")
+    if not math.isclose(float(manifest.get("threshold", -1)), float(threshold), rel_tol=1e-9, abs_tol=1e-9):
+        errors.append("threshold mismatch")
+    if manifest.get("feature_names_hash") != _hash_feature_names(feature_names):
+        errors.append("feature_names hash mismatch")
+    if manifest.get("train_matrix_hash") != _hash_array(train_matrix):
+        errors.append("train_matrix hash mismatch")
+    if manifest.get("label_hash") != _hash_array(labels.astype(int)):
+        errors.append("label hash mismatch")
+    if manifest.get("model_hash") != _hash_model(model):
+        errors.append("model hash mismatch")
+    return errors
+
+
+def _resolve_run_root_dir(
+    exp_scope: str,
+    finalising_experiments: bool,
+    group_by_evidence: bool,
+) -> tuple[Path, bool]:
+    ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    scope_map = {
+        "full_exps": "full_run",
+        "no_llm_exps": "no_llm_exps",
+        "minimal_exps": "minimal_exps",
+        "vif50_exps": "vif50_exps",
+    }
+    desc = scope_map.get(exp_scope, exp_scope or "run")
+    if finalising_experiments:
+        desc = f"finalising_{desc}"
+    if group_by_evidence:
+        desc = f"no_evidence_rating_{desc}"
+    root_dir = OUTPUT_DIR / f"{ts}_{desc}"
+    _ensure_dir(root_dir)
+    full_run_root = finalising_experiments or exp_scope == "full_exps"
+    return root_dir, full_run_root
 
 
 def _resolve_run_output_dir(
@@ -87,12 +587,7 @@ def _resolve_run_output_dir(
 ) -> Path:
     if not group_by_evidence:
         return run_root
-    if full_run_root:
-        base_dir = run_root
-    else:
-        date_prefix = datetime.now().strftime("%Y-%m-%d")
-        base_dir = run_root / f"{date_prefix}_no_evidence_rating"
-        _ensure_dir(base_dir)
+    base_dir = run_root
     sub_dir = base_dir / ("no_evidence_rating" if evidence_tag else "normal")
     _ensure_dir(sub_dir)
     return sub_dir
@@ -352,8 +847,14 @@ def _preprocess_features(
     pls_components: int,
     sft_k: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[str], Any | None]:
-    X_train = train_df.copy().apply(pd.to_numeric, errors="coerce")
-    X_test = test_df.copy().apply(pd.to_numeric, errors="coerce")
+    missing_train = [c for c in feature_names if c not in train_df.columns]
+    missing_test = [c for c in feature_names if c not in test_df.columns]
+    if missing_train or missing_test:
+        raise RuntimeError(
+            f"Missing features in train/test: train={missing_train}, test={missing_test}"
+        )
+    X_train = train_df[feature_names].copy().apply(pd.to_numeric, errors="coerce")
+    X_test = test_df[feature_names].copy().apply(pd.to_numeric, errors="coerce")
     if X_train.isna().any().any() or X_test.isna().any().any():
         if model_type in ("xgb1", "xgb3"):
             X_train = X_train.fillna(0.0)
@@ -407,6 +908,40 @@ def _preprocess_features(
         return X_train, X_test, selected, selector
 
     return X_train, X_test, feature_names, None
+
+
+def _predict_test(
+    df_train: pd.DataFrame,
+    df_test: pd.DataFrame,
+    feature_names: list[str],
+    model_type: str,
+    transform: str,
+    threshold: float,
+    y_train: np.ndarray,
+    pca_variance: float,
+    pls_components: int,
+    sft_k: int,
+    model: Any,
+    rule_mask_train: np.ndarray | None = None,
+    rule_mask_test: np.ndarray | None = None,
+) -> np.ndarray:
+    X_train, X_test, feature_names_out, _ = _preprocess_features(
+        df_train,
+        df_test,
+        feature_names,
+        model_type,
+        transform,
+        y_train,
+        pca_variance,
+        pls_components,
+        sft_k,
+    )
+    test_scores = model.predict_proba(X_test.values.astype(float))[:, 1]
+    if rule_mask_train is not None:
+        pass
+    if rule_mask_test is not None:
+        test_scores = _apply_rule_override(test_scores, rule_mask_test)
+    return (test_scores >= threshold).astype(int)
 
 
 def _oof_cv_metrics(
@@ -507,7 +1042,7 @@ def _full_train_metrics(
     logistic_l1_ratio: float | None = 0.5,
     mlp_alpha: float = 0.01,
     return_model: bool = False,
-) -> dict[str, float] | tuple[dict[str, float], Any, Any | None, list[str]]:
+) -> dict[str, float] | tuple[dict[str, float], Any, Any | None, list[str], np.ndarray]:
     X_train, _, feature_names_out, transformer = _preprocess_features(
         df,
         df.copy(),
@@ -535,7 +1070,7 @@ def _full_train_metrics(
     metrics = _metrics_from_scores(y, scores, threshold)
     metrics["accuracy"] = float(np.mean((scores >= metrics["threshold"]).astype(int) == y))
     if return_model:
-        return metrics, model, transformer, feature_names_out
+        return metrics, model, transformer, feature_names_out, X_train.values.astype(float)
     return metrics
 
 
@@ -591,13 +1126,17 @@ def _resolve_report_dir(
     base_sweep_enabled: bool,
     prune_tag: str,
     base_output_dir: Path,
+    full_run_root: bool = False,
     pruning_sweep: bool = False,
 ) -> Path:
     if pruning_sweep:
         report_dir = base_output_dir / "pruning_sweep"
     else:
-        base_dir = base_output_dir / f"reports_prune_{prune_tag}"
-        _ensure_dir(base_dir)
+        if full_run_root:
+            base_dir = base_output_dir
+        else:
+            base_dir = base_output_dir / f"reports_prune_{prune_tag}"
+            _ensure_dir(base_dir)
         report_dir = base_dir
         if transform_upper == "PCA" and sweep_mode:
             report_dir = base_dir / "PCA_Sweep_reports"
@@ -631,22 +1170,35 @@ def _build_collinearity_section(
             return "inf"
         return f"{val:.3f}"
 
-    # Pick a single top-risk row per combo to keep the table compact.
-    picked: dict[str, dict[str, Any]] = {}
-    for row in summary_rows:
-        combo = row.get("reasoning_combo", "HQ")
-        current = picked.get(combo)
-        score = row.get("max_vif") if not row.get("vif_skipped") else row.get("max_abs_corr")
-        if score is None:
-            score = 0.0
-        if current is None:
-            picked[combo] = row
-            continue
-        cur_score = current.get("max_vif") if not current.get("vif_skipped") else current.get("max_abs_corr")
-        if cur_score is None:
-            cur_score = 0.0
-        if float(score) > float(cur_score):
-            picked[combo] = row
+    if all_models:
+        rows = sorted(
+            summary_rows,
+            key=lambda r: (
+                str(r.get("family", "")),
+                str(r.get("reasoning_combo", "")),
+                str(r.get("model_type", "")),
+                str(r.get("transform", "")),
+                str(r.get("sweep_param", "")),
+            ),
+        )
+    else:
+        # Pick a single top-risk row per combo to keep the table compact.
+        picked: dict[str, dict[str, Any]] = {}
+        for row in summary_rows:
+            combo = row.get("reasoning_combo", "HQ")
+            current = picked.get(combo)
+            score = row.get("max_vif") if not row.get("vif_skipped") else row.get("max_abs_corr")
+            if score is None:
+                score = 0.0
+            if current is None:
+                picked[combo] = row
+                continue
+            cur_score = current.get("max_vif") if not current.get("vif_skipped") else current.get("max_abs_corr")
+            if cur_score is None:
+                cur_score = 0.0
+            if float(score) > float(cur_score):
+                picked[combo] = row
+        rows = [picked[k] for k in sorted(picked.keys())]
 
     title = "## Collinearity Diagnostics (All models)" if all_models else "## Collinearity Diagnostics (Logistic only)"
     lines = [
@@ -658,7 +1210,8 @@ def _build_collinearity_section(
         "| Combo | Family | Model | Transform | Sweep | max_vif | max_abs_corr | cond_num | avg_sign_flip | raw_max_vif | raw_max_abs_corr | raw_cond_num |",
         "|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
-    for combo, row in sorted(picked.items()):
+    for row in rows:
+        combo = row.get("reasoning_combo", "HQ")
         lines.append(
             "| "
             + " | ".join(
@@ -916,6 +1469,7 @@ def _save_model_bundle(
     logistic_penalty: str,
     logistic_c: float | None,
     logistic_l1_ratio: float | None,
+    model_manifest: dict[str, Any] | None = None,
 ) -> None:
     family_slug = _slugify(run.family)
     combo_slug = _slugify(combo or "HQ")
@@ -955,6 +1509,9 @@ def _save_model_bundle(
     }
     meta_path = subdir / "meta.json"
     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    if model_manifest is not None:
+        manifest_path = subdir / "model_manifest.json"
+        manifest_path.write_text(json.dumps(model_manifest, indent=2), encoding="utf-8")
 
 
 def _compute_f05(y_true: np.ndarray, scores: np.ndarray, threshold: float) -> float:
@@ -1219,6 +1776,9 @@ def main() -> None:
     parser.add_argument("--mlp_alpha_grid", type=str, default="0.001,0.01,0.1")
     parser.add_argument("--mlp_alpha", type=float, default=0.01)
     parser.add_argument("--finalising_experiments", type=str, default="false")
+    parser.add_argument("--generating_test_predictions", type=str, default="true")
+    parser.add_argument("--test_csv", type=str, default=str(DEFAULT_TEST_CSV))
+    parser.add_argument("--test_reasoning_parquet", type=str, default=str(DEFAULT_TEST_REASONING))
     parser.add_argument("--exclude_evidence_support_rating", type=str, default="false")
     parser.add_argument("--resume", type=str, default="false")
     parser.add_argument("--save_models", type=str, default="true")
@@ -1247,14 +1807,21 @@ def main() -> None:
     _install_exception_logger()
     LOGGER.info("Starting model testing pipeline")
     LOGGER.info("Args: %s", vars(args))
+    finalising_experiments = (
+        str(args.finalising_experiments).strip().lower() in {"1", "true", "yes"}
+    )
+    generating_test_predictions = (
+        str(args.generating_test_predictions).strip().lower() in {"1", "true", "yes"}
+    )
     exp_scope = str(args.exp_scope).strip().lower()
-    if exp_scope not in {"no_llm_exps", "full_exps", "minimal_exps"}:
-        raise RuntimeError("--exp_scope must be one of: no_llm_exps, full_exps, minimal_exps")
-    if finalising_experiments and exp_scope != "full_exps":
-        LOGGER.info("finalising_experiments=true: forcing exp_scope to full_exps")
-        exp_scope = "full_exps"
+    if exp_scope not in {"no_llm_exps", "full_exps", "minimal_exps", "vif50_exps"}:
+        raise RuntimeError("--exp_scope must be one of: no_llm_exps, full_exps, minimal_exps, vif50_exps")
+    if finalising_experiments and exp_scope == "minimal_exps":
+        LOGGER.info("finalising_experiments=true: upgrading exp_scope from minimal_exps to no_llm_exps")
+        exp_scope = "no_llm_exps"
     include_llm_engineered = exp_scope == "full_exps"
     minimal_exps = exp_scope == "minimal_exps"
+    vif50_exps = exp_scope == "vif50_exps"
     run_interpretability_default = str(args.run_interpretability).strip().lower() not in {"0", "false", "no"}
     model_complexity = str(args.model_complexity).strip().lower()
     transform_sweep = str(args.transform_sweep).strip().lower() in {"1", "true", "yes"}
@@ -1269,10 +1836,6 @@ def main() -> None:
     logistic_c = float(args.logistic_c)
     logistic_l1_ratio = float(args.logistic_l1_ratio)
     regularization_sweep = str(args.regularization_sweep).strip().lower()
-    finalising_experiments = (
-        str(args.finalising_experiments).strip().lower() in {"1", "true", "yes"}
-    )
-    collinearity_all_models = finalising_experiments
     exclude_evidence_support_rating = (
         str(args.exclude_evidence_support_rating).strip().lower() in {"1", "true", "yes"}
     )
@@ -1280,6 +1843,13 @@ def main() -> None:
     feature_pruning = str(args.feature_pruning).strip().lower()
     pruning_sweep = str(args.pruning_sweep).strip().lower() in {"1", "true", "yes"}
     combo_filter_raw = str(args.combo_filter).strip()
+    if generating_test_predictions:
+        finalising_experiments = True
+        include_llm_engineered = False
+        exclude_evidence_support_rating = False
+        combo_filter_raw = ""
+        regularization_sweep = "none"
+    collinearity_all_models = finalising_experiments
     try:
         logistic_c_grid = [float(v) for v in str(args.logistic_c_grid).split(",") if v.strip()]
     except ValueError as exc:
@@ -1301,7 +1871,12 @@ def main() -> None:
     if feature_pruning not in {"none", "mild_pruning", "aggressive_pruning"}:
         raise RuntimeError("--feature_pruning must be one of: none, mild_pruning, aggressive_pruning")
 
-    run_root_dir, full_run_root = _resolve_run_root_dir(exp_scope)
+    run_root_dir, full_run_root = _resolve_run_root_dir(
+        exp_scope,
+        finalising_experiments,
+        exclude_evidence_support_rating,
+    )
+    preds_output: dict[str, list[int]] | None = None
 
     prune_token_map = {
         "none": "none",
@@ -1345,8 +1920,25 @@ def main() -> None:
             except (TypeError, ValueError):
                 pass
 
-    if minimal_exps:
+    if generating_test_predictions:
+        allowed_combos = FINAL_BASE_COMBOS.copy()
+    elif minimal_exps:
         allowed_combos = ["HQ", "A", "D", "F"]
+    elif vif50_exps:
+        allowed_combos = [
+            "HQ",
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "A+B",
+            "A+C",
+            "A+D",
+            "A+E",
+            "A+D+E",
+            "A+C+D+E",
+        ]
     elif exp_scope == "full_exps":
         allowed_combos = [
             "HQ",
@@ -1356,11 +1948,15 @@ def main() -> None:
             "D",
             "E",
             "F",
+            "A+C",
+            "A+B",
             "A+E",
             "A+D",
             "A+D+E",
             "A+C+D+E",
+            "C+F",
             "D+F",
+            "D+E+F",
             "C+D+E+F",
             "A+B+C+D+E+F",
         ]
@@ -1373,11 +1969,14 @@ def main() -> None:
             "D",
             "E",
             "F",
+            "A+C",
             "A+B",
             "A+E",
             "A+D",
             "A+D+E",
             "A+C+D+E",
+            "C+F",
+            "D+F",
             "D+E+F",
             "C+D+E+F",
             "A+B+C+D+E+F",
@@ -1397,7 +1996,24 @@ def main() -> None:
             if item not in seen:
                 allowed_combos.append(item)
                 seen.add(item)
-    def _build_combos_for_run(exclude_evidence: bool) -> dict[str, list[str]]:
+    finalising_pls_combos = (
+        FINAL_PLS_COMBOS.copy()
+        if generating_test_predictions
+        else [
+            "F",
+            "D+F",
+            "C+F",
+            "D+E+F",
+            "C+D+E+F",
+            "A+B+C+D+E+F",
+        ]
+    )
+    finalising_pls_combos_filtered = list(finalising_pls_combos)
+
+    def _build_combos_for_run(
+        exclude_evidence: bool,
+        allowed_list: list[str],
+    ) -> dict[str, list[str]]:
         combos_local = {"HQ": []}
         combos_local.update(
             _build_reasoning_combos_numeric(
@@ -1406,8 +2022,8 @@ def main() -> None:
                 exclude_evidence_support_rating=exclude_evidence,
             )
         )
-        combos_local = {k: v for k, v in combos_local.items() if k in allowed_combos}
-        missing = [c for c in allowed_combos if c not in combos_local]
+        combos_local = {k: v for k, v in combos_local.items() if k in allowed_list}
+        missing = [c for c in allowed_list if c not in combos_local]
         if missing:
             raise RuntimeError(
                 f"Missing required Full Mirror combos: {missing}. Check full_current reasoning columns."
@@ -1437,6 +2053,50 @@ def main() -> None:
     pruning_levels = ["none", "mild_pruning", "aggressive_pruning"] if pruning_sweep else [feature_pruning]
     rule_mask_full = hq_df_full["exit_count"].fillna(0.0).astype(float).values > 0
 
+    test_ids: list[str] = []
+    hq_test_no_gap: pd.DataFrame | None = None
+    rule_mask_test: np.ndarray | None = None
+    test_reasoning_df: pd.DataFrame | None = None
+    if generating_test_predictions:
+        _load_env_if_present()
+        _refresh_llm_from_env()
+        test_csv = Path(args.test_csv)
+        test_reasoning_path = Path(args.test_reasoning_parquet)
+        if not test_csv.exists():
+            raise FileNotFoundError(f"Test CSV not found: {test_csv}")
+        test_records, _ = _load_test_records(test_csv)
+        records_hash = _records_hash(test_records)
+        test_ids = _make_unique_ids(test_records, "test")
+        hq_df_test = _build_high_quality_features(test_records, hq_script)
+        hq_df_test.index = test_ids
+        hq_test_no_gap = hq_df_test[HQ_FEATURES_BASE].copy()
+        rule_mask_test = hq_df_test["exit_count"].fillna(0.0).astype(float).values > 0
+        exp_ids = ["A", "B", "C", "D", "E", "F"]
+        providers = {"openai": True, "google": False}
+        test_reasoning_df = _ensure_test_reasoning(
+            test_records,
+            test_reasoning_path,
+            PROMPT_DIR / "core_prompt.txt",
+            CONFIG_DIR / "experiments.json",
+            exp_ids,
+            run_root_dir / "test_reasoning_logs",
+            "gpt-4.1-nano",
+            providers,
+            "gemini-2.0-flash",
+            records_hash,
+            TEST_PARSE_VERSION,
+        )
+        test_reasoning_df, _ = _load_reasoning_cache(test_reasoning_df, exp_ids)
+        if "founder_uuid" not in test_reasoning_df.columns and "row_index" in test_reasoning_df.columns:
+            test_map = {i: test_ids[i] for i in range(len(test_ids))}
+            test_reasoning_df["founder_uuid"] = test_reasoning_df["row_index"].map(test_map)
+        if "founder_uuid" in test_reasoning_df.columns and test_reasoning_df["founder_uuid"].duplicated().any():
+            test_reasoning_df = test_reasoning_df.drop_duplicates(subset=["founder_uuid"], keep="first")
+        if "founder_uuid" not in test_reasoning_df.columns:
+            raise RuntimeError("Test reasoning parquet missing founder_uuid (or row_index).")
+        test_reasoning_df = test_reasoning_df.set_index("founder_uuid").reindex(test_ids)
+        preds_output = {"founder_uuid": test_ids}
+
     engineered_df: pd.DataFrame | None = None
     engineered_set_id = args.engineered_set_id
     if include_llm_engineered:
@@ -1457,7 +2117,9 @@ def main() -> None:
         use_fixed=True,
     )
 
-    if finalising_experiments:
+    if generating_test_predictions:
+        model_types = ["logistic", "mlp4"]
+    elif finalising_experiments:
         model_types = ["logistic", "xgb1", "mlp4"]
     elif model_complexity == "simple":
         model_types = ["logistic", "xgb1"]
@@ -1468,9 +2130,10 @@ def main() -> None:
 
     def _build_model_runs(
         hq_feature_list: list[str],
+        combos_local: dict[str, list[str]],
     ) -> list[ModelRun]:
         runs: list[ModelRun] = []
-        for combo, combo_cols in combos.items():
+        for combo, combo_cols in combos_local.items():
             for model_type in model_types:
                 runs.append(
                     ModelRun(
@@ -1546,10 +2209,12 @@ def main() -> None:
 
     def _write_finalising_report(
         results_by_transform: dict[str, list[dict[str, Any]]],
+        col_summary_rows: list[dict[str, Any]],
         evidence_tag: str | None,
         prune_tag_local: str,
         include_engineered: bool,
         engineered_set_id_local: str,
+        lr_only: bool,
     ) -> None:
         def _fmt(mean: float | None, std: float | None) -> str:
             if mean is None or std is None:
@@ -1567,7 +2232,7 @@ def main() -> None:
             run_root=run_root_dir,
             full_run_root=full_run_root,
         )
-        report_dir = run_output_dir / f"reports_prune_{prune_tag_local}"
+        report_dir = run_output_dir if full_run_root else run_output_dir / f"reports_prune_{prune_tag_local}"
         _ensure_dir(report_dir)
 
         combined_rows: list[dict[str, Any]] = []
@@ -1583,22 +2248,55 @@ def main() -> None:
             )
             lookup[key] = row
 
+        model_line = "Models: LR (BASE), LR (PLS), MLP4 (PLS)." if lr_only else "Models: LR (BASE), XGB1 (BASE), LR (PLS), MLP4 (PLS)."
         lines = [
             "# Model Testing Report (Finalising Experiments)",
             f"Generated: {pd.Timestamp.utcnow().isoformat()}Z",
             "",
-            "Models: LR (BASE), XGB1 (BASE), MLP4 (PLS).",
+            model_line,
             f"Feature pruning: {feature_pruning_label}.",
             "",
         ]
 
-        lines += ["## HQ Mirror + Reasoning"]
-        header = ["Combo", "LR (BASE)", "XGB1 (BASE)", "MLP4 (PLS)"]
+        lines += ["## HQ Mirror + Reasoning", "### BASE (LR)" if lr_only else "### BASE (LR, XGB1)"]
+        header = ["Combo", "LR (BASE) CV", "LR (BASE) Full"]
+        if not lr_only:
+            header += ["XGB1 (BASE) CV", "XGB1 (BASE) Full"]
         lines.append("| " + " | ".join(header) + " |")
-        lines.append("|---|---:|---:|---:|")
+        lines.append("|---|---:|---:|" + ("---:|---:|" if not lr_only else ""))
         for combo in allowed_combos:
             lr_row = lookup.get(("hq_mirror", combo, "logistic", "BASE"))
             xgb_row = lookup.get(("hq_mirror", combo, "xgb1", "BASE"))
+            row_cells = [
+                combo,
+                _fmt(
+                    lr_row.get("f0.5_mean") if lr_row else None,
+                    lr_row.get("f0.5_std") if lr_row else None,
+                ),
+                f"{lr_row['full_train_f0.5']:.3f}" if lr_row else "--",
+            ]
+            if not lr_only:
+                row_cells += [
+                    _fmt(
+                        xgb_row.get("f0.5_mean") if xgb_row else None,
+                        xgb_row.get("f0.5_std") if xgb_row else None,
+                    ),
+                    f"{xgb_row['full_train_f0.5']:.3f}" if xgb_row else "--",
+                ]
+            lines.append("| " + " | ".join(row_cells) + " |")
+        lines += ["", "### PLS (LR, MLP4)"]
+        header = [
+            "Combo",
+            "LR (PLS) CV",
+            "LR (PLS) Full",
+            "MLP4 (PLS) CV",
+            "MLP4 (PLS) Full",
+        ]
+        lines.append("| " + " | ".join(header) + " |")
+        lines.append("|---|---:|---:|---:|---:|")
+        combos_pls_report = finalising_pls_combos_filtered or allowed_combos
+        for combo in combos_pls_report:
+            lr_row = lookup.get(("hq_mirror", combo, "logistic", "PLS"))
             mlp_row = lookup.get(("hq_mirror", combo, "mlp4", "PLS"))
             lines.append(
                 "| "
@@ -1609,14 +2307,12 @@ def main() -> None:
                             lr_row.get("f0.5_mean") if lr_row else None,
                             lr_row.get("f0.5_std") if lr_row else None,
                         ),
-                        _fmt(
-                            xgb_row.get("f0.5_mean") if xgb_row else None,
-                            xgb_row.get("f0.5_std") if xgb_row else None,
-                        ),
+                        f"{lr_row['full_train_f0.5']:.3f}" if lr_row else "--",
                         _fmt(
                             mlp_row.get("f0.5_mean") if mlp_row else None,
                             mlp_row.get("f0.5_std") if mlp_row else None,
                         ),
+                        f"{mlp_row['full_train_f0.5']:.3f}" if mlp_row else "--",
                     ]
                 )
                 + " |"
@@ -1624,40 +2320,72 @@ def main() -> None:
 
         if include_engineered:
             family_key = f"engineered_{engineered_set_id_local}"
-            lines += ["", "## LLM-Engineered + Reasoning"]
-            header = ["Combo", "LR (BASE)", "XGB1 (BASE)", "LR (PLS)", "XGB1 (PLS)"]
+            lines += ["", "## LLM-Engineered + Reasoning", "### BASE (LR)" if lr_only else "### BASE (LR, XGB1)"]
+            header = ["Combo", "LR (BASE) CV", "LR (BASE) Full"]
+            if not lr_only:
+                header += ["XGB1 (BASE) CV", "XGB1 (BASE) Full"]
             lines.append("| " + " | ".join(header) + " |")
-            lines.append("|---|---:|---:|---:|---:|")
+            lines.append("|---|---:|---:|" + ("---:|---:|" if not lr_only else ""))
             for combo in allowed_combos:
                 lr_base = lookup.get((family_key, combo, "logistic", "BASE"))
                 xgb_base = lookup.get((family_key, combo, "xgb1", "BASE"))
+                row_cells = [
+                    _display_combo_label(family_key, combo),
+                    _fmt(
+                        lr_base.get("f0.5_mean") if lr_base else None,
+                        lr_base.get("f0.5_std") if lr_base else None,
+                    ),
+                    f"{lr_base['full_train_f0.5']:.3f}" if lr_base else "--",
+                ]
+                if not lr_only:
+                    row_cells += [
+                        _fmt(
+                            xgb_base.get("f0.5_mean") if xgb_base else None,
+                            xgb_base.get("f0.5_std") if xgb_base else None,
+                        ),
+                        f"{xgb_base['full_train_f0.5']:.3f}" if xgb_base else "--",
+                    ]
+                lines.append("| " + " | ".join(row_cells) + " |")
+            lines += ["", "### PLS (LR, MLP4)"]
+            header = [
+                "Combo",
+                "LR (PLS) CV",
+                "LR (PLS) Full",
+                "MLP4 (PLS) CV",
+                "MLP4 (PLS) Full",
+            ]
+            lines.append("| " + " | ".join(header) + " |")
+            lines.append("|---|---:|---:|---:|---:|")
+            combos_pls_report = finalising_pls_combos_filtered or allowed_combos
+            for combo in combos_pls_report:
                 lr_pls = lookup.get((family_key, combo, "logistic", "PLS"))
-                xgb_pls = lookup.get((family_key, combo, "xgb1", "PLS"))
+                mlp_pls = lookup.get((family_key, combo, "mlp4", "PLS"))
                 lines.append(
                     "| "
                     + " | ".join(
                         [
                             _display_combo_label(family_key, combo),
                             _fmt(
-                                lr_base.get("f0.5_mean") if lr_base else None,
-                                lr_base.get("f0.5_std") if lr_base else None,
-                            ),
-                            _fmt(
-                                xgb_base.get("f0.5_mean") if xgb_base else None,
-                                xgb_base.get("f0.5_std") if xgb_base else None,
-                            ),
-                            _fmt(
                                 lr_pls.get("f0.5_mean") if lr_pls else None,
                                 lr_pls.get("f0.5_std") if lr_pls else None,
                             ),
+                            f"{lr_pls['full_train_f0.5']:.3f}" if lr_pls else "--",
                             _fmt(
-                                xgb_pls.get("f0.5_mean") if xgb_pls else None,
-                                xgb_pls.get("f0.5_std") if xgb_pls else None,
+                                mlp_pls.get("f0.5_mean") if mlp_pls else None,
+                                mlp_pls.get("f0.5_std") if mlp_pls else None,
                             ),
+                            f"{mlp_pls['full_train_f0.5']:.3f}" if mlp_pls else "--",
                         ]
                     )
                     + " |"
                 )
+
+        if collinearity_report and col_summary_rows:
+            lines += _build_collinearity_section(
+                col_summary_rows,
+                collinearity_corr_threshold,
+                all_models=True,
+            )
 
         report_path = report_dir / "model_testing_report_finalising_experiments.md"
         report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -1667,7 +2395,7 @@ def main() -> None:
         transform: str,
         combos: dict[str, list[str]],
         evidence_tag: str | None,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         transform_upper = transform.upper()
         interp_on = run_interpretability_default and transform_upper not in {"PCA", "PLS"}
         LOGGER.info("Run transform start: %s (interp_on=%s)", transform_upper, interp_on)
@@ -1709,6 +2437,7 @@ def main() -> None:
             ),
             prune_tag=prune_tag,
             base_output_dir=run_output_dir,
+            full_run_root=full_run_root,
             pruning_sweep=pruning_sweep,
         )
         file_suffix_report = _safe_output_suffix(report_dir, output_suffix)
@@ -1794,7 +2523,7 @@ def main() -> None:
             prune_set = prune_set_map[prune_level]
             hq_features_pruned = [f for f in HQ_FEATURES_BASE if f not in prune_set]
             hq_full_no_gap = hq_df_full[hq_features_pruned].copy()
-            model_runs = _build_model_runs(hq_features_pruned)
+            model_runs = _build_model_runs(hq_features_pruned, combos)
             for sweep_value in variance_list:
                 LOGGER.info("Transform=%s sweep_value=%s", transform_upper, sweep_value)
                 pca_variance_value = PCA_VARIANCE_DEFAULT
@@ -1810,6 +2539,11 @@ def main() -> None:
                 for run in model_runs:
                     if multi_transform and transform_upper != "BASE" and run.model_type == "elasticnet":
                         continue
+                    if generating_test_predictions:
+                        if transform_upper == "BASE" and run.model_type != "logistic":
+                            continue
+                        if transform_upper == "PLS" and run.model_type not in {"logistic", "mlp4"}:
+                            continue
                     combo = run.reasoning_combo or "HQ"
                     LOGGER.info(
                         "Run start family=%s combo=%s model=%s transform=%s sweep=%s reg_sweep=%s",
@@ -2360,8 +3094,14 @@ def main() -> None:
                             )
 
                             completed_col_keys.add(col_key)
-                    if save_models:
-                        full_metrics, full_model, full_transformer, feature_names_out = _full_train_metrics(
+                    need_model = save_models or generating_test_predictions
+                    full_model = None
+                    full_transformer = None
+                    feature_names_out = []
+                    train_matrix = None
+                    model_manifest = None
+                    if need_model:
+                        full_metrics, full_model, full_transformer, feature_names_out, train_matrix = _full_train_metrics(
                             train_df,
                             labels,
                             run.feature_names,
@@ -2376,9 +3116,20 @@ def main() -> None:
                             logistic_penalty=penalty,
                             logistic_c=chosen_c,
                             logistic_l1_ratio=chosen_l1,
+                            mlp_alpha=chosen_mlp_alpha,
                             return_model=True,
                         )
-                        if model_dir is not None:
+                        if train_matrix is not None and full_model is not None:
+                            model_manifest = _build_model_manifest(
+                                model=full_model,
+                                model_type=run.model_type,
+                                seed=42,
+                                threshold=oof_threshold,
+                                feature_names=feature_names_out,
+                                train_matrix=train_matrix,
+                                labels=labels,
+                            )
+                        if save_models and model_dir is not None and full_model is not None:
                             _save_model_bundle(
                                 out_dir=model_dir,
                                 run=run,
@@ -2394,6 +3145,7 @@ def main() -> None:
                                 logistic_penalty=penalty,
                                 logistic_c=chosen_c,
                                 logistic_l1_ratio=chosen_l1,
+                                model_manifest=model_manifest,
                             )
                     else:
                         full_metrics = _full_train_metrics(
@@ -2413,6 +3165,64 @@ def main() -> None:
                             logistic_l1_ratio=chosen_l1,
                             mlp_alpha=chosen_mlp_alpha,
                         )
+                    if generating_test_predictions and preds_output is not None:
+                        out_col = FINAL_PRED_COLUMNS.get((run.model_type, transform_upper, combo))
+                        if out_col:
+                            if hq_test_no_gap is None or test_reasoning_df is None:
+                                raise RuntimeError("Test features are required for generating predictions.")
+                            combo_cols = combos.get(combo, [])
+                            if combo_cols:
+                                missing_test_cols = [c for c in combo_cols if c not in test_reasoning_df.columns]
+                                if missing_test_cols:
+                                    raise RuntimeError(
+                                        f"Missing test reasoning columns for combo {combo}: {missing_test_cols}"
+                                    )
+                                test_df = pd.concat([hq_test_no_gap, test_reasoning_df[combo_cols]], axis=1)
+                            else:
+                                test_df = hq_test_no_gap.copy()
+                            if full_model is None or model_manifest is None:
+                                raise RuntimeError("Missing trained model or manifest for test prediction.")
+                            train_prepped, _, feature_names_out_check, _ = _preprocess_features(
+                                train_df,
+                                train_df.copy(),
+                                run.feature_names,
+                                run.model_type,
+                                transform_upper,
+                                labels,
+                                pca_variance_value,
+                                cur_pls_components,
+                                cur_sft_k,
+                            )
+                            verify_errors = _verify_model_manifest(
+                                manifest=model_manifest,
+                                model=full_model,
+                                model_type=run.model_type,
+                                seed=42,
+                                threshold=oof_threshold,
+                                feature_names=feature_names_out_check,
+                                train_matrix=train_prepped.values.astype(float),
+                                labels=labels,
+                            )
+                            if verify_errors:
+                                raise RuntimeError(
+                                    f"Prediction verification failed for {run.name}: {verify_errors}"
+                                )
+                            preds = _predict_test(
+                                train_df,
+                                test_df,
+                                run.feature_names,
+                                run.model_type,
+                                transform_upper,
+                                oof_threshold,
+                                labels,
+                                pca_variance_value,
+                                cur_pls_components,
+                                cur_sft_k,
+                                full_model,
+                                rule_mask_train=run.rule_mask,
+                                rule_mask_test=rule_mask_test,
+                            )
+                            preds_output[out_col] = preds.tolist()
                     results_rows.append(
                         {
                             "family": run.family,
@@ -2952,28 +3762,32 @@ def main() -> None:
                             lines.append(f"| {row['feature']} | {row['mean']:.4f} | {row['std']:.4f} |")
 
         report_dir = report_dir
-        if collinearity_report and col_summary_rows:
-            col_path = report_dir / f"collinearity_summary{file_suffix_report}.csv"
-            pd.DataFrame(col_summary_rows).to_csv(col_path, index=False)
-            col_md_path = report_dir / f"collinearity_report{file_suffix_report}.md"
-            col_md_lines = _build_collinearity_full_table(
-                col_summary_rows,
-                collinearity_corr_threshold,
-                all_models=collinearity_all_models,
-            )
-            col_md_path.write_text("\n".join(col_md_lines), encoding="utf-8")
-        report_path = report_dir / f"model_testing_report{file_suffix_report}.md"
-        if collinearity_report and col_summary_rows:
-            lines += _build_collinearity_section(
-                col_summary_rows,
-                collinearity_corr_threshold,
-                all_models=collinearity_all_models,
-            )
-        report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        LOGGER.info("Report saved: %s", report_path)
-        LOGGER.info("Results saved: %s", results_path)
-        if collinearity_report and col_summary_rows:
-            LOGGER.info("Collinearity summary saved: %s", col_path)
+        if not finalising_experiments:
+            if collinearity_report and col_summary_rows:
+                col_path = report_dir / f"collinearity_summary{file_suffix_report}.csv"
+                pd.DataFrame(col_summary_rows).to_csv(col_path, index=False)
+                col_md_path = report_dir / f"collinearity_report{file_suffix_report}.md"
+                col_md_lines = _build_collinearity_full_table(
+                    col_summary_rows,
+                    collinearity_corr_threshold,
+                    all_models=collinearity_all_models,
+                )
+                col_md_path.write_text("\n".join(col_md_lines), encoding="utf-8")
+            report_path = report_dir / f"model_testing_report{file_suffix_report}.md"
+            if collinearity_report and col_summary_rows:
+                lines += _build_collinearity_section(
+                    col_summary_rows,
+                    collinearity_corr_threshold,
+                    all_models=collinearity_all_models,
+                )
+            report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            LOGGER.info("Report saved: %s", report_path)
+            LOGGER.info("Results saved: %s", results_path)
+            if collinearity_report and col_summary_rows:
+                LOGGER.info("Collinearity summary saved: %s", col_path)
+        else:
+            LOGGER.info("Finalising mode: standard report skipped.")
+            LOGGER.info("Results saved: %s", results_path)
 
         notes_path = OUTPUT_DIR / "model_testing_notes.md"
         notes_path.write_text(
@@ -2984,29 +3798,48 @@ def main() -> None:
             encoding="utf-8",
         )
 
-        print(f"Report saved: {report_path}")
+        if not finalising_experiments:
+            print(f"Report saved: {report_path}")
         print(f"Results saved: {results_path}")
-        return results_rows
+        return results_rows, col_summary_rows
     exclude_modes = [False, True] if exclude_evidence_support_rating else [False]
     for exclude_evidence in exclude_modes:
         evidence_tag = "no_evidence_rating" if exclude_evidence else None
-        combos = _build_combos_for_run(exclude_evidence)
+        base_combos = _build_combos_for_run(exclude_evidence, allowed_combos)
+        pls_combos = (
+            _build_combos_for_run(exclude_evidence, finalising_pls_combos_filtered)
+            if finalising_experiments and finalising_pls_combos_filtered
+            else base_combos
+        )
         if exclude_evidence:
             LOGGER.info("Running pipeline with evidence_support_rating excluded from reasoning features.")
         finalising_results: dict[str, list[dict[str, Any]]] = {}
+        finalising_col_rows: list[dict[str, Any]] = []
         for transform in transforms:
             print(f"Running transform: {transform}")
-            run_rows = _run_for_transform(transform, combos, evidence_tag)
+            combos = pls_combos if (finalising_experiments and transform.upper() == "PLS") else base_combos
+            run_rows, run_col_rows = _run_for_transform(transform, combos, evidence_tag)
             if finalising_experiments:
                 finalising_results[transform.upper()] = run_rows
+                finalising_col_rows.extend(run_col_rows)
         if finalising_experiments:
             _write_finalising_report(
                 finalising_results,
+                finalising_col_rows,
                 evidence_tag,
                 prune_tag,
                 include_llm_engineered,
                 engineered_set_id,
+                lr_only=generating_test_predictions,
             )
+
+    if generating_test_predictions and preds_output is not None:
+        missing_cols = [c for c in FINAL_PRED_COLUMNS.values() if c not in preds_output]
+        if missing_cols:
+            raise RuntimeError(f"Missing test predictions for columns: {missing_cols}")
+        preds_path = run_root_dir / "model_testing_test_predictions.csv"
+        pd.DataFrame(preds_output).to_csv(preds_path, index=False)
+        LOGGER.info("Test predictions saved: %s", preds_path)
 
 
 if __name__ == "__main__":

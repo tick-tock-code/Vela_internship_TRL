@@ -1,0 +1,23 @@
+{
+  "family": "hq_mirror",
+  "model_name": "Mirror HQ C+F (mlp4)",
+  "model_type": "mlp4",
+  "reasoning_combo": "C+F",
+  "transform": "BASE",
+  "sweep_param": "None",
+  "n_features_model": 29,
+  "n_features_raw": 29,
+  "cond_number": 1710.5570201212236,
+  "max_abs_corr": 0.9925844381897262,
+  "mean_abs_corr": 0.2580624106945614,
+  "corr_count_ge_threshold": 13.0,
+  "max_vif": 122.2257062546525,
+  "vif_skipped": false,
+  "avg_sign_flip_rate": null,
+  "raw_cond_number": 1710.5570201212236,
+  "raw_max_abs_corr": 0.9925844381897262,
+  "raw_mean_abs_corr": 0.2580624106945614,
+  "raw_corr_count_ge_threshold": 13.0,
+  "raw_max_vif": 122.2257062546525,
+  "raw_vif_skipped": false
+}

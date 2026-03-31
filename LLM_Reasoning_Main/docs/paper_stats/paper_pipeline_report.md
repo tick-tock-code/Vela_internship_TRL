@@ -1,5 +1,5 @@
 # Paper Pipeline Report
-Generated: 2026-03-26T01:18:06.143215
+Generated: 2026-03-31T03:16:53.164262
 
 ## Part 1 (Pool 4400) ? CV (OOF)
 | Set ID | Regression | Reasoning Combo | F0.5 (mean+/-std) |

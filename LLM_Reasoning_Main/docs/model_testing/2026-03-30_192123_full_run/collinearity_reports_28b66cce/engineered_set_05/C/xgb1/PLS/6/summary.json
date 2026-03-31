@@ -1,0 +1,23 @@
+{
+  "family": "engineered_set_05",
+  "model_name": "Engineered set_05 C (xgb1)",
+  "model_type": "xgb1",
+  "reasoning_combo": "C",
+  "transform": "PLS",
+  "sweep_param": "6",
+  "n_features_model": 6,
+  "n_features_raw": 20,
+  "cond_number": 1.0000000000000016,
+  "max_abs_corr": 7.622017906556397e-16,
+  "mean_abs_corr": 3.9113450403827357e-16,
+  "corr_count_ge_threshold": 0.0,
+  "max_vif": 1.0,
+  "vif_skipped": false,
+  "avg_sign_flip_rate": null,
+  "raw_cond_number": 4.4535593205287565e+17,
+  "raw_max_abs_corr": 1.0,
+  "raw_mean_abs_corr": 0.11497077149792544,
+  "raw_corr_count_ge_threshold": 3.0,
+  "raw_max_vif": Infinity,
+  "raw_vif_skipped": false
+}

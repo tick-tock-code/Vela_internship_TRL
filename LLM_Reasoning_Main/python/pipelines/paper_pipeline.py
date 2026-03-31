@@ -730,9 +730,11 @@ def _ensure_test_reasoning(
     google_model: str | None,
     records_hash: str,
     parse_version: str,
+    batch_size: int,
 ) -> pd.DataFrame:
     log_dir.mkdir(parents=True, exist_ok=True)
     log_path = log_dir / "paper_pipeline_reasoning.log"
+    batch_size = max(1, int(batch_size))
 
     def _log(msg: str) -> None:
         ts = datetime.now().isoformat()
@@ -826,7 +828,7 @@ def _ensure_test_reasoning(
             "Cached reasoning needs repair/missing experiments. "
             f"missing_exps={missing_exps} nan_flags={exp_nan_flags}"
         )
-        batch_size = 20
+        batch_size = max(1, int(batch_size))
         labels = np.zeros(len(records), dtype=int)
         output_dir = test_reasoning_path.parent
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -937,7 +939,7 @@ def _ensure_test_reasoning(
             experiments_path=experiments_path,
             providers=providers,
             google_model=google_model,
-            batch_size=20,
+            batch_size=batch_size,
             concurrency=10,
             experiments=[exp_id],
             dry_run=False,
@@ -1114,6 +1116,7 @@ def main() -> None:
         default="A,B,D,E,F",
         help="Comma-separated test reasoning experiments to generate/use (default: A,B,D,E,F).",
     )
+    parser.add_argument("--test_reasoning_batch_size", type=int, default=20)
     parser.add_argument("--include_abcdef_test_preds", action="store_true")
     parser.add_argument("--llm_model", type=str, default="gpt-4.1-nano")
     parser.add_argument("--google_model", type=str, default="gemini-2.0-flash")
@@ -1240,6 +1243,7 @@ def main() -> None:
         args.google_model,
         test_records_hash,
         TEST_PARSE_VERSION,
+        args.test_reasoning_batch_size,
     )
     test_reasoning_df, _ = _load_reasoning_cache(test_reasoning_df, test_exp_ids)
     if "founder_uuid" not in test_reasoning_df.columns and "row_index" in test_reasoning_df.columns:

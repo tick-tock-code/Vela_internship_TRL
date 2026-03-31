@@ -14,3 +14,25 @@
 ## Current Direction
 - Redundant features pruned and regularization increased.
 - `PLS` remains a potential additive step depending on test‑set behavior.
+
+
+
+🧠 8. What I would do (clean decision rule)
+Step 1 — Split experiments:
+
+Group A: Clean features
+
+A, A+D, A+E → use BASE
+
+Group B: High-signal features
+
+F, D+E+F, full combo → use ONLY PLS
+Step 2 — Final candidates:
+LR + A (baseline safe)
+LR + PLS(full combo) (likely best linear model)
+XGB1 + full combo (raw or PLS)
+MLP4 + PLS(full combo) (highest ceiling)
+
+## Collinearity (Base, VIF threshold 50)
+- VIF <= 50: HQ, A, B, C, D, E, A+B, A+C, A+D, A+E, A+D+E, A+C+D+E
+- VIF > 50: F, D+F, C+F, D+E+F, C+D+E+F, A+B+C+D+E+F
