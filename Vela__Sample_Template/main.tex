@@ -1,0 +1,301 @@
+%%%%%%%% ICML 2024 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2024} with \usepackage[nohyperref]{icml2024} above.
+\usepackage{hyperref}
+
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+\renewcommand{\theHtable}{\arabic{table}}
+
+% Use the following line for the initial blind version submitted for review:
+%\usepackage{icml2024}
+
+% If accepted, instead use the following line for the camera-ready submission:
+\usepackage[accepted]{icml2024}
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+\usepackage{multirow}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Micro-Internship Week 1: Evaluating LLM-Engineering and Reasoning}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Micro-Internship Week 1: Evaluating the use of LLM-Engineering and Reasoning to improve on human-engineered features}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2024
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Joel Beazley}{blank}
+\icmlauthor{Ben Griffin}{blank}
+\icmlauthor{Yigiz Ihlamur}{blank}
+\end{icmlauthorlist}
+
+\icmlaffiliation{blank}{}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+%\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+\begin{abstract}
+We evaluate founder-success prediction using two complementary experiments: a Human vs LLM-Eng vs LLM-Reason experiment focused on the core methodology, and a model-testing pipeline that probes feature representations, pruning, transforms including partial least squares (PLS), and model classes. The report consolidates validation and private-test performance, highlights generalization gaps, and motivates a final model suite for test-time prediction. \textit{(Placeholder: replace with your final abstract.)}
+\end{abstract}
+
+\section{Introduction}
+Founder and early-stage company characteristics are noisy and high-dimensional, but investment decisions require interpretable, robust, and precise signals. This report consolidates the results of two experiments: (1) a Human vs LLM-Eng vs LLM-Reason experiment that defines the core method and evaluation protocol, and (2) a model-testing pipeline that rigorously probes feature sets, pruning, transforms, and model classes. \textit{(Placeholder: add motivation, contributions, and context.)}
+
+\section{Method and Results (Human vs LLM-Eng vs LLM-Reason)}
+\subsection{Method}
+The Human vs LLM-Eng vs LLM-Reason experiment evaluates whether LLM-derived features improve founder-success prediction relative to manual baselines. Three feature families were compared: \textit{Human}, \textit{LLM-Eng}, and \textit{LLM-Reason}. Human features were hand-crafted from exploratory analysis, LLM-Eng features were structured features generated from a small training subset, and LLM-Reason features were subjective reasoning outputs intended to capture signal not already encoded in the engineered sets.
+
+The empirical design consisted of two experiment blocks. The first was a 3x3 comparison of Human, LLM-Eng, and LLM-Reason variants using XGBoost only. Within this block, the three human variants are denoted \textit{Human-1/2/3}, the three engineered variants are denoted \textit{LLM-Eng-05/08/07}, and reasoning augmentation is denoted by \textit{LLM-Reason (A, E)}. The second block evaluated reasoning additions to a high-quality human baseline, denoted \textit{HQ}. Here, HQ refers to the curated human-engineered benchmark feature set that served as the strongest manual baseline in this stage of the project. Each reasoning prompt family (A--F) was run separately across the dataset to generate its own feature block. Labels such as \textit{A, E} or \textit{A, D, E, F} therefore denote that the corresponding prompt-specific feature blocks were concatenated after feature extraction and before model training, rather than that a single combined prompt was used. The evaluated combinations were HQ, HQ with D, HQ with A and E, and HQ with A, D, E, and F, using both Logistic Regression (LR) and XGBoost with depth-1 trees, denoted \textit{XGB1}. Throughout, validation performance is reported as mean,$\pm$,standard deviation across folds, while private-test performance is computed on held-out success labels.
+
+\subsection{Results}
+The first question is whether LLM-derived features improve on the human baseline once generalization is taken seriously. Table~\ref{tab:paper-family} shows that the answer is mixed. At the family level, LLM-Eng improves on Human on both validation and private test, but the addition of LLM-Reason changes the character of the results: validation performance increases further, while private-test performance deteriorates sharply. This pattern already suggests that reasoning features are capable of fitting validation structure without delivering comparable out-of-sample gains.
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{l c c}
+\toprule
+Family & Validation $F_{0.5}$ (mean$\pm$std) & Test $F_{0.5}$ \\
+\midrule
+Human & 0.227 $\pm$ 0.002 & 0.2567 \\
+LLM-engineered & 0.254 $\pm$ 0.005 & 0.2727 \\
+LLM-Reason (A, E) & 0.277 $\pm$ 0.002 & 0.2028 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Part 1 family-level validation vs private-test.}
+\label{tab:paper-family}
+\end{table}
+
+Table~\ref{tab:paper-models} shows that this pattern is not an artifact of aggregation. Among the non-reasoning models, \textit{LLM-Eng-05} is the strongest model on the private test set, outperforming all three Human variants. In contrast, the reasoning-augmented variants are unstable: \textit{LLM-Eng-05 + LLM-Reason (A, E)} attains the strongest validation score in this block, but collapses on the private test set. The implication is that automated feature engineering is useful, whereas subjective reasoning features require much tighter control to avoid overfitting.
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{l c c}
+\toprule
+Model & Validation $F_{0.5}$ (mean$\pm$std) & Test $F_{0.5}$ \\
+\midrule
+Human-1 (scaled durations) & 0.226 $\pm$ 0.014 & 0.2530 \\
+Human-2 (binary equivalents) & 0.226 $\pm$ 0.015 & 0.2607 \\
+Human-3 (mixed durations) & 0.230 $\pm$ 0.016 & 0.2563 \\
+LLM-Eng-05 & 0.261 $\pm$ 0.066 & 0.2969 \\
+LLM-Eng-08 & 0.252 $\pm$ 0.042 & 0.2722 \\
+LLM-Eng-07 & 0.249 $\pm$ 0.051 & 0.2490 \\
+LLM-Eng-05 + LLM-Reason (A, E) & 0.280 $\pm$ 0.069 & 0.1212 \\
+LLM-Eng-08 + LLM-Reason (A, E) & 0.274 $\pm$ 0.032 & 0.2210 \\
+LLM-Eng-07 + LLM-Reason (A, E) & 0.277 $\pm$ 0.040 & 0.2661 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Part 1 per-model validation vs private-test.}
+\label{tab:paper-models}
+\end{table}
+
+Having established that richer reasoning features can raise validation performance while weakening generalization, the second block asks whether the same pattern persists when reasoning combinations are added to the HQ benchmark.
+
+Table~\ref{tab:paper-hq} reports the validation and private-test results for the HQ reasoning block, with panel (a) showing LR and panel (b) showing XGB1. In both cases, the more complex reasoning combinations improve cross-validated performance relative to HQ, whereas the private-test results remain anchored by the simpler specifications.
+
+\begin{table}[t]
+\centering
+\subtable[Logistic Regression validation vs private-test for HQ baseline combinations.\label{tab:paper-lr}]{
+\small
+\begin{tabular}{l c c}
+\toprule
+Feature combo & LR val & LR test \\
+\midrule
+ HQ & 0.234 $\pm$ 0.041 & 0.2684 \\
+ HQ, D & 0.249 $\pm$ 0.021 & 0.2482 \\
+ HQ, A, D, E, F & 0.339 $\pm$ 0.043 & 0.2243 \\
+ HQ, A, E & 0.281 $\pm$ 0.042 & 0.2225 \\
+\bottomrule
+\end{tabular}
+}
+
+\vspace{0.5em}
+
+\subtable[XGB1 validation vs private-test for HQ baseline combinations.\label{tab:paper-xgb}]{
+\small
+\begin{tabular}{l c c}
+\toprule
+Feature combo & XGB1 val & XGB1 test \\
+\midrule
+ HQ & 0.233 $\pm$ 0.027 & 0.2737 \\
+ HQ, D & 0.235 $\pm$ 0.029 & 0.2638 \\
+ HQ, A, D, E, F & 0.301 $\pm$ 0.042 & 0.2604 \\
+ HQ, A, E & 0.280 $\pm$ 0.055 & 0.2582 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Validation vs private-test for HQ benchmark with reasoning combinations.}
+\label{tab:paper-hq}
+\end{table}
+
+\section{Discussion (Human vs LLM-Eng vs LLM-Reason)}
+The Human vs LLM-Eng vs LLM-Reason results support two linked conclusions. First, LLM-Eng features are genuinely useful: they match and in some cases improve on both the Human feature variants and the HQ baseline. Second, the apparent gains from LLM-Reason features are misleading when judged only by cross-validation. In both experiment blocks, reasoning combinations improve validation performance, but those gains do not carry through to the private test set. The most plausible explanation, later investigated directly in the model-testing pipeline, is that the added reasoning features introduce highly collinear parameters that increase flexibility without improving generalisability. The implication is that the problem is not a lack of predictive signal, but a lack of stability once richer reasoning features are introduced.
+
+\section{Method and Results (Model Testing)}
+\subsection{Method}
+The model-testing pipeline was designed to answer a different question from the Human vs LLM-Eng vs LLM-Reason experiment: not whether richer feature families can produce high validation scores, but why cross-validated improvement failed to translate into better private-test performance, and which modeling choices remain stable enough to justify final test-set prediction. The pipeline therefore evolved through a sequence of controlled investigations. First, regularisation and pruning were examined through ElasticNet-guided sweeps, which showed that aggressive pruning reduced variance and improved stability; this became the default preprocessing choice for later experiments. Under aggressive pruning, the following HQ features were removed from the original high-quality human baseline: \textit{best\_degree\_prestige}, \textit{comfort\_index}, \textit{longest\_founding\_tenure}, \textit{persistence\_score}, \textit{has\_prior\_ipo}, \textit{is\_serial\_founder}, \textit{founding\_role\_count}, and \textit{edu\_prestige\_tier}. This pruning step was motivated by the hypothesis that redundant human-engineered features were contributing to the same instability observed when reasoning features were added.
+
+Second, feature transformations were evaluated. Three representations were considered: the untransformed feature space (\textit{None}), Principal Component Analysis (\textit{PCA}), and Partial Least Squares (\textit{PLS}). PCA was ultimately rejected because the relevant objective here is not to maximize explained variance, but to preserve predictive signal in a lower-dimensional orthogonal representation. PLS is better aligned with that objective because it constructs components using covariance with the target. Third, model classes were compared: Logistic Regression (\textit{LR}), XGBoost with depth-1 trees (\textit{XGB1}), and multilayer perceptrons with 2, 4, and 32 hidden units, denoted \textit{MLP2}, \textit{MLP4}, and \textit{MLP32}, respectively. Finally, collinearity diagnostics based on variance inflation factors (VIF), correlations, and condition numbers were introduced to determine when dimensionality reduction should be used for stability rather than for raw compression.
+
+\subsection{Results}
+The first substantive result of the model-testing pipeline is that stability improves only after the representation problem is treated explicitly. Transform sweeps showed that PCA did not provide the right inductive bias for this task, whereas PLS yielded more reliable gains on the high-signal feature combinations. The PLS sweep further showed that $n_{components}=6$ offered the strongest overall tradeoff across LR and XGB1, with mean CV $F_{0.5}$ values of 0.273 and 0.270, respectively. This is why the final evaluation retained only BASE and PLS representations.
+
+Model sweeps then clarified the appropriate level of functional complexity. LR remained the strongest stability anchor throughout the pipeline, while XGB1 was competitive but not consistently superior once validation and generalization were considered jointly. The neural models revealed a more informative gradient: MLP32 had the highest tendency to overfit, MLP2 was comparatively stable but weak, and MLP4 provided the best balance of capacity and control, particularly under PLS. This progression matters because it establishes that non-linearity is only useful when paired with a representation that has already reduced redundancy.
+
+Table~\ref{tab:final-models} brings these decisions together in the final model suite. The table is organized by model class, transform, and reasoning-feature combination, which makes the design logic explicit: clean baselines are retained in the untransformed representation, while higher-signal combinations are evaluated under PLS.
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{l l l c c}
+\toprule
+Model & Transform & Reasoning features & CV $F_{0.5}$ (mean$\pm$std) & Test $F_{0.5}$ \\
+\midrule
+LR & PLS & D, E, F & 0.301$\pm$0.036 & 0.274 \\
+LR & PLS & F & 0.278$\pm$0.031 & 0.271 \\
+MLP4 & PLS & C, D, E, F & 0.310$\pm$0.044 & 0.270 \\
+LR & None & None & 0.241$\pm$0.033 & 0.264 \\
+LR & None & A, C & 0.292$\pm$0.033 & 0.242 \\
+LR & None & A & 0.286$\pm$0.028 & 0.240 \\
+MLP4 & PLS & A, B, C, D, E, F & 0.333$\pm$0.042 & 0.239 \\
+LR & PLS & A & 0.287$\pm$0.036 & 0.233 \\
+LR & PLS & A, B, C, D, E, F & 0.337$\pm$0.033 & 0.225 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Final model suite (validation and private-test).}
+\label{tab:final-models}
+\end{table}
+
+\section{Discussion (Model Testing)}
+The model-testing results indicate that the key problem was not simply under-regularisation, but misallocation of representation capacity. Aggressive pruning reduced redundancy, but it did not eliminate it uniformly across feature combinations. Collinearity diagnostics showed that combinations involving A remained in a comparatively safe regime, whereas combinations built around F remained highly correlated. In the latter case, the broader combinations were not intended to remove redundancy; they were intended to add contextual information around the same underlying signal. This explains why PLS is not used universally: for cleaner combinations, BASE preserves interpretability without an obvious penalty, whereas for high-signal, high-collinearity combinations, PLS improves stability by compressing the redundant feature space into a smaller predictive representation.
+
+This routing logic also clarifies the role of the final model suite reported in Table~\ref{tab:final-models}. The suite is designed to separate three questions that would otherwise be conflated: whether the useful signal is clean or distributed, whether compression helps more than raw representation, and whether non-linear capacity adds value beyond a well-regularised linear model. The most informative outcome is that the PLS model using F alone remains comparatively stable from validation to private test, which suggests that PLS successfully compressed a dense but genuinely useful reasoning signal. By contrast, the full A, B, C, D, E, F combination was retained despite strong overfitting suspicions because it provided the highest cross-validated score and therefore served as a necessary stress test of whether maximum in-sample signal would generalise. Its weaker private-test performance confirms that high validation performance alone was not a sufficient selection criterion.
+
+\section{Conclusions}
+Taken together, the two pipelines support a consistent conclusion. LLM-Eng features can improve on human baselines, but unrestricted reasoning features are prone to overfitting when judged on genuine hold-out performance. The model-testing pipeline therefore shifts the selection criterion from validation maximization to stability under genuine distribution shift: aggressive pruning reduces redundancy, PLS is applied where collinearity remains structurally high, and final model choice is restricted to specifications that preserve interpretable tradeoffs between signal, compression, and complexity. The strongest evidence for this strategy is that PLS with F remains relatively stable between validation and private test, whereas the full A, B, C, D, E, F specification---retained because it achieved the best cross-validated score---does not generalise comparably well. The final suite is thus suitable for test-set prediction not because it contains a single dominant model, but because it encodes a disciplined comparison between clean linear baselines, compressed high-signal linear models, and a limited non-linear alternative.
+
+\section*{Impact Statement}
+This report aims to improve transparency and reliability in early-stage founder evaluation. Findings are limited to the observed dataset and should not be construed as investment advice. \textit{(Placeholder: refine as needed.)}
+
+\bibliography{main}
+\bibliographystyle{icml2024}
+
+\bibliographystyle{icml2024}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\newpage
+%\appendix
+%\onecolumn
+%\section{You \emph{can} have an appendix here.}
+
+%You can have as much text here as you want. The main body must be at most $8$ pages long.
+%For the final version, one more page can be added.
+%If you want, you can use an appendix like this one.  
+
+%The $\mathtt{\backslash onecolumn}$ command above can be kept in place if you prefer a one-column appendix, or can be removed if you prefer a two-column appendix.  Apart from this possible change, the style (font size, spacing, margins, page numbering, etc.) should be kept the same as the main body.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022.
+% Modified again in 2023 and 2024 by Sivan Sabato and Jonathan Scarlett.
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.

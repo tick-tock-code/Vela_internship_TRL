@@ -1,0 +1,112 @@
+1) Core Principle
+
+Write as a coherent academic argument, not a summary.
+
+Every section must contribute to a single central claim
+Do not list findings—interpret and connect them
+Prioritise clarity, logic, and flow over brevity
+2) Structure of Argument (Critical)
+
+Each section must follow this logic:
+
+Claim → Evidence → Interpretation → Implication
+
+Claim: What is the point being made?
+Evidence: What result/table supports this?
+Interpretation: What does it mean?
+Implication: Why does it matter?
+
+👉 Never present results without interpretation.
+
+3) Referencing Tables and Figures (VERY IMPORTANT)
+Rules:
+Always reference tables in-text before or alongside mentioning results
+Use format:
+“Table 1 shows…”
+“As shown in Table 2,…”
+“Results in Table 3 indicate that…”
+Do NOT:
+❌ Dump a table without explanation
+❌ Say “the table below shows”
+❌ Repeat all numbers from the table
+Do:
+Extract 1–2 key insights only
+Explain what the reader should notice
+Example:
+
+Bad:
+
+Table 1 reports the regression results. X is 0.5, Y is 0.3…
+
+Good:
+
+As shown in Table 1, the coefficient on 
+𝑋
+X is positive and statistically significant, indicating a strong relationship between X and Y.
+
+4) Paragraph Construction
+
+Each paragraph must:
+
+Start with a clear topic sentence (claim)
+Provide supporting evidence
+End with interpretation or transition
+Rule:
+One paragraph = one idea
+Avoid:
+Bullet-style writing in prose
+Disconnected sentences
+5) Flow Between Sentences and Sections
+Within paragraphs:
+Use linking words:
+“This suggests that…”
+“Consistent with this…”
+“In contrast,…”
+Between paragraphs:
+Add transition sentences:
+“Having established X, we now examine Y.”
+“To further explore this relationship…”
+Between sections:
+Briefly explain why the next section exists
+6) Results Section (Common Failure Point)
+DO:
+Interpret results, not just restate them
+Highlight:
+direction (positive/negative)
+magnitude (large/small)
+significance (if relevant)
+DO NOT:
+Copy numbers mechanically
+Describe every coefficient
+Focus on:
+What is important, not what is present
+7) Avoid These Common LLM Mistakes
+❌ “This paper shows…” (overused and vague)
+❌ Repetition of the same point
+❌ Overly generic claims (“important”, “significant” without context)
+❌ Listing results instead of analysing them
+❌ Abrupt section transitions
+8) Tone and Style
+Formal, precise, and concise
+No conversational language
+No fluff or filler
+Prefer:
+“The results indicate…”
+“This suggests…”
+“We find that…”
+9) LaTeX-Specific Rules
+Use proper referencing:
+Table~\ref{tab:results}
+Ensure:
+All tables have captions
+All tables are referenced in text
+Do not leave unused labels or broken references
+10) Final Check Before Output
+
+Ensure:
+
+Every table is referenced and interpreted
+Each paragraph has a clear purpose
+The argument flows logically from start to end
+No repetition or filler text
+Output is valid LaTeX
