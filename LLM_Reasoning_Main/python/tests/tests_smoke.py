@@ -10,6 +10,9 @@ These tests are intentionally small and fast; they do not touch the dataset.
 
 
 import numpy as np
+import pytest
+
+pytest.importorskip("openai")
 
 from pipelines import vcbench_pipeline as vp
 

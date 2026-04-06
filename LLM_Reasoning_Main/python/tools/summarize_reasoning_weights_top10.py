@@ -12,19 +12,18 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
-from lib.paths import BASE_DIR
-
-DOCS_DIR = BASE_DIR / "docs" / "proper_run"
-RESULTS_CSV = BASE_DIR / "docs" / "llm_full_results.csv"
-FOLDS_PATH = BASE_DIR / "features_storage" / "cv_folds" / "folds_k10_seed42.json"
-REASONING_PATH = (
-    BASE_DIR
-    / "features_storage"
-    / "llm_reasoning"
-    / "currently_in_use"
-    / "llm_reasoning_full.parquet"
+from lib.paths import (
+    DOCS_DIR,
+    VCBENCH_LLM_ENGINEERED_FAMILIES_DIR,
+    VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR,
+    fold_cache_path,
 )
-FAMILY_DIR = BASE_DIR / "features_storage" / "llm_engineered" / "families"
+
+OUTPUT_DIR = DOCS_DIR / "proper_run"
+RESULTS_CSV = DOCS_DIR / "llm_full_results.csv"
+FOLDS_PATH = fold_cache_path("folds_k10_seed42.json")
+REASONING_PATH = VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR / "llm_reasoning_full.parquet"
+FAMILY_DIR = VCBENCH_LLM_ENGINEERED_FAMILIES_DIR
 
 RANDOM_STATE = 42
 TOP_K = 10
@@ -195,8 +194,8 @@ def main() -> int:
         lines.extend(_format_reasoning_weights(reasoning_stats))
         lines.append("")
 
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = DOCS_DIR / "reasoning_feature_weights_top10.md"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUTPUT_DIR / "reasoning_feature_weights_top10.md"
     out_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"Wrote {out_path}")
     return 0

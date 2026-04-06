@@ -1,0 +1,8 @@
+{
+  "description": "Canonical legacy preset for the main VCBench pipeline.",
+  "args": {
+    "dataset": "full",
+    "feature_config": "configs/features.json",
+    "cv_use_fixed_folds": true
+  }
+}

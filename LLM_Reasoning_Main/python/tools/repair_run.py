@@ -18,7 +18,15 @@ from dotenv import load_dotenv
 from think_reason_learn.datasets import load_vcbench
 
 from lib.llm_reasoning_features import ReasoningConfig, generate_reasoning_features, LABEL_FIELDS
-from lib.paths import BASE_DIR, CONFIG_DIR, PROMPT_DIR
+from lib.paths import (
+    BASE_DIR,
+    CONFIG_DIR,
+    PROMPT_DIR,
+    VCBENCH_LOGGING_DIR,
+    VCBENCH_LLM_REASONING_RUNS_DIR,
+    engineered_seed_path,
+    raw_public_csv_path,
+)
 
 
 def _latest_run(runs_root: Path, exp_id: str) -> Path | None:
@@ -60,7 +68,7 @@ def main() -> int:
         raise FileNotFoundError("features.json not found.")
     config_data = json.loads(features_path.read_text(encoding="utf-8-sig"))
 
-    runs_root = root / "features_storage" / "llm_reasoning" / "runs"
+    runs_root = VCBENCH_LLM_REASONING_RUNS_DIR
     run_dir = _latest_run(runs_root, exp_id)
     if run_dir is None:
         raise RuntimeError(f"No run_{exp_id}_* parquet found.")
@@ -86,11 +94,11 @@ def main() -> int:
     print(f"Target batches to repair: {len(target_batches)}")
     print(f"NaN indices: {np.where(nan_rows)[0].tolist()}")
 
-    dataset_path = root.parent / "VCBench-Starter-Kit" / "vcbench_final_public.csv"
+    dataset_path = raw_public_csv_path()
     records, labels = load_vcbench(str(dataset_path))
     labels = np.asarray(labels)
 
-    seed_path = root / "features_storage" / "llm_engineered" / "seed_100.json"
+    seed_path = engineered_seed_path(100)
     seed_data = json.loads(seed_path.read_text(encoding="utf-8"))
     seed_idx = set(int(i) for i in seed_data.get("indices", []))
     pool_idx = [i for i in range(len(records)) if i not in seed_idx]
@@ -121,7 +129,7 @@ def main() -> int:
         experiments=[exp_id],
         dry_run=bool(config_data.get("llm_reasoning_dry_run", False)),
         dry_run_fast=bool(config_data.get("llm_reasoning_dry_run_fast", False)),
-        log_dir=root / "logging" / f"repair_run_{exp_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        log_dir=VCBENCH_LOGGING_DIR / f"repair_run_{exp_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
         log_every=int(config_data.get("llm_reasoning_log_every", 10)),
         repair_nan=True,
         repair_existing=True,

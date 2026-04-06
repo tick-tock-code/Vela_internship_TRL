@@ -1,9 +1,0 @@
-{
-  "model_type": "xgboost",
-  "seed": 42,
-  "threshold": 0.6400000000000001,
-  "feature_names_hash": "ecc6f493a040535ddeff4937c34f6869178ee821f5730158b614aff0576d97d7",
-  "train_matrix_hash": "3939f4e28e8e7ab3c971395df1d763780f858c36f0d4b7e0b55b0ff3e09f2b93",
-  "label_hash": "24ebf37c39d2755e10a9ee64562be9ad0fdb806039b6e0405d85501833dd7f12",
-  "model_hash": "638f67b2652cda313c56a5e430943f7c91238d1ea34a404d81405b5ef20d3934"
-}

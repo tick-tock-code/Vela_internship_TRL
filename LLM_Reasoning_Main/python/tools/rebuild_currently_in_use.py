@@ -11,7 +11,12 @@ import json
 import sys
 
 import pandas as pd
-from lib.paths import BASE_DIR
+from lib.paths import (
+    BASE_DIR,
+    VCBENCH_LLM_REASONING_CURRENT_DIR,
+    VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR,
+    VCBENCH_LLM_REASONING_RUNS_DIR,
+)
 
 
 def _latest_run(runs_root: Path, exp_id: str) -> Path | None:
@@ -68,7 +73,7 @@ def _write_outputs(target_root: Path, merged: pd.DataFrame, run_map: dict[str, s
 
 def main() -> int:
     root = BASE_DIR
-    runs_root = root / "features_storage" / "llm_reasoning" / "runs"
+    runs_root = VCBENCH_LLM_REASONING_RUNS_DIR
     if not runs_root.exists():
         print("Runs folder not found.", file=sys.stderr)
         return 1
@@ -107,8 +112,8 @@ def main() -> int:
         raise RuntimeError("Merged frame missing success column.")
     merged = merged.reset_index()
 
-    current_root = root / "features_storage" / "llm_reasoning" / "current"
-    use_root = root / "features_storage" / "llm_reasoning" / "currently_in_use"
+    current_root = VCBENCH_LLM_REASONING_CURRENT_DIR
+    use_root = VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR
     _write_outputs(current_root, merged, run_map, per_exp)
     _write_outputs(use_root, merged, run_map, per_exp)
 

@@ -13,21 +13,21 @@ from sklearn.linear_model import LogisticRegression
 from itertools import combinations
 
 from lib.feature_registry import FEATURE_REGISTRY
-from lib.paths import BASE_DIR, CONFIG_DIR
-
-
-DOCS_DIR = BASE_DIR / "docs"
-RESULTS_CSV = DOCS_DIR / "llm_full_results.csv"
-FOLDS_PATH = BASE_DIR / "features_storage" / "cv_folds" / "folds_k10_seed42.json"
-HUMAN_PATH = BASE_DIR / "features_storage" / "features_full.parquet"
-REASONING_PATH = (
-    BASE_DIR
-    / "features_storage"
-    / "llm_reasoning"
-    / "currently_in_use"
-    / "llm_reasoning_full.parquet"
+from lib.paths import (
+    CONFIG_DIR,
+    DOCS_DIR,
+    VCBENCH_COMBINED_FEATURES_DIR,
+    VCBENCH_LLM_ENGINEERED_FAMILIES_DIR,
+    VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR,
+    fold_cache_path,
 )
-FAMILY_DIR = BASE_DIR / "features_storage" / "llm_engineered" / "families"
+
+
+RESULTS_CSV = DOCS_DIR / "llm_full_results.csv"
+FOLDS_PATH = fold_cache_path("folds_k10_seed42.json")
+HUMAN_PATH = VCBENCH_COMBINED_FEATURES_DIR / "features_full.parquet"
+REASONING_PATH = VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR / "llm_reasoning_full.parquet"
+FAMILY_DIR = VCBENCH_LLM_ENGINEERED_FAMILIES_DIR
 FEATURES_JSON = CONFIG_DIR / "features.json"
 RANDOM_STATE = 42
 

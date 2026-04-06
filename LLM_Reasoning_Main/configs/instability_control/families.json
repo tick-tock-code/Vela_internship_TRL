@@ -1,0 +1,57 @@
+{
+  "dataset": {
+    "id_column": "founder_uuid",
+    "label_column": "success",
+    "folds_path": "data/vcbench/folds/folds_k5_seed42_full.json"
+  },
+  "baseline": {
+    "id": "hq_baseline",
+    "label": "Human HQ Baseline",
+    "path": "data/vcbench/features/human_high_quality/features_full.parquet",
+    "kind": "baseline"
+  },
+  "families": [
+    {
+      "id": "engineered_set_05",
+      "label": "Engineered Set 05",
+      "path": "data/vcbench/features/llm_engineered/archives/family_20260321_144238/set_05/current/llm_features.parquet",
+      "exclude_columns": ["set_id"]
+    },
+    {
+      "id": "reasoning_A",
+      "label": "Reasoning A",
+      "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+      "feature_prefixes": ["A_"]
+    },
+    {
+      "id": "reasoning_B",
+      "label": "Reasoning B",
+      "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+      "feature_prefixes": ["B_"]
+    },
+    {
+      "id": "reasoning_C",
+      "label": "Reasoning C",
+      "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+      "feature_prefixes": ["C_"]
+    },
+    {
+      "id": "reasoning_D",
+      "label": "Reasoning D",
+      "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+      "feature_prefixes": ["D_"]
+    },
+    {
+      "id": "reasoning_E",
+      "label": "Reasoning E",
+      "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+      "feature_prefixes": ["E_"]
+    },
+    {
+      "id": "reasoning_F",
+      "label": "Reasoning F",
+      "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+      "feature_prefixes": ["F_"]
+    }
+  ]
+}

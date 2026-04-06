@@ -1,0 +1,31 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_phd",
+    "prior_ipo",
+    "industry_tech",
+    "industry_health",
+    "education_high_qs",
+    "has_executive_role",
+    "industry_focused",
+    "has_education",
+    "industry_investment",
+    "has_multiple_jobs",
+    "industry_startup",
+    "has_education_from_top_qs",
+    "experience_in_management",
+    "industry_extractive",
+    "has_high_qs_ranking",
+    "industry_investment_related",
+    "has_executive_experience",
+    "industry_innovation"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

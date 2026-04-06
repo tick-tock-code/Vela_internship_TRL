@@ -1,0 +1,27 @@
+{
+  "families_config": "configs/instability_control/families.json",
+  "selected_families": [
+    "engineered_set_05",
+    "reasoning_A",
+    "reasoning_D",
+    "reasoning_E",
+    "reasoning_F"
+  ],
+  "routes": [
+    {
+      "id": "baseline_logistic",
+      "type": "logistic"
+    },
+    {
+      "id": "elasticnet_logistic",
+      "type": "elasticnet_logistic",
+      "c": 0.1,
+      "l1_ratio": 0.5
+    },
+    {
+      "id": "pls_logistic_6",
+      "type": "pls_logistic",
+      "n_components": 6
+    }
+  ]
+}

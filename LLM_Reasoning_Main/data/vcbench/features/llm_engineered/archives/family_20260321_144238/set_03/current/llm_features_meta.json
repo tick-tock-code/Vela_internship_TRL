@@ -1,0 +1,29 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_phd",
+    "prior_ipo",
+    "industry_known",
+    "has_experience_in_industry",
+    "education_qs_rank_high",
+    "has_exited",
+    "has_multiple_jobs",
+    "has_job_duration_over_3_years",
+    "industry_in_target_list",
+    "has_startup_experience",
+    "education_field_relevant",
+    "industry_experience_in_target",
+    "has_mba_or_higher",
+    "has_experience_in_target_industries",
+    "has_experience_in_target_roles",
+    "has_high_qs_ranking_education"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

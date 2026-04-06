@@ -1,0 +1,87 @@
+[
+  {
+    "name": "has_high_qs_rank",
+    "description": "Founder has at least one education with QS ranking 10 or better",
+    "expression": "lambda founder: any(parse_qs(e.get('qs_ranking', '')) <= 10 for e in founder.get('educations', []))"
+  },
+  {
+    "name": "has_executive_role",
+    "description": "Founder has held an executive role (e.g., President, CEO, Director) for at least 2 years",
+    "expression": "lambda founder: any(parse_duration(r.get('duration', '')) >= 2 for r in founder.get('jobs', [])) and any(role.lower() in ['president', 'ceo', 'director', 'co-founder', 'president & founder', 'founder, ceo'] for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "has_experience_in_industry",
+    "description": "Founder has worked in the startup's industry for at least 2 years",
+    "expression": "lambda founder: any(parse_duration(r.get('duration', '')) >= 2 and r.get('industry', '').lower() in founder.get('industry', '').lower() for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "has_ipo_event",
+    "description": "Founder has experienced an IPO event",
+    "expression": "lambda founder: len(founder.get('ipos', [])) > 0"
+  },
+  {
+    "name": "has_acquisition_event",
+    "description": "Founder has been involved in an acquisition",
+    "expression": "lambda founder: len(founder.get('acquisitions', [])) > 0"
+  },
+  {
+    "name": "educations_in_top_qs",
+    "description": "Founder has at least one education with QS ranking 50 or better",
+    "expression": "lambda founder: any(parse_qs(e.get('qs_ranking', '')) <= 50 for e in founder.get('educations', []))"
+  },
+  {
+    "name": "has_leadership_experience",
+    "description": "Founder has held a leadership role for at least 4 years",
+    "expression": "lambda founder: any(parse_duration(r.get('duration', '')) >= 4 for r in founder.get('jobs', [])) and any('lead' in r.get('role', '').lower() or 'president' in r.get('role', '').lower() or 'ceo' in r.get('role', '').lower() for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "has_education_in_science_or_engineering",
+    "description": "Founder has an education degree in a science or engineering field",
+    "expression": "lambda founder: any('science' in e.get('field', '').lower() or 'engineering' in e.get('field', '').lower() for e in founder.get('educations', []))"
+  },
+  {
+    "name": "has_experience_in_high_company_size",
+    "description": "Founder has worked in a company with more than 1000 employees for at least 2 years",
+    "expression": "lambda founder: any(parse_duration(r.get('duration', '')) >= 2 and parse_company_size(r.get('company_size', '')) > 1000 for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "industry_experience_in_top_qs",
+    "description": "Founder has industry experience from a top QS ranked institution (rank 10 or better)",
+    "expression": "lambda founder: any(parse_qs(e.get('qs_ranking', '')) <= 10 for e in founder.get('educations', [])) and any(r.get('industry', '').lower() in founder.get('industry', '').lower() for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "multiple_educations",
+    "description": "Founder has at least two different degrees",
+    "expression": "lambda founder: len({e.get('degree', '').lower() for e in founder.get('educations', []) if e.get('degree', '')}) >= 2"
+  },
+  {
+    "name": "has_international_experience",
+    "description": "Founder has worked in at least two countries or industries",
+    "expression": "lambda founder: len({r.get('industry', '').lower() for r in founder.get('jobs', [])}) >= 2"
+  },
+  {
+    "name": "has_startup_experience",
+    "description": "Founder has held a role in a startup for at least 2 years",
+    "expression": "lambda founder: any(parse_duration(r.get('duration', '')) >= 2 and 'startup' in r.get('role', '').lower() for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "has_experience_in_biotech_or_medtech",
+    "description": "Founder has worked in biotech or medical technology industries",
+    "expression": "lambda founder: any(r.get('industry', '').lower() in ['biotechnology', 'medical equipment manufacturing', 'healthcare'] for r in founder.get('jobs', []))"
+  },
+  {
+    "name": "has_focused_education",
+    "description": "Founder has an education degree in their startup's industry field",
+    "expression": "lambda founder: any(e.get('field', '').lower() in founder.get('industry', '').lower() for e in founder.get('educations', []))"
+  },
+  {
+    "name": "has_advanced_education",
+    "description": "Founder has at least a master's degree",
+    "expression": "lambda founder: any('master' in e.get('degree', '').lower() or 'phd' in e.get('degree', '').lower() or 'doctorate' in e.get('degree', '').lower() for e in founder.get('educations', []))"
+  },
+  {
+    "name": "has_consulting_or_advisory_experience",
+    "description": "Founder has experience in consulting or advisory roles for at least 2 years",
+    "expression": "lambda founder: any(parse_duration(r.get('duration', '')) >= 2 and 'consult' in r.get('role', '').lower() for r in founder.get('jobs', []))"
+  }
+]

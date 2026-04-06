@@ -11,7 +11,12 @@ import json
 import sys
 
 import pandas as pd
-from lib.paths import BASE_DIR
+from lib.paths import (
+    BASE_DIR,
+    VCBENCH_LLM_REASONING_CURRENT_DIR,
+    VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR,
+    VCBENCH_LLM_REASONING_RUNS_DIR,
+)
 
 
 def _latest_run(runs_root: Path, exp_id: str) -> Path | None:
@@ -45,10 +50,10 @@ def _load_confidence(run_dir: Path, exp_id: str, join_key: str) -> pd.DataFrame:
 
 def main() -> int:
     root = BASE_DIR
-    runs_root = root / "features_storage" / "llm_reasoning" / "runs"
+    runs_root = VCBENCH_LLM_REASONING_RUNS_DIR
     use_candidates = [
-        root / "features_storage" / "llm_reasoning" / "currently_in_use",
-        root / "features_storage" / "llm_reasoning" / "current",
+        VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR,
+        VCBENCH_LLM_REASONING_CURRENT_DIR,
     ]
     use_targets: list[Path] = []
     for candidate in use_candidates:

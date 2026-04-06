@@ -1,9 +1,0 @@
-family,model_name,model_type,reasoning_combo,transform,sweep_param,cond_number,max_abs_corr,mean_abs_corr,corr_count_ge_threshold,max_vif,vif_skipped,avg_sign_flip_rate,raw_cond_number,raw_max_abs_corr,raw_mean_abs_corr,raw_corr_count_ge_threshold,raw_max_vif,raw_vif_skipped
-hq_mirror,Mirror HQ HQ (logistic),logistic,HQ,BASE,None,5.489775576494353e+17,1.0,0.16140175690610462,3.0,inf,False,0.08571428571428572,5.489775576494353e+17,1.0,0.16140175690610462,3.0,inf,False
-hq_mirror,Mirror HQ A (logistic),logistic,A,BASE,None,1.836565869540184e+17,1.0,0.18493361962249819,3.0,inf,False,0.06666666666666667,1.836565869540184e+17,1.0,0.18493361962249819,3.0,inf,False
-hq_mirror,Mirror HQ B (logistic),logistic,B,BASE,None,1.5378111304930618e+17,1.0,0.17190296332091695,4.0,inf,False,0.09333333333333334,1.5378111304930618e+17,1.0,0.17190296332091695,4.0,inf,False
-hq_mirror,Mirror HQ C (logistic),logistic,C,BASE,None,7.246409554509646e+18,1.0,0.17398837245448423,4.0,inf,False,0.08387096774193549,7.246409554509646e+18,1.0,0.17398837245448423,4.0,inf,False
-hq_mirror,Mirror HQ D (logistic),logistic,D,BASE,None,2.879058586018573e+17,1.0,0.1712223030022401,4.0,inf,False,0.04666666666666667,2.879058586018573e+17,1.0,0.1712223030022401,4.0,inf,False
-hq_mirror,Mirror HQ E (logistic),logistic,E,BASE,None,2.176496952013731e+17,1.0,0.17259383655386962,4.0,inf,False,0.05806451612903226,2.176496952013731e+17,1.0,0.17259383655386962,4.0,inf,False
-hq_mirror,Mirror HQ F (logistic),logistic,F,BASE,None,1.3426944158639856e+17,1.0,0.19898310973893946,13.0,inf,False,0.023529411764705882,1.3426944158639856e+17,1.0,0.19898310973893946,13.0,inf,False
-hq_mirror,Mirror HQ A+B+C+D+E+F (logistic),logistic,A+B+C+D+E+F,BASE,None,2.698910617561285e+18,1.0,0.2782010021493656,17.0,inf,False,0.0326530612244898,2.698910617561285e+18,1.0,0.2782010021493656,17.0,inf,False

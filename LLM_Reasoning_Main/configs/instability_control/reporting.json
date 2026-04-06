@@ -1,0 +1,5 @@
+{
+  "families_config": "configs/instability_control/families.json",
+  "admission_config": "configs/instability_control/admission.json",
+  "routes_config": "configs/instability_control/routes.json"
+}

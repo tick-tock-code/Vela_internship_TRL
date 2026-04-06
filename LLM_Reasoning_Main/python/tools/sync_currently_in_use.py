@@ -10,7 +10,11 @@ import shutil
 
 import numpy as np
 import pandas as pd
-from lib.paths import BASE_DIR
+from lib.paths import (
+    BASE_DIR,
+    VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR,
+    VCBENCH_LLM_REASONING_RUNS_DIR,
+)
 
 
 def _reasoning_run_valid(run_dir: Path, exp_id: str) -> bool:
@@ -48,8 +52,7 @@ def _detect_join_key(sample_df: pd.DataFrame) -> str:
 
 
 def _update_currently_in_use(exp_list: list[str], selected_runs: dict[str, Path]) -> None:
-    base_root = BASE_DIR
-    use_root = base_root / "features_storage" / "llm_reasoning" / "currently_in_use"
+    use_root = VCBENCH_LLM_REASONING_CURRENTLY_IN_USE_DIR
     exp_root = use_root / "experiments"
     use_root.mkdir(parents=True, exist_ok=True)
     exp_root.mkdir(parents=True, exist_ok=True)
@@ -119,7 +122,7 @@ def main() -> None:
     )
     args = parser.parse_args()
     exp_list = [e.strip() for e in str(args.experiments).split(",") if e.strip()]
-    runs_root = BASE_DIR / "features_storage" / "llm_reasoning" / "runs"
+    runs_root = VCBENCH_LLM_REASONING_RUNS_DIR
     selected_runs = _select_latest_valid_runs(runs_root, exp_list)
     missing = [e for e in exp_list if e not in selected_runs]
     if missing:

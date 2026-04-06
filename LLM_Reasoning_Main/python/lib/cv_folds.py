@@ -8,6 +8,8 @@ from typing import Any
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 
+from lib.paths import VCBENCH_FOLDS_DIR
+
 
 def resolve_folds_path(
     base_dir: Path, cv_folds: int, random_state: int, override_path: str | None
@@ -17,12 +19,7 @@ def resolve_folds_path(
         if not path.is_absolute():
             path = base_dir / path
         return path
-    return (
-        base_dir
-        / "features_storage"
-        / "cv_folds"
-        / f"folds_k{cv_folds}_seed{random_state}.json"
-    )
+    return VCBENCH_FOLDS_DIR / f"folds_k{cv_folds}_seed{random_state}.json"
 
 
 def build_splits_from_fold_ids(

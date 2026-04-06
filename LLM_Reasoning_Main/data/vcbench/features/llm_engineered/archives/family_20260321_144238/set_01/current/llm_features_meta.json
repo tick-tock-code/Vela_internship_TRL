@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_ranking_education",
+    "has_executive_role_long_duration",
+    "industry_includes_tech",
+    "has_education_in_science_or_engineering",
+    "has_ipo_experience",
+    "has_acquisition_experience",
+    "has_extensive_experience_in_industry",
+    "has_multiple_education_degrees",
+    "has_international_experience",
+    "industry_is_nan_or_empty",
+    "has_high_number_of_jobs",
+    "has_education_in_top_qs_ranking",
+    "has_leadership_experience_in_startup",
+    "industry_includes_health",
+    "experience_in_education_sector",
+    "has_multiple_high_qs_education",
+    "has_education_in_social_sciences"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

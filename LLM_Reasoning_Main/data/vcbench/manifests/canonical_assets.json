@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-04-05",
+  "raw": {
+    "public_csv": "data/vcbench/raw/vcbench_final_public.csv",
+    "public_sample_csv": "data/vcbench/raw/vcbench_final_public_sample100.csv",
+    "private_csv": "data/vcbench/raw/vcbench_final_private (success column removed) - vcbench_final_private.csv"
+  },
+  "folds": [
+    "data/vcbench/folds/folds_k4_seed42.json",
+    "data/vcbench/folds/folds_k5_seed42.json",
+    "data/vcbench/folds/folds_k5_seed42_full.json",
+    "data/vcbench/folds/folds_k10_seed42.json"
+  ],
+  "features": {
+    "combined": "data/vcbench/features/combined/features_full.parquet",
+    "human": "data/vcbench/features/human/features_full.parquet",
+    "human_high_quality": "data/vcbench/features/human_high_quality/features_full.parquet",
+    "engineered_seed": "data/vcbench/features/llm_engineered/seed_100.json",
+    "engineered_families_dir": "data/vcbench/features/llm_engineered/families",
+    "engineered_archives_dir": "data/vcbench/features/llm_engineered/archives",
+    "engineered_canonical_family_dir": "data/vcbench/features/llm_engineered/family_20260321_144238",
+    "reasoning_train_currently_in_use": "data/vcbench/features/llm_reasoning/train/combined/currently_in_use/llm_reasoning_full.parquet",
+    "reasoning_train_full_current": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
+    "reasoning_test_combined": "data/vcbench/features/llm_reasoning/test/combined/llm_reasoning_private.parquet"
+  },
+  "notes": [
+    "Deprecated legacy storage trees were moved to .tmp/migration/",
+    "Legacy pipelines now read canonical data paths first and keep deprecated-path fallbacks only for transition safety."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "n_rows": 4400,
+  "n_features": 18,
+  "feature_names": [
+    "has_high_qs_ranking_education",
+    "industry_is_tech_or_software",
+    "has_exited_firm",
+    "has_experience_in_industry",
+    "long_professional_experience",
+    "has_graduate_degree",
+    "industry_in_management_or_professional_services",
+    "has_education_in_top_qs",
+    "industry_is_in_healthcare",
+    "has_startup_experience",
+    "industry_is_in_digital_or_internet",
+    "has_education_in_science_or_engineering",
+    "industry_is_in_finance_or_investment",
+    "has_experience_in_management_roles",
+    "has_experience_in_technology_roles",
+    "industry_has_exited_companies",
+    "has_degree_in_business_or_management"
+  ],
+  "model": "gpt-4.1-nano",
+  "providers": {
+    "openai": true,
+    "google": false
+  },
+  "google_model": null,
+  "seed_hash": "5479991db182694326f99bc76565646e52b3d22db09c9e73867a8ef376c261e7"
+}

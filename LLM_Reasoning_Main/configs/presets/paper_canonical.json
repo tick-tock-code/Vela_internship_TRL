@@ -1,0 +1,12 @@
+{
+  "description": "Canonical legacy preset for the paper pipeline.",
+  "args": {
+    "cv_folds": 5,
+    "test_csv": "data/vcbench/raw/vcbench_final_private (success column removed) - vcbench_final_private.csv",
+    "test_reasoning_parquet": "data/vcbench/features/llm_reasoning/test/combined/llm_reasoning_private.parquet",
+    "engineered_family_id": "20260321_144238",
+    "engineered_set_ids": "set_01,set_04,set_05",
+    "n_engineered_sets": 3,
+    "engineered_n_rules": 18
+  }
+}

@@ -1,11 +1,25 @@
-features_full.parquet
+.tmp/
+.tmp_tests/
+benchmark_raw/
 training_logs/
 logging/
-benchmark_raw/
-.tmp_tests/
+features_storage/
+test_dataset/
+features_full.parquet
 training_log_*.txt
 loss_curve_*.csv
 human_feature_correlations.csv
 human_feature_correlations.png
 __pycache__/
 .python_deps/
+
+# Generated experiment outputs and logs
+prompt_evolution/outputs/
+prompt_evolution/full_eval/
+prompt_evolution/launch_logs/
+prompt_evolution/runs/
+mirror_experiments/outputs/
+
+# Serialized model artifacts
+*.joblib
+*.pkl
