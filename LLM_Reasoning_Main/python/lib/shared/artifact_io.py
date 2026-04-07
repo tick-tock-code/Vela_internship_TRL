@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 
 def ensure_dir(path: Path) -> Path:
     path.mkdir(parents=True, exist_ok=True)
@@ -26,6 +28,12 @@ def write_markdown(path: Path, content: str) -> Path:
     if not content.endswith("\n"):
         content += "\n"
     path.write_text(content, encoding="utf-8")
+    return path
+
+
+def write_csv(path: Path, frame: pd.DataFrame) -> Path:
+    ensure_dir(path.parent)
+    frame.to_csv(path, index=False)
     return path
 
 

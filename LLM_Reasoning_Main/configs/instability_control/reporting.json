@@ -1,5 +1,13 @@
 {
   "families_config": "configs/instability_control/families.json",
-  "admission_config": "configs/instability_control/admission.json",
-  "routes_config": "configs/instability_control/routes.json"
+  "combo_catalog_config": "configs/instability_control/combo_catalog.json",
+  "controls_config": "configs/instability_control/controls.json",
+  "methods_config": "configs/instability_control/methods.json",
+  "docs_output": {
+    "results_markdown": "docs/instability_control/step1/03_results.md",
+    "legacy_alignment_markdown": "docs/instability_control/step1/07_step1_legacy_alignment.md",
+    "snapshot_csv": "docs/instability_control/step1/step1_snapshot.csv",
+    "method_benchmark_markdown": "docs/instability_control/step2/08_method_benchmark.md",
+    "status_report_markdown": "docs/instability_control/step3/09_status_report.md"
+  }
 }

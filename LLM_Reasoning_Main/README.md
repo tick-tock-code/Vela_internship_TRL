@@ -1,19 +1,31 @@
 # LLM_Reasoning_Main
 
-This repo now separates frozen legacy pipelines from the new instability-control direction.
+This repo now separates frozen legacy pipelines from an evidence-first instability-control workflow.
 
 ## Active Structure
 
 - `python/pipelines/legacy/`: frozen legacy implementations.
-- `python/pipelines/`: thin compatibility wrappers that keep the original entrypoint filenames callable.
-- `python/pipelines/instability_control/`: active family-diagnostics, admission, route-comparison, and final-report entrypoints.
+- `python/pipelines/`: thin compatibility wrappers that keep original entrypoint filenames callable.
+- `python/pipelines/instability_control/evidence_map.py`: primary Step 1 evidence-mapping entrypoint.
+- `python/pipelines/instability_control/method_benchmark.py`: scaffold entrypoint for the next mathematical-method stage.
+- `python/pipelines/instability_control/status_report.py`: current-state synthesis for the instability-control track.
 - `python/lib/shared/`: reusable loading, folds, metrics, and artifact helpers.
-- `python/lib/stability/`: instability-control logic.
-- `configs/presets/`: canonical legacy presets.
-- `configs/instability_control/`: active configs for the new methodology path.
+- `python/lib/stability/`: family registry, combo catalog, route evaluators, evidence synthesis, and method scaffold logic.
+- `configs/instability_control/`: active configs for atomic families, legacy combos, route controls, reporting, and method order.
 - `data/vcbench/`: canonical datasets, fold caches, feature banks, and train/test reasoning caches.
 - `.tmp/runs/`: raw run outputs.
 - `docs/`: curated human-readable outputs only.
+
+## Instability-Control Workflow
+
+1. Anchor continuity:
+   `HQ_anchor_xgb1_unpruned` stays frozen as the benchmark anchor.
+2. Step 1 evidence map:
+   reproduce the raw failure pattern and transformed `PLS` wins cleanly.
+3. Method benchmark:
+   add new stability methods only after Step 1 identifies the priority units.
+4. Final synthesis:
+   maintain one paper-facing summary of what fails raw, what is transform-sensitive, and what to try next.
 
 ## Canonical Paths
 
@@ -39,15 +51,6 @@ These filenames still work and now load canonical presets by default:
 
 Preset files live in `configs/presets/`.
 
-## Active Instability-Control Entry Points
-
-- `python/pipelines/instability_control/family_diagnostics.py`
-- `python/pipelines/instability_control/family_admission.py`
-- `python/pipelines/instability_control/route_comparison.py`
-- `python/pipelines/instability_control/final_report.py`
-
-Default configs live in `configs/instability_control/`.
-
 ## Docs
 
-Start with `docs/README.md` for navigation and `docs/next_steps.md` for the week-one execution plan.
+Start with `docs/README.md` for navigation and `docs/instability_control/README.md` for the active study path.

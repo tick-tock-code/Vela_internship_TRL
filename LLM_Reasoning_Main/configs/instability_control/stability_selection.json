@@ -1,0 +1,74 @@
+{
+  "family_ids": [
+    "reasoning_A",
+    "reasoning_B",
+    "reasoning_C",
+    "reasoning_D",
+    "reasoning_E",
+    "reasoning_F"
+  ],
+  "outer_cv": {
+    "n_splits": 3,
+    "n_repeats": 10,
+    "random_state": 42
+  },
+  "subsampling": {
+    "fraction": 0.5,
+    "n_subsamples": 100,
+    "random_state": 42,
+    "stratified": true
+  },
+  "selector": {
+    "solver": "saga",
+    "penalty": "l1",
+    "c_grid": [
+      0.01,
+      0.03,
+      0.1,
+      0.3,
+      1.0,
+      3.0
+    ],
+    "max_iter": 5000,
+    "selection_epsilon": 1e-08
+  },
+  "stability": {
+    "primary_threshold": 0.8,
+    "sign_consistency_threshold": 0.9,
+    "report_thresholds": [
+      0.6,
+      0.8,
+      0.9
+    ]
+  },
+  "evaluation": {
+    "models": [
+      "logistic",
+      "xgb1"
+    ],
+    "apply_rule_override": true,
+    "threshold_grid": "default",
+    "inner_threshold_cv_splits": 3,
+    "random_state": 42
+  },
+  "tracks": [
+    {
+      "id": "competition_track",
+      "label": "Competition Track",
+      "mode": "competition"
+    },
+    {
+      "id": "augmentation_track",
+      "label": "Augmentation Track",
+      "mode": "augmentation"
+    }
+  ],
+  "docs_output": {
+    "protocol_markdown": "docs/instability_control/step2/10_stability_selection_protocol.md",
+    "summary_markdown": "docs/instability_control/step2/11_stability_selection_summary.md",
+    "details_markdown": "docs/instability_control/step2/12_stability_selection_family_details.md",
+    "audit_markdown": "docs/instability_control/step2/13_stability_selection_final_audit.md",
+    "summary_csv": "docs/instability_control/step2/stability_selection_summary.csv",
+    "feature_frequencies_csv": "docs/instability_control/step2/stability_selection_feature_frequencies.csv"
+  }
+}

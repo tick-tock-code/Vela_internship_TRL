@@ -1,9 +1,34 @@
 # Family Map
 
-Current default family registry:
+Current Step 1 evaluation units:
 
-- `hq_baseline`: HQ human baseline features.
-- `engineered_set_05`: canonical engineered family set from `family_20260321_144238`.
-- `reasoning_A` to `reasoning_F`: one family per reasoning experiment prefix from `full_current`.
+## Atomic Families
 
-These defaults are defined in `configs/instability_control/families.json`.
+- `HQ_anchor_xgb1_unpruned`: canonical frozen mirror benchmark anchor
+- `engineered_set_05`
+- `reasoning_A`
+- `reasoning_B`
+- `reasoning_C`
+- `reasoning_D`
+- `reasoning_E`
+- `reasoning_F`
+
+## Fixed Legacy Combos
+
+- `HQ`
+- `A+C`
+- `D+E+F`
+- `C+D+E+F`
+- `A+B+C+D+E+F`
+
+## Route Controls
+
+Step 1 uses route controls rather than route baselines with admission logic:
+
+- `anchor_xgb1_unpruned`
+- `raw_lr_base`
+- `raw_xgb1`
+- `pls_lr_n6`
+- `pls_mlp4_n6`
+
+Pruned or compressed HQ variants are route variants, not new baselines.

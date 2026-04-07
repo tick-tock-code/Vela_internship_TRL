@@ -2,103 +2,72 @@ from __future__ import annotations
 
 from typing import Any
 
+import pandas as pd
 
-def diagnostics_markdown(results: dict[str, Any]) -> str:
-    lines = [
-        "# Family Diagnostics",
-        "",
-        "| family | features | delta_f0.5 | delta_pr_auc | delta_p@10 | max_cross_corr |",
-        "|---|---:|---:|---:|---:|---:|",
-    ]
-    for family_id, payload in results.items():
-        lines.append(
-            "| {family} | {count} | {df05:+.4f} | {dpr:+.4f} | {dp10:+.4f} | {corr:.4f} |".format(
-                family=family_id,
-                count=int(payload["family_feature_count"]),
-                df05=float(payload["delta_f0_5_mean"]),
-                dpr=float(payload["delta_pr_auc_mean"]),
-                dp10=float(payload["delta_precision_at_10_mean"]),
-                corr=float(payload["cross_corr"]["max_abs_cross_corr"]),
-            )
-        )
-    return "\n".join(lines)
+from lib.stability.evidence import build_route_snapshot
 
 
-def admission_markdown(results: dict[str, Any]) -> str:
-    lines = [
-        "# Sequential Admission",
-        "",
-        f"Admitted families: {', '.join(results['admitted_families']) if results['admitted_families'] else '(none)'}",
-        "",
-        "| family | accepted | delta_f0.5 | f0.5_std | delta_p@10 |",
-        "|---|---|---:|---:|---:|",
-    ]
-    for decision in results["decisions"]:
-        lines.append(
-            "| {family} | {accepted} | {df05:+.4f} | {std:.4f} | {dp10:+.4f} |".format(
-                family=decision["family_id"],
-                accepted="yes" if decision["accepted"] else "no",
-                df05=float(decision["delta_f0_5_mean"]),
-                std=float(decision["delta_f0_5_std"]),
-                dp10=float(decision["delta_precision_at_10_mean"]),
-            )
-        )
-    return "\n".join(lines)
+def _fmt_num(value: Any, places: int = 3) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return "--"
+    return f"{float(value):.{places}f}"
 
 
-def routes_markdown(results: list[dict[str, Any]]) -> str:
-    lines = [
-        "# Route Comparison",
-        "",
-        "| route | type | f0.5 | pr_auc | p@10 |",
-        "|---|---|---:|---:|---:|",
-    ]
-    for result in results:
-        summary = result["summary"]
-        lines.append(
-            "| {route_id} | {route_type} | {f05:.4f} | {pr:.4f} | {p10:.4f} |".format(
-                route_id=result["route_id"],
-                route_type=result["route_type"],
-                f05=float(summary["f0_5_mean"]),
-                pr=float(summary["pr_auc_mean"]),
-                p10=float(summary["precision_at_10_mean"]),
-            )
-        )
-    return "\n".join(lines)
-
-
-def final_report_markdown(
-    diagnostics: dict[str, Any],
-    admission: dict[str, Any],
-    routes: list[dict[str, Any]],
-    residuals: dict[str, Any],
+def status_report_markdown(
+    route_metrics: pd.DataFrame,
+    classification: pd.DataFrame,
+    priorities: dict[str, list[str]],
+    method_summary: dict[str, Any],
 ) -> str:
+    counts = (
+        classification[classification["classification"] != "anchor_reference"]["classification"]
+        .value_counts()
+        .to_dict()
+    )
+    snapshot = build_route_snapshot(route_metrics, classification)
     lines = [
-        "# Instability-Control Summary",
+        "# Instability-Control Status Report",
         "",
-        "## Admission Outcome",
+        "This is a current-state synthesis for the active study path. It is not a final experimental report.",
         "",
-        f"Admitted families: {', '.join(admission['admitted_families']) if admission['admitted_families'] else '(none)'}",
+        "## Step 1 Outcome",
         "",
-        "## Best Route",
+        f"- Transform-sensitive units: {int(counts.get('transform_sensitive', 0))}",
+        f"- Raw-fail units: {int(counts.get('raw_fail', 0))}",
+        f"- No reproducible evidence: {int(counts.get('no_reproducible_evidence', 0))}",
         "",
+        "## Whole-Data Snapshot",
+        "",
+        "| Unit | Class | Raw LR Mean | Raw LR Std | Raw XGB1 Mean | Raw XGB1 Std | PLS LR Mean | PLS LR Std | Legacy Raw Test | Legacy PLS Test |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
-    if routes:
-        best = max(routes, key=lambda item: float(item["summary"]["f0_5_mean"]))
+    for row in snapshot.to_dict(orient="records"):
         lines.append(
-            f"{best['route_id']} ({best['route_type']}) with F0.5={float(best['summary']['f0_5_mean']):.4f}"
+            "| {unit} | {label} | {raw_lr_mean} | {raw_lr_std} | {raw_xgb_mean} | {raw_xgb_std} | {pls_mean} | {pls_std} | {raw_test} | {pls_test} |".format(
+                unit=row["unit_display_label"],
+                label=row["classification"],
+                raw_lr_mean=_fmt_num(row.get("raw_lr_cv_mean")),
+                raw_lr_std=_fmt_num(row.get("raw_lr_cv_std")),
+                raw_xgb_mean=_fmt_num(row.get("raw_xgb1_cv_mean")),
+                raw_xgb_std=_fmt_num(row.get("raw_xgb1_cv_std")),
+                pls_mean=_fmt_num(row.get("pls_lr_cv_mean")),
+                pls_std=_fmt_num(row.get("pls_lr_cv_std")),
+                raw_test=_fmt_num(row.get("legacy_raw_test_f0_5")),
+                pls_test=_fmt_num(row.get("legacy_pls_test_f0_5")),
+            )
         )
-    else:
-        lines.append("No routes evaluated.")
+
     lines += [
         "",
-        "## Residual Gain",
+        "## Next Method Targets",
         "",
-        f"Recovered false negatives: {residuals['recovered_false_negatives']} / {residuals['baseline_false_negatives']}",
-        f"Borderline recovered: {residuals['borderline_recovered']} / {residuals['borderline_case_count']}",
+        f"- Compression: {', '.join(priorities.get('compression_priority', [])) or '(none)'}",
+        f"- Stability selection: {', '.join(priorities.get('stability_selection_priority', [])) or '(none)'}",
+        f"- Grouped penalty: {', '.join(priorities.get('grouped_penalty_priority', [])) or '(none)'}",
         "",
-        "## Diagnostics Snapshot",
+        "## Scaffold Status",
         "",
-        diagnostics_markdown(diagnostics),
+        f"- Active mathematical methods in this pass: {int(method_summary.get('active_method_count', 0))}",
+        "- The next concrete implementation target is `stability_selection` on `HQ + A-F`.",
     ]
     return "\n".join(lines)

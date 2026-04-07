@@ -1,0 +1,31 @@
+{
+  "active_methods": [
+    {
+      "id": "stability_selection",
+      "config": "configs/instability_control/stability_selection.json",
+      "notes": "Active Step 2 method. Run row-subsampled stability selection on HQ + A-F before any new PLS work."
+    }
+  ],
+  "available_methods": [
+    {
+      "id": "stability_selection",
+      "notes": "Active next method. Use row subsampling on HQ + A-F to measure stable reasoning-feature membership before any new transforms."
+    },
+    {
+      "id": "sparse_group_lasso",
+      "notes": "Apply after stability selection if grouped penalties are needed to control redundancy within HQ + reasoning routes."
+    },
+    {
+      "id": "spls",
+      "notes": "Revisit after the subsampling route is understood. Treat as a later transform benchmark, not the next implementation step."
+    },
+    {
+      "id": "supervised_grouping",
+      "notes": "Only introduce if grouped penalties require data-driven regrouping inside unstable families."
+    },
+    {
+      "id": "llm_guided_selection",
+      "notes": "Keep as a late extension after the statistical stability routes are established."
+    }
+  ]
+}

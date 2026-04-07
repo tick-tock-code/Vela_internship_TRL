@@ -27,6 +27,7 @@ class FamilySpec:
     exclude_columns: list[str] | None = None
     kind: str = "candidate"
     notes: str = ""
+    legacy_labels: dict[str, str] | None = None
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ class FamilyRegistry:
 class AlignedFamilyData:
     join_key: str
     labels: pd.Series
+    baseline_spec: FamilySpec
     baseline: pd.DataFrame
     candidate_frames: dict[str, pd.DataFrame]
     family_specs: dict[str, FamilySpec]
@@ -53,6 +55,10 @@ def _resolve_path(value: str) -> Path:
 
 
 def _family_from_payload(payload: dict[str, object]) -> FamilySpec:
+    legacy_payload = payload.get("legacy_labels", {})
+    legacy_labels = None
+    if isinstance(legacy_payload, dict):
+        legacy_labels = {str(key): str(value) for key, value in legacy_payload.items()}
     return FamilySpec(
         id=str(payload["id"]),
         label=str(payload.get("label", payload["id"])),
@@ -62,6 +68,7 @@ def _family_from_payload(payload: dict[str, object]) -> FamilySpec:
         exclude_columns=list(payload.get("exclude_columns", []) or []) or None,
         kind=str(payload.get("kind", "candidate")),
         notes=str(payload.get("notes", "")),
+        legacy_labels=legacy_labels,
     )
 
 
@@ -87,6 +94,7 @@ def _load_spec(spec: FamilySpec, dataset: DatasetSpec) -> LoadedFrame:
         spec.path,
         id_column=dataset.id_column,
         label_column=dataset.label_column,
+        allow_missing_label=spec.kind != "baseline",
         feature_columns=spec.feature_columns,
         feature_prefixes=spec.feature_prefixes,
         exclude_columns=spec.exclude_columns,
@@ -117,6 +125,7 @@ def load_aligned_family_data(registry: FamilyRegistry) -> AlignedFamilyData:
     return AlignedFamilyData(
         join_key=join_key,
         labels=labels,
+        baseline_spec=registry.baseline,
         baseline=baseline_features,
         candidate_frames=candidate_frames,
         family_specs=family_specs,

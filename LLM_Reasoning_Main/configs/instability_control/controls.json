@@ -1,0 +1,102 @@
+{
+  "routes": [
+    {
+      "id": "anchor_xgb1_unpruned",
+      "label": "Anchor XGB1 (unpruned HQ)",
+      "model": "xgb1",
+      "transform": "BASE",
+      "threshold_grid": "mirror",
+      "apply_rule_override": true,
+      "drop_baseline_features": [],
+      "classification_role": "anchor",
+      "exclude_from_classification": true
+    },
+    {
+      "id": "raw_lr_base",
+      "label": "Raw LR (BASE)",
+      "model": "logistic",
+      "transform": "BASE",
+      "threshold_grid": "default",
+      "apply_rule_override": true,
+      "drop_baseline_features": [
+        "best_degree_prestige",
+        "comfort_index",
+        "longest_founding_tenure",
+        "persistence_score",
+        "has_prior_ipo",
+        "is_serial_founder",
+        "founding_role_count",
+        "edu_prestige_tier"
+      ],
+      "classification_role": "raw"
+    },
+    {
+      "id": "raw_xgb1",
+      "label": "Raw XGB1 (BASE)",
+      "model": "xgb1",
+      "transform": "BASE",
+      "threshold_grid": "default",
+      "apply_rule_override": true,
+      "drop_baseline_features": [
+        "best_degree_prestige",
+        "comfort_index",
+        "longest_founding_tenure",
+        "persistence_score",
+        "has_prior_ipo",
+        "is_serial_founder",
+        "founding_role_count",
+        "edu_prestige_tier"
+      ],
+      "classification_role": "raw"
+    },
+    {
+      "id": "pls_lr_n6",
+      "label": "PLS LR (n=6)",
+      "model": "logistic",
+      "transform": "PLS",
+      "pls_components": 6,
+      "threshold_grid": "default",
+      "apply_rule_override": true,
+      "drop_baseline_features": [
+        "best_degree_prestige",
+        "comfort_index",
+        "longest_founding_tenure",
+        "persistence_score",
+        "has_prior_ipo",
+        "is_serial_founder",
+        "founding_role_count",
+        "edu_prestige_tier"
+      ],
+      "classification_role": "transformed"
+    },
+    {
+      "id": "pls_mlp4_n6",
+      "label": "PLS MLP4 (n=6)",
+      "model": "mlp4",
+      "transform": "PLS",
+      "pls_components": 6,
+      "threshold_grid": "default",
+      "apply_rule_override": true,
+      "drop_baseline_features": [
+        "best_degree_prestige",
+        "comfort_index",
+        "longest_founding_tenure",
+        "persistence_score",
+        "has_prior_ipo",
+        "is_serial_founder",
+        "founding_role_count",
+        "edu_prestige_tier"
+      ],
+      "classification_role": "audit",
+      "exclude_from_classification": true
+    }
+  ],
+  "classification": {
+    "primary_raw_route_id": "raw_lr_base",
+    "secondary_raw_route_id": "raw_xgb1",
+    "primary_transformed_route_id": "pls_lr_n6",
+    "compression_priority_limit": 5,
+    "stability_priority_limit": 5,
+    "grouped_priority_limit": 5
+  }
+}

@@ -5,53 +5,71 @@
     "folds_path": "data/vcbench/folds/folds_k5_seed42_full.json"
   },
   "baseline": {
-    "id": "hq_baseline",
-    "label": "Human HQ Baseline",
+    "id": "HQ_anchor_xgb1_unpruned",
+    "label": "HQ",
     "path": "data/vcbench/features/human_high_quality/features_full.parquet",
-    "kind": "baseline"
+    "kind": "baseline",
+    "notes": "Canonical frozen HQ feature bank. The mirror XGB1 anchor stays unpruned.",
+    "legacy_labels": {
+      "raw_lr_base": "LR_BASE_HQ"
+    }
   },
   "families": [
     {
       "id": "engineered_set_05",
       "label": "Engineered Set 05",
-      "path": "data/vcbench/features/llm_engineered/archives/family_20260321_144238/set_05/current/llm_features.parquet",
-      "exclude_columns": ["set_id"]
+      "path": "data/vcbench/features/llm_engineered/family_20260321_144238/set_05/current/llm_features.parquet",
+      "exclude_columns": ["set_id"],
+      "notes": "Canonical engineered family archive pinned in the repo."
     },
     {
       "id": "reasoning_A",
-      "label": "Reasoning A",
+      "label": "A",
       "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
-      "feature_prefixes": ["A_"]
+      "feature_prefixes": ["A_"],
+      "notes": "Reasoning experiment A.",
+      "legacy_labels": {
+        "raw_lr_base": "LR_BASE_A",
+        "pls_lr_n6": "LR_PLS_A"
+      }
     },
     {
       "id": "reasoning_B",
-      "label": "Reasoning B",
+      "label": "B",
       "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
-      "feature_prefixes": ["B_"]
+      "feature_prefixes": ["B_"],
+      "notes": "Reasoning experiment B."
     },
     {
       "id": "reasoning_C",
-      "label": "Reasoning C",
+      "label": "C",
       "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
-      "feature_prefixes": ["C_"]
+      "feature_prefixes": ["C_"],
+      "notes": "Reasoning experiment C."
     },
     {
       "id": "reasoning_D",
-      "label": "Reasoning D",
+      "label": "D",
       "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
-      "feature_prefixes": ["D_"]
+      "feature_prefixes": ["D_"],
+      "notes": "Reasoning experiment D."
     },
     {
       "id": "reasoning_E",
-      "label": "Reasoning E",
+      "label": "E",
       "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
-      "feature_prefixes": ["E_"]
+      "feature_prefixes": ["E_"],
+      "notes": "Reasoning experiment E."
     },
     {
       "id": "reasoning_F",
-      "label": "Reasoning F",
+      "label": "F",
       "path": "data/vcbench/features/llm_reasoning/train/combined/full_current/llm_reasoning_full.parquet",
-      "feature_prefixes": ["F_"]
+      "feature_prefixes": ["F_"],
+      "notes": "Reasoning experiment F.",
+      "legacy_labels": {
+        "pls_lr_n6": "LR_PLS_F"
+      }
     }
   ]
 }

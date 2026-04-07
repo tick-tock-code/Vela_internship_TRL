@@ -2,8 +2,8 @@
 
 Active:
 
-- `instability_control/`: active methodology workspace for family diagnostics, admission, route comparison, and final reporting.
-- `next_steps.md`: concrete week-one plan and codebase checklist for the new direction.
+- `instability_control/`: active evidence-first workspace for anchor continuity, Step 1 evidence mapping, method scaffold work, and final synthesis.
+- `next_steps.md`: concrete near-term plan and codebase checklist for the new direction.
 
 Frozen or curated legacy outputs:
 

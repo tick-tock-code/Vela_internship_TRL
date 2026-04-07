@@ -31,6 +31,7 @@ def prepare_frame(
     *,
     id_column: str = "founder_uuid",
     label_column: str = "success",
+    allow_missing_label: bool = False,
 ) -> pd.DataFrame:
     prepared = frame.copy()
     if "row_index" not in prepared.columns:
@@ -39,7 +40,9 @@ def prepare_frame(
     if id_column not in prepared.columns:
         prepared[id_column] = prepared["row_index"].astype(str)
     if label_column not in prepared.columns:
-        raise KeyError(f"Missing label column '{label_column}'.")
+        if not allow_missing_label:
+            raise KeyError(f"Missing label column '{label_column}'.")
+        prepared[label_column] = 0
     return prepared
 
 
@@ -56,7 +59,13 @@ def select_feature_columns(
         return [col for col in feature_columns if col in frame.columns and col not in excluded]
     if feature_prefixes:
         prefixes = tuple(str(prefix) for prefix in feature_prefixes)
-        cols = [col for col in frame.columns if col.startswith(prefixes) and col not in excluded]
+        cols = [
+            col
+            for col in frame.columns
+            if col.startswith(prefixes)
+            and col not in excluded
+            and pd.api.types.is_numeric_dtype(frame[col])
+        ]
         return cols
     return [col for col in frame.columns if col not in excluded and pd.api.types.is_numeric_dtype(frame[col])]
 
@@ -66,11 +75,17 @@ def load_feature_frame(
     *,
     id_column: str = "founder_uuid",
     label_column: str = "success",
+    allow_missing_label: bool = False,
     feature_columns: Iterable[str] | None = None,
     feature_prefixes: Iterable[str] | None = None,
     exclude_columns: Iterable[str] | None = None,
 ) -> LoadedFrame:
-    frame = prepare_frame(read_table(path), id_column=id_column, label_column=label_column)
+    frame = prepare_frame(
+        read_table(path),
+        id_column=id_column,
+        label_column=label_column,
+        allow_missing_label=allow_missing_label,
+    )
     features = select_feature_columns(
         frame,
         feature_columns=feature_columns,

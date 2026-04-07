@@ -1,0 +1,41 @@
+{
+  "combos": [
+    {
+      "id": "combo_A_C",
+      "label": "A+C",
+      "family_ids": ["reasoning_A", "reasoning_C"],
+      "notes": "Legacy raw combo retained in the final model-testing report.",
+      "legacy_labels": {
+        "raw_lr_base": "LR_BASE_A_C"
+      }
+    },
+    {
+      "id": "combo_D_E_F",
+      "label": "D+E+F",
+      "family_ids": ["reasoning_D", "reasoning_E", "reasoning_F"],
+      "notes": "Transform-sensitive legacy combo with the strongest LR PLS test result.",
+      "legacy_labels": {
+        "pls_lr_n6": "LR_PLS_DEF"
+      }
+    },
+    {
+      "id": "combo_C_D_E_F",
+      "label": "C+D+E+F",
+      "family_ids": ["reasoning_C", "reasoning_D", "reasoning_E", "reasoning_F"],
+      "notes": "Audit-only combo retained for the MLP4 PLS legacy comparison.",
+      "legacy_labels": {
+        "pls_mlp4_n6": "MLP4_PLS_CDEF"
+      }
+    },
+    {
+      "id": "combo_A_B_C_D_E_F",
+      "label": "A+B+C+D+E+F",
+      "family_ids": ["reasoning_A", "reasoning_B", "reasoning_C", "reasoning_D", "reasoning_E", "reasoning_F"],
+      "notes": "Full reasoning stack retained as a legacy stress test.",
+      "legacy_labels": {
+        "pls_lr_n6": "LR_PLS_ABCDEF",
+        "pls_mlp4_n6": "MLP4_PLS_ABCDEF"
+      }
+    }
+  ]
+}
