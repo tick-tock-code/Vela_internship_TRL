@@ -68,6 +68,6 @@ def status_report_markdown(
         "## Scaffold Status",
         "",
         f"- Active mathematical methods in this pass: {int(method_summary.get('active_method_count', 0))}",
-        "- The next concrete implementation target is `stability_selection` on `HQ + A-F`.",
+        "- The active next method stage is `supervised_grouping`, with Step 2 stability selection and Step 3 blockwise reasoning-PLS preserved as frozen references.",
     ]
     return "\n".join(lines)

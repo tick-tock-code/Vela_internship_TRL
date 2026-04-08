@@ -377,6 +377,11 @@ def evaluate_selected_route(
         scores = _apply_rule_override(scores, rule_mask_test)
     metrics = _metric_row(y_test, scores, threshold)
     metrics["threshold"] = float(threshold)
+    if model_type == "logistic":
+        metrics["coefficients"] = {
+            column: float(value)
+            for column, value in zip(train_df.columns.tolist(), model.coef_.reshape(-1).tolist(), strict=False)
+        }
     return metrics
 
 
@@ -425,6 +430,7 @@ def run_family_stability_study(
     feature_frequency_rows: list[dict[str, Any]] = []
     selection_rows: list[dict[str, Any]] = []
     family_metric_rows: list[dict[str, Any]] = []
+    coefficient_rows: list[dict[str, Any]] = []
 
     total_splits = len(outer_splits)
     total_units = max(1, total_splits * max(1, len(family_ids)))
@@ -498,6 +504,22 @@ def run_family_stability_study(
                     "brier": float(metrics["brier"]),
                 }
             )
+            if model_type == "logistic":
+                for feature_name, coefficient in metrics.get("coefficients", {}).items():
+                    coefficient_rows.append(
+                        {
+                            "family_id": "HQ",
+                            "family_label": "HQ",
+                            "family_display_label": "HQ",
+                            "outer_split_id": outer_split_id,
+                            "repeat_index": int(split["repeat_index"]),
+                            "fold_index": int(split["fold_index"]),
+                            "route_group": "hq_only",
+                            "feature_name": feature_name,
+                            "feature_group": "hq",
+                            "coefficient": float(coefficient),
+                        }
+                    )
 
         for family_id in family_ids:
             family_spec = family_specs[family_id]
@@ -655,6 +677,22 @@ def run_family_stability_study(
                             "brier": float(metrics["brier"]),
                         }
                     )
+                    if model_type == "logistic":
+                        for feature_name, coefficient in metrics.get("coefficients", {}).items():
+                            coefficient_rows.append(
+                                {
+                                    "family_id": family_id,
+                                    "family_label": family_spec.label,
+                                    "family_display_label": family_display_label(family_spec.label),
+                                    "outer_split_id": outer_split_id,
+                                    "repeat_index": int(split["repeat_index"]),
+                                    "fold_index": int(split["fold_index"]),
+                                    "route_group": route_group,
+                                    "feature_name": feature_name,
+                                    "feature_group": "reasoning" if feature_name in family_columns else "hq",
+                                    "coefficient": float(coefficient),
+                                }
+                            )
             completed_units += 1
             if progress_callback is not None:
                 progress_callback(
@@ -683,6 +721,7 @@ def run_family_stability_study(
     family_metrics_df = pd.DataFrame(family_metric_rows)
     feature_frequency_df = pd.DataFrame(feature_frequency_rows)
     selection_df = pd.DataFrame(selection_rows)
+    coefficient_df = pd.DataFrame(coefficient_rows)
 
     metric_frames = [frame for frame in [benchmark_df, family_metrics_df] if not frame.empty]
     combined_metrics_df = pd.concat(metric_frames, ignore_index=True) if metric_frames else pd.DataFrame()
@@ -749,6 +788,58 @@ def run_family_stability_study(
             .fillna(0.0)
         )
 
+    coefficient_summary_df = pd.DataFrame()
+    if not coefficient_df.empty:
+        coefficient_summary_rows: list[dict[str, Any]] = []
+        for (
+            family_id,
+            family_label,
+            family_display_label_text,
+            route_group,
+            feature_name,
+            feature_group,
+        ), subset in coefficient_df.groupby(
+            [
+                "family_id",
+                "family_label",
+                "family_display_label",
+                "route_group",
+                "feature_name",
+                "feature_group",
+            ],
+            dropna=False,
+        ):
+            coeffs = subset["coefficient"].to_numpy(dtype=float)
+            positive_rate = float(np.mean(coeffs > 0.0))
+            negative_rate = float(np.mean(coeffs < 0.0))
+            nonzero_rate = positive_rate + negative_rate
+            sign_flip_rate = 0.0
+            if nonzero_rate > 0.0:
+                sign_flip_rate = min(positive_rate, negative_rate) / nonzero_rate
+            dominant_sign = "none"
+            if positive_rate > negative_rate:
+                dominant_sign = "positive"
+            elif negative_rate > positive_rate:
+                dominant_sign = "negative"
+            coefficient_summary_rows.append(
+                {
+                    "family_id": family_id,
+                    "family_label": family_label,
+                    "family_display_label": family_display_label_text,
+                    "route_group": route_group,
+                    "feature_name": feature_name,
+                    "feature_group": feature_group,
+                    "coefficient_mean": float(np.mean(coeffs)),
+                    "coefficient_std": float(np.std(coeffs, ddof=0)),
+                    "abs_coefficient_mean": float(np.mean(np.abs(coeffs))),
+                    "positive_rate": positive_rate,
+                    "negative_rate": negative_rate,
+                    "sign_flip_rate": float(sign_flip_rate),
+                    "dominant_sign": dominant_sign,
+                }
+            )
+        coefficient_summary_df = pd.DataFrame(coefficient_summary_rows)
+
     audit_df = pd.DataFrame(
         [
             {
@@ -765,6 +856,8 @@ def run_family_stability_study(
         "family_metrics": family_metrics_df,
         "feature_frequencies": feature_frequency_df,
         "selection_summary": selection_df,
+        "logistic_coefficients": coefficient_df,
+        "coefficient_summary": coefficient_summary_df,
         "summary": summary_df,
         "family_selection_summary": family_selection_summary,
         "audit": audit_df,
@@ -890,6 +983,7 @@ def stability_details_markdown(
     feature_freq_df: pd.DataFrame,
     family_selection_summary: pd.DataFrame,
     summary_df: pd.DataFrame,
+    coefficient_summary_df: pd.DataFrame,
 ) -> str:
     lines = [
         "# Stability Selection Family Details",
@@ -946,6 +1040,10 @@ def stability_details_markdown(
         family_features = feature_freq_df[feature_freq_df["family_id"] == family_id].copy()
         if family_features.empty:
             continue
+        family_coefficients = coefficient_summary_df[
+            (coefficient_summary_df["family_id"] == family_id)
+            & (coefficient_summary_df["feature_group"] == "reasoning")
+        ].copy()
         grouped = (
             family_features.groupby(["feature_name", "feature_group"], dropna=False)
             .agg(
@@ -982,6 +1080,40 @@ def stability_details_markdown(
             )
         if top_reasoning.empty:
             lines.append("| -- | -- | -- | -- | -- | -- | -- |")
+        lines += [
+            "",
+            "Reasoning-feature LR coefficient stability:",
+            "",
+            "| Feature | Raw Mean | Raw Std | Raw Flip | Comp Mean | Comp Std | Comp Flip | Aug Mean | Aug Std | Aug Flip |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+        if not family_coefficients.empty:
+            for feature_name in sorted(set(family_coefficients["feature_name"].tolist())):
+                def coef_lookup(route_group: str, column: str) -> str:
+                    subset = family_coefficients[
+                        (family_coefficients["feature_name"] == feature_name)
+                        & (family_coefficients["route_group"] == route_group)
+                    ]
+                    if subset.empty:
+                        return "--"
+                    return _safe_fmt(subset.iloc[0][column])
+
+                lines.append(
+                    "| {feature} | {raw_mean} | {raw_std} | {raw_flip} | {comp_mean} | {comp_std} | {comp_flip} | {aug_mean} | {aug_std} | {aug_flip} |".format(
+                        feature=feature_name,
+                        raw_mean=coef_lookup("raw_family", "coefficient_mean"),
+                        raw_std=coef_lookup("raw_family", "coefficient_std"),
+                        raw_flip=coef_lookup("raw_family", "sign_flip_rate"),
+                        comp_mean=coef_lookup("competition_track", "coefficient_mean"),
+                        comp_std=coef_lookup("competition_track", "coefficient_std"),
+                        comp_flip=coef_lookup("competition_track", "sign_flip_rate"),
+                        aug_mean=coef_lookup("augmentation_track", "coefficient_mean"),
+                        aug_std=coef_lookup("augmentation_track", "coefficient_std"),
+                        aug_flip=coef_lookup("augmentation_track", "sign_flip_rate"),
+                    )
+                )
+        else:
+            lines.append("| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |")
         lines += [
             "",
             "Top HQ features in the competition-track selector view:",

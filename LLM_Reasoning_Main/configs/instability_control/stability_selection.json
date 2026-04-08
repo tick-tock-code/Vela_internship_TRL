@@ -64,11 +64,12 @@
     }
   ],
   "docs_output": {
-    "protocol_markdown": "docs/instability_control/step2/10_stability_selection_protocol.md",
-    "summary_markdown": "docs/instability_control/step2/11_stability_selection_summary.md",
-    "details_markdown": "docs/instability_control/step2/12_stability_selection_family_details.md",
-    "audit_markdown": "docs/instability_control/step2/13_stability_selection_final_audit.md",
-    "summary_csv": "docs/instability_control/step2/stability_selection_summary.csv",
-    "feature_frequencies_csv": "docs/instability_control/step2/stability_selection_feature_frequencies.csv"
+    "protocol_markdown": "docs/instability_control/step_2_stability_analysis/10_stability_selection_protocol.md",
+    "summary_markdown": "docs/instability_control/step_2_stability_analysis/11_stability_selection_summary.md",
+    "details_markdown": "docs/instability_control/step_2_stability_analysis/12_stability_selection_family_details.md",
+    "audit_markdown": "docs/instability_control/step_2_stability_analysis/13_stability_selection_final_audit.md",
+    "summary_csv": "docs/instability_control/step_2_stability_analysis/stability_selection_summary.csv",
+    "feature_frequencies_csv": "docs/instability_control/step_2_stability_analysis/stability_selection_feature_frequencies.csv",
+    "coefficient_summary_csv": "docs/instability_control/step_2_stability_analysis/stability_selection_coefficient_summary.csv"
   }
 }

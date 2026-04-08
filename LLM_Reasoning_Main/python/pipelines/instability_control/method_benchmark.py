@@ -44,7 +44,7 @@ def main() -> None:
 
     reporting_payload = read_json(_resolve_path(str(args.reporting_config)))
     docs_output = reporting_payload.get("docs_output", {})
-    docs_path = _resolve_path(str(docs_output.get("method_benchmark_markdown", INSTABILITY_CONTROL_DOCS_DIR / "step2" / "08_method_benchmark.md")))
+    docs_path = _resolve_path(str(docs_output.get("method_benchmark_markdown", INSTABILITY_CONTROL_DOCS_DIR / "step_2_stability_analysis" / "08_method_benchmark.md")))
     write_markdown(docs_path, markdown)
     print(f"Wrote method scaffold outputs to {run_dir}")
 

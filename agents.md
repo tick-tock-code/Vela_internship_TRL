@@ -60,6 +60,12 @@ Errors are learning opportunities. When something breaks:
 
 **Key principle:** Local files are only for processing. Deliverables live in execution and directives. Everything in `.tmp/` can be deleted and regenerated.
 
+
+## IMPORTANT: Using prior knowledge from previous experiments in the repo
+- Refer to data and descriptions in 'final report/' and 'Summaries_to_build_report/', when considering the meaning of results in the instability workflow.
+- Do not let these results constrain new ideas for data treatment. Only use them to infer meaning in the results we calculate.
+
+
 ## Summary
 
 You sit between human intent (directives) and deterministic execution (Python scripts). Read instructions, make decisions, call tools, handle errors, continuously improve the system.

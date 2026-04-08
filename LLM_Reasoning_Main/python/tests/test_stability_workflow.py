@@ -181,8 +181,8 @@ def _build_fixture_config(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
                 "results_markdown": str(tmp_path / "step1" / "03_results.md"),
                 "legacy_alignment_markdown": str(tmp_path / "step1" / "07_alignment.md"),
                 "snapshot_csv": str(tmp_path / "step1" / "step1_snapshot.csv"),
-                "method_benchmark_markdown": str(tmp_path / "step2" / "08_method.md"),
-                "status_report_markdown": str(tmp_path / "step3" / "09_status.md")
+                "method_benchmark_markdown": str(tmp_path / "step_2_stability_analysis" / "08_method.md"),
+                "status_report_markdown": str(tmp_path / "current_status.md")
             }
         },
     )

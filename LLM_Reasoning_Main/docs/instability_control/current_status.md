@@ -33,5 +33,5 @@ This is a current-state synthesis for the active study path. It is not a final e
 
 ## Scaffold Status
 
-- Active mathematical methods in this pass: 1
-- The next concrete implementation target is `stability_selection` on `HQ + A-F`.
+- Active mathematical methods in this pass: 3
+- The active next method stage is `supervised_grouping`, with Step 2 stability selection and Step 3 blockwise reasoning-PLS preserved as frozen references.

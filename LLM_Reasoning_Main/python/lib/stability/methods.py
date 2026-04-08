@@ -31,7 +31,7 @@ def method_scaffold_markdown(summary: dict[str, Any]) -> str:
     lines = [
         "# Method Benchmark Scaffold",
         "",
-        "This file records the active Step 2 method order and the current priority inputs.",
+        "This file records the active instability-control method order and the current priority inputs.",
         "",
         f"- Active methods configured: {len(active_methods)}",
         "",

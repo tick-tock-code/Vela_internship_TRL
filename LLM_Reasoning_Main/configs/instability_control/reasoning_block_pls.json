@@ -1,0 +1,58 @@
+{
+  "family_ids": [
+    "reasoning_A",
+    "reasoning_B",
+    "reasoning_C",
+    "reasoning_D",
+    "reasoning_E",
+    "reasoning_F"
+  ],
+  "outer_cv": {
+    "n_splits": 3,
+    "n_repeats": 16,
+    "random_state": 42
+  },
+  "evaluation": {
+    "models": [
+      "logistic",
+      "xgb1"
+    ],
+    "apply_rule_override": true,
+    "threshold_grid": "default",
+    "inner_threshold_cv_splits": 3,
+    "random_state": 42
+  },
+  "family_components": {
+    "reasoning_A": [
+      2,
+      3
+    ],
+    "reasoning_B": [
+      1,
+      2
+    ],
+    "reasoning_C": [
+      2
+    ],
+    "reasoning_D": [
+      1,
+      2
+    ],
+    "reasoning_E": [
+      1
+    ],
+    "reasoning_F": [
+      2,
+      3
+    ]
+  },
+  "docs_output": {
+    "protocol_markdown": "docs/instability_control/step_3_PLS_reasoning/10_reasoning_block_pls_protocol.md",
+    "summary_markdown": "docs/instability_control/step_3_PLS_reasoning/11_reasoning_block_pls_summary.md",
+    "details_markdown": "docs/instability_control/step_3_PLS_reasoning/12_reasoning_block_pls_family_details.md",
+    "audit_markdown": "docs/instability_control/step_3_PLS_reasoning/13_reasoning_block_pls_final_audit.md",
+    "summary_csv": "docs/instability_control/step_3_PLS_reasoning/reasoning_block_pls_summary.csv",
+    "fold_metrics_csv": "docs/instability_control/step_3_PLS_reasoning/reasoning_block_pls_fold_metrics.csv",
+    "component_summary_csv": "docs/instability_control/step_3_PLS_reasoning/reasoning_block_pls_component_summary.csv"
+  }
+}

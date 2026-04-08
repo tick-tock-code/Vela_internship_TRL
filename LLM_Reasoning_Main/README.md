@@ -8,6 +8,8 @@ This repo now separates frozen legacy pipelines from an evidence-first instabili
 - `python/pipelines/`: thin compatibility wrappers that keep original entrypoint filenames callable.
 - `python/pipelines/instability_control/evidence_map.py`: primary Step 1 evidence-mapping entrypoint.
 - `python/pipelines/instability_control/method_benchmark.py`: scaffold entrypoint for the next mathematical-method stage.
+- `python/pipelines/instability_control/reasoning_block_pls.py`: Step 3 blockwise PLS on reasoning families before HQ concatenation.
+- `python/pipelines/instability_control/supervised_grouping.py`: Step 4 supervised grouping with train-only clustering and 1-component cluster PLS.
 - `python/pipelines/instability_control/status_report.py`: current-state synthesis for the instability-control track.
 - `python/lib/shared/`: reusable loading, folds, metrics, and artifact helpers.
 - `python/lib/stability/`: family registry, combo catalog, route evaluators, evidence synthesis, and method scaffold logic.
@@ -22,9 +24,13 @@ This repo now separates frozen legacy pipelines from an evidence-first instabili
    `HQ_anchor_xgb1_unpruned` stays frozen as the benchmark anchor.
 2. Step 1 evidence map:
    reproduce the raw failure pattern and transformed `PLS` wins cleanly.
-3. Method benchmark:
-   add new stability methods only after Step 1 identifies the priority units.
-4. Final synthesis:
+3. Step 2 stability analysis:
+   preserve the row-subsampled stability-selection reference on `HQ + A-F`.
+4. Step 3 blockwise PLS:
+   compress the reasoning block inside each outer fold before joining it to raw `HQ`.
+5. Step 4 supervised grouping:
+   cluster correlated features inside each outer fold, then collapse each cluster to one latent route feature.
+6. Final synthesis:
    maintain one paper-facing summary of what fails raw, what is transform-sensitive, and what to try next.
 
 ## Canonical Paths

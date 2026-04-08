@@ -62,7 +62,7 @@ def main() -> None:
     write_markdown(run_dir / "status_report.md", markdown)
 
     docs_output = reporting_payload.get("docs_output", {})
-    docs_path = _resolve_path(str(docs_output.get("status_report_markdown", INSTABILITY_CONTROL_DOCS_DIR / "step3" / "09_status_report.md")))
+    docs_path = _resolve_path(str(docs_output.get("status_report_markdown", INSTABILITY_CONTROL_DOCS_DIR / "current_status.md")))
     write_markdown(docs_path, markdown)
     print(f"Wrote status report to {run_dir}")
 

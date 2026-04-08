@@ -1,0 +1,118 @@
+{
+  "outer_cv": {
+    "n_splits": 3,
+    "n_repeats": 16,
+    "random_state": 42
+  },
+  "evaluation": {
+    "models": [
+      "logistic",
+      "xgb1"
+    ],
+    "apply_rule_override": true,
+    "threshold_grid": "default",
+    "inner_threshold_cv_splits": 3,
+    "random_state": 42
+  },
+  "augmentation": {
+    "groups_per_family": [
+      2,
+      3
+    ],
+    "feature_sets": [
+      {
+        "id": "hq_plus_a",
+        "label": "HQ + A",
+        "family_ids": [
+          "reasoning_A"
+        ]
+      },
+      {
+        "id": "hq_plus_f",
+        "label": "HQ + F",
+        "family_ids": [
+          "reasoning_F"
+        ]
+      },
+      {
+        "id": "hq_plus_a_b_c_d_e",
+        "label": "HQ + A+B+C+D+E",
+        "family_ids": [
+          "reasoning_A",
+          "reasoning_B",
+          "reasoning_C",
+          "reasoning_D",
+          "reasoning_E"
+        ]
+      },
+      {
+        "id": "hq_plus_b_c_d_e_f",
+        "label": "HQ + B+C+D+E+F",
+        "family_ids": [
+          "reasoning_B",
+          "reasoning_C",
+          "reasoning_D",
+          "reasoning_E",
+          "reasoning_F"
+        ]
+      }
+    ]
+  },
+  "competition": {
+    "total_groups": 6,
+    "feature_sets": [
+      {
+        "id": "hq_only",
+        "label": "HQ",
+        "family_ids": []
+      },
+      {
+        "id": "hq_plus_a",
+        "label": "HQ + A",
+        "family_ids": [
+          "reasoning_A"
+        ]
+      },
+      {
+        "id": "hq_plus_f",
+        "label": "HQ + F",
+        "family_ids": [
+          "reasoning_F"
+        ]
+      },
+      {
+        "id": "hq_plus_a_b_c_d_e",
+        "label": "HQ + A+B+C+D+E",
+        "family_ids": [
+          "reasoning_A",
+          "reasoning_B",
+          "reasoning_C",
+          "reasoning_D",
+          "reasoning_E"
+        ]
+      },
+      {
+        "id": "hq_plus_b_c_d_e_f",
+        "label": "HQ + B+C+D+E+F",
+        "family_ids": [
+          "reasoning_B",
+          "reasoning_C",
+          "reasoning_D",
+          "reasoning_E",
+          "reasoning_F"
+        ]
+      }
+    ]
+  },
+  "docs_output": {
+    "protocol_markdown": "docs/instability_control/step_4_supervised_grouping/10_supervised_grouping_protocol.md",
+    "summary_markdown": "docs/instability_control/step_4_supervised_grouping/11_supervised_grouping_summary.md",
+    "details_markdown": "docs/instability_control/step_4_supervised_grouping/12_supervised_grouping_details.md",
+    "audit_markdown": "docs/instability_control/step_4_supervised_grouping/13_supervised_grouping_final_audit.md",
+    "summary_csv": "docs/instability_control/step_4_supervised_grouping/supervised_grouping_summary.csv",
+    "fold_metrics_csv": "docs/instability_control/step_4_supervised_grouping/supervised_grouping_fold_metrics.csv",
+    "cluster_assignments_csv": "docs/instability_control/step_4_supervised_grouping/supervised_grouping_cluster_assignments.csv",
+    "component_summary_csv": "docs/instability_control/step_4_supervised_grouping/supervised_grouping_component_summary.csv",
+    "cocluster_summary_csv": "docs/instability_control/step_4_supervised_grouping/supervised_grouping_cocluster_summary.csv"
+  }
+}

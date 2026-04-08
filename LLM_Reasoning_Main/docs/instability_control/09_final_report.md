@@ -2,4 +2,4 @@
 
 This path is retained only as a compatibility note.
 
-Use [step3/09_status_report.md](C:/Users/joelb/OneDrive/Vela_partnerships_project/Project_folder/LLM_Reasoning_Main/docs/instability_control/step3/09_status_report.md) instead.
+Use [current_status.md](C:/Users/joelb/OneDrive/Vela_partnerships_project/Project_folder/LLM_Reasoning_Main/docs/instability_control/current_status.md) instead.

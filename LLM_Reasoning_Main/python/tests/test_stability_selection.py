@@ -126,12 +126,13 @@ def _build_fixture_config(tmp_path: Path) -> tuple[Path, Path, int]:
                 "random_state": 42,
             },
             "docs_output": {
-                "protocol_markdown": str(tmp_path / "step2" / "10_protocol.md"),
-                "summary_markdown": str(tmp_path / "step2" / "11_summary.md"),
-                "details_markdown": str(tmp_path / "step2" / "12_details.md"),
-                "audit_markdown": str(tmp_path / "step2" / "13_audit.md"),
-                "summary_csv": str(tmp_path / "step2" / "summary.csv"),
-                "feature_frequencies_csv": str(tmp_path / "step2" / "feature_frequencies.csv"),
+                "protocol_markdown": str(tmp_path / "step_2_stability_analysis" / "10_protocol.md"),
+                "summary_markdown": str(tmp_path / "step_2_stability_analysis" / "11_summary.md"),
+                "details_markdown": str(tmp_path / "step_2_stability_analysis" / "12_details.md"),
+                "audit_markdown": str(tmp_path / "step_2_stability_analysis" / "13_audit.md"),
+                "summary_csv": str(tmp_path / "step_2_stability_analysis" / "summary.csv"),
+                "feature_frequencies_csv": str(tmp_path / "step_2_stability_analysis" / "feature_frequencies.csv"),
+                "coefficient_summary_csv": str(tmp_path / "step_2_stability_analysis" / "coefficient_summary.csv"),
             },
         },
     )
@@ -159,6 +160,7 @@ def test_stability_selection_study_runs_per_family() -> None:
     feature_freq = outputs["feature_frequencies"]
     benchmark = outputs["benchmark_metrics"]
     family_metrics = outputs["family_metrics"]
+    coefficient_summary = outputs["coefficient_summary"]
 
     assert {"HQ", "reasoning_A", "reasoning_F"} == set(summary["family_id"].unique().tolist())
     assert set(family_metrics["route_group"].unique().tolist()) == {
@@ -175,6 +177,9 @@ def test_stability_selection_study_runs_per_family() -> None:
     assert "negative_selection_frequency" in feature_freq.columns
     assert "mean_reasoning_sign_consistency" in summary.columns
     assert "sign_stable_reasoning_count_mean" in summary.columns
+    assert not coefficient_summary.empty
+    assert "coefficient_mean" in coefficient_summary.columns
+    assert "sign_flip_rate" in coefficient_summary.columns
 
     augmentation_rows = summary[
         (summary["route_group"] == "augmentation_track") & (summary["evaluator_model"] == "logistic")
@@ -200,10 +205,11 @@ def test_stability_selection_pipeline_writes_docs() -> None:
         str(stability_path),
     ]
     stability_selection_pipeline.main()
-    protocol = (tmp_path / "step2" / "10_protocol.md").read_text(encoding="utf-8")
-    summary = (tmp_path / "step2" / "11_summary.md").read_text(encoding="utf-8")
-    details = (tmp_path / "step2" / "12_details.md").read_text(encoding="utf-8")
-    audit = (tmp_path / "step2" / "13_audit.md").read_text(encoding="utf-8")
+    protocol = (tmp_path / "step_2_stability_analysis" / "10_protocol.md").read_text(encoding="utf-8")
+    summary = (tmp_path / "step_2_stability_analysis" / "11_summary.md").read_text(encoding="utf-8")
+    details = (tmp_path / "step_2_stability_analysis" / "12_details.md").read_text(encoding="utf-8")
+    audit = (tmp_path / "step_2_stability_analysis" / "13_audit.md").read_text(encoding="utf-8")
+    coefficient_csv = (tmp_path / "step_2_stability_analysis" / "coefficient_summary.csv").read_text(encoding="utf-8")
 
     assert "row-subsampled stability selection" in protocol
     assert "Sign-consistency threshold" in protocol
@@ -211,4 +217,6 @@ def test_stability_selection_pipeline_writes_docs() -> None:
     assert "HQ + F" in summary
     assert "Top reasoning features" in details
     assert "Mean Sign Consistency" in details
+    assert "Reasoning-feature LR coefficient stability" in details
     assert "No scored private-test audit" in audit
+    assert "coefficient_mean" in coefficient_csv

@@ -4,12 +4,12 @@ This Step 2 method pass tests row-subsampled stability selection before any new 
 
 ## Study Setup
 
-- Families in scope: A, F
+- Families in scope: A, B, C, D, E, F
 - Units are evaluated as `HQ + family`, not family-only models.
 - Selector: `LogisticRegression(solver="saga", penalty="l1")`
 - C grid: 0.01, 0.03, 0.1, 0.3, 1.0, 3.0
-- Outer CV: 3-fold repeated 5 times
-- Row subsamples per outer-train fold: 100
+- Outer CV: 3-fold repeated 3 times
+- Row subsamples per outer-train fold: 25
 - Subsample fraction: 0.50
 - Primary stability threshold: 0.80
 - Sign-consistency threshold for reasoning features: 0.90
